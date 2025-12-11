@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT License https://github.com/McJtyMods/Hazardous/blob/1.16/LICENCE"
+issueTrackerURL="http://github.com/McJtyMods/Hazardous/issues"
+displayURL="http://github.com/McJtyMods/Hazardous/"
+#logoFile="examplemod.png" #optional
+#credits="Thanks for this example mod goes to Java" #optional
+authors="McJty"
+
+[[mods]]
+modId="hazardous"
+version="${file.jarVersion}"
+displayName="Hazardous"
+#updateJSONURL="http://myurl.me/" #optional
+description='''
+A simple minimal mod used for testing hazardous features
+'''
+[[dependencies.hazardous]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
