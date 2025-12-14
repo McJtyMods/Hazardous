@@ -1,0 +1,7 @@
+{
+  "association": {
+    "type": "biome",
+    "biome": "minecraft:nether_wastes"
+  },
+  "hazardType": "hazardous:solar_burn"
+}

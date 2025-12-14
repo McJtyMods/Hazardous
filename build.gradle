@@ -43,7 +43,8 @@ sourceSets.main.resources {
 
 dependencies {
     mc()
+    mcjtylib()
 }
 
-cfdeps([], [], [])
-modrinth([], [], [])
+cfdeps([], ['mcjtylib'], [])
+modrinth([], ['mcjtylib'], [])

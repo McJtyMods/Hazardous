@@ -1,0 +1,24 @@
+{
+  "blocking": {
+    "type": "absorption",
+    "absorptionRegistryHint": "hazardous:absorption_hints",
+    "defaultAbsorption": 0.2
+  },
+  "exposure": {
+    "accumulatesDose": true,
+    "applyIntervalTicks": 10,
+    "doseDecayPerSecond": 0.04,
+    "maxDose": 200.0
+  },
+  "falloff": {
+    "type": "exponential",
+    "k": 0.18
+  },
+  "transmission": {
+    "type": "point",
+    "airAttenuationPerBlock": 0.05,
+    "baseIntensity": 1.0,
+    "maxDistance": 12,
+    "requiresLineOfSight": true
+  }
+}

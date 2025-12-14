@@ -21,3 +21,9 @@ A simple minimal mod used for testing hazardous features
     versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.hazardous]]
+    modId="mcjtylib"
+    mandatory=true
+    versionRange="[1.20-8.0.4,)"
+    ordering="AFTER"
+    side="BOTH"

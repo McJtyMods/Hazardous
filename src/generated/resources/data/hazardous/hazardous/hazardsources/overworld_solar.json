@@ -1,0 +1,7 @@
+{
+  "association": {
+    "type": "level",
+    "level": "minecraft:overworld"
+  },
+  "hazardType": "hazardous:solar_burn"
+}

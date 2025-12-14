@@ -1,0 +1,18 @@
+{
+  "blocking": {
+    "type": "none"
+  },
+  "exposure": {
+    "accumulatesDose": false,
+    "applyIntervalTicks": 1,
+    "doseDecayPerSecond": 0.0,
+    "maxDose": 10.0
+  },
+  "falloff": {
+    "type": "none"
+  },
+  "transmission": {
+    "type": "contact",
+    "baseIntensity": 2.5
+  }
+}

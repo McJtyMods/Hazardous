@@ -1,0 +1,7 @@
+{
+  "association": {
+    "type": "entity_type",
+    "entityType": "minecraft:zombie"
+  },
+  "hazardType": "hazardous:radioactive_source"
+}
