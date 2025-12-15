@@ -1,0 +1,15 @@
+{
+  "action": {
+    "type": "client_fx",
+    "durationTicks": 20,
+    "fxId": "geiger"
+  },
+  "trigger": {
+    "type": "probability",
+    "scaling": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.05
+    }
+  }
+}

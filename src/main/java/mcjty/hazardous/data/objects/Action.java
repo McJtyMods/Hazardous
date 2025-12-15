@@ -1,0 +1,143 @@
+package mcjty.hazardous.data.objects;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
+
+import java.util.UUID;
+
+/** What happens when the trigger fires. */
+public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire, Action.Attribute, Action.ClientFx, Action.Command {
+    private static Codec<? extends Action> actionCodec(String type) {
+        return switch (type) {
+            case "potion" -> Action.Potion.CODEC;
+            case "damage" -> Action.Damage.CODEC;
+            case "fire" -> Action.Fire.CODEC;
+            case "attribute" -> Action.Attribute.CODEC;
+            case "client_fx" -> Action.ClientFx.CODEC;
+            case "command" -> Action.Command.CODEC;
+            default -> throw new IllegalStateException("Unknown action type '" + type + "'");
+        };
+    }
+
+    Codec<Action> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch(
+            "type",
+            Action::actionType,
+            Action::actionCodec
+    ));
+    String actionType();
+
+    /** Apply a MobEffectInstance (vanilla potion effect). */
+    record Potion(
+            ResourceLocation effect, // mob effect id
+            int durationTicks,
+            int amplifier,
+            boolean ambient,
+            boolean showParticles,
+            boolean showIcon,
+            Scaling intensityToAmplifier // optional scaling hook
+    ) implements Action {
+        public static final Codec<Potion> CODEC = RecordCodecBuilder.create(i -> i.group(
+                ResourceLocation.CODEC.fieldOf("effect").forGetter(Potion::effect),
+                Codec.INT.fieldOf("durationTicks").forGetter(Potion::durationTicks),
+                Codec.INT.fieldOf("amplifier").forGetter(Potion::amplifier),
+                Codec.BOOL.optionalFieldOf("ambient", false).forGetter(Potion::ambient),
+                Codec.BOOL.optionalFieldOf("showParticles", true).forGetter(Potion::showParticles),
+                Codec.BOOL.optionalFieldOf("showIcon", true).forGetter(Potion::showIcon),
+                Scaling.CODEC.optionalFieldOf("intensityToAmplifier", new Scaling.Constant(1.0)).forGetter(Potion::intensityToAmplifier)
+        ).apply(i, Potion::new));
+
+        @Override
+        public String actionType() {
+            return "potion";
+        }
+    }
+
+    /** Direct damage (custom damage type). */
+    record Damage(
+            ResourceLocation damageType, // 1.20+ DamageType registry id
+            double amount,
+            Scaling scaleAmount // scale with intensity/dose
+    ) implements Action {
+        public static final Codec<Damage> CODEC = RecordCodecBuilder.create(i -> i.group(
+                ResourceLocation.CODEC.fieldOf("damageType").forGetter(Damage::damageType),
+                Codec.DOUBLE.fieldOf("amount").forGetter(Damage::amount),
+                Scaling.CODEC.optionalFieldOf("scaleAmount", new Scaling.Constant(1.0)).forGetter(Damage::scaleAmount)
+        ).apply(i, Damage::new));
+
+        @Override
+        public String actionType() {
+            return "damage";
+        }
+    }
+
+    /** Ignite the entity for some seconds. */
+    record Fire(int seconds, Scaling scaleSeconds) implements Action {
+        public static final Codec<Fire> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.INT.fieldOf("seconds").forGetter(Fire::seconds),
+                Scaling.CODEC.optionalFieldOf("scaleSeconds", new Scaling.Constant(1.0)).forGetter(Fire::scaleSeconds)
+        ).apply(i, Fire::new));
+
+        @Override
+        public String actionType() {
+            return "fire";
+        }
+    }
+
+    /** Add temporary attribute modifiers (e.g. max health, movement). */
+    record Attribute(
+            ResourceLocation attribute,
+            UUID uuid,
+            String name,
+            double amount,
+            String operation, // "add", "multiply_base", "multiply_total"
+            int durationTicks,
+            Scaling scaleAmount
+    ) implements Action {
+        public static final Codec<Attribute> CODEC = RecordCodecBuilder.create(i -> i.group(
+                ResourceLocation.CODEC.fieldOf("attribute").forGetter(Attribute::attribute),
+                Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(Attribute::uuid),
+                Codec.STRING.fieldOf("name").forGetter(Attribute::name),
+                Codec.DOUBLE.fieldOf("amount").forGetter(Attribute::amount),
+                Codec.STRING.fieldOf("operation").forGetter(Attribute::operation),
+                Codec.INT.fieldOf("durationTicks").forGetter(Attribute::durationTicks),
+                Scaling.CODEC.optionalFieldOf("scaleAmount", new Scaling.Constant(1.0)).forGetter(Attribute::scaleAmount)
+        ).apply(i, Attribute::new));
+
+        @Override
+        public String actionType() {
+            return  "attribute";
+        }
+    }
+
+    /** Client-side only visuals (screen vignette, blur, particles, geiger clicks). */
+    record ClientFx(
+            String fxId,
+            Scaling intensity,
+            int durationTicks
+    ) implements Action {
+        public static final Codec<ClientFx> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.fieldOf("fxId").forGetter(ClientFx::fxId),
+                Scaling.CODEC.optionalFieldOf("intensity", new Scaling.Constant(1.0)).forGetter(ClientFx::intensity),
+                Codec.INT.optionalFieldOf("durationTicks", 40).forGetter(ClientFx::durationTicks)
+        ).apply(i, ClientFx::new));
+
+        @Override
+        public String actionType() {
+            return  "client_fx";
+        }
+    }
+
+    /** Execute a command (server) with placeholders later. */
+    record Command(String command) implements Action {
+        public static final Codec<Command> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.fieldOf("command").forGetter(Command::command)
+        ).apply(i, Command::new));
+
+        @Override
+        public String actionType() {
+            return "command";
+        }
+    }
+}

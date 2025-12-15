@@ -1,6 +1,9 @@
 package mcjty.hazardous.data;
 
 import mcjty.hazardous.Hazardous;
+import mcjty.hazardous.data.objects.EffectEntry;
+import mcjty.hazardous.data.objects.HazardSource;
+import mcjty.hazardous.data.objects.HazardType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -21,13 +24,17 @@ public class CustomRegistries {
     public static final DeferredRegister<HazardType> HAZARD_TYPE_DEFERRED_REGISTER = DeferredRegister.create(HAZARD_TYPE_REGISTRY_KEY, Hazardous.MODID);
     public static final ResourceKey<Registry<HazardSource>> HAZARD_SOURCE_REGISTRY_KEY = ResourceKey.createRegistryKey(new ResourceLocation(Hazardous.MODID, "hazardsources"));
     public static final DeferredRegister<HazardSource> HAZARD_SOURCE_DEFERRED_REGISTER = DeferredRegister.create(HAZARD_SOURCE_REGISTRY_KEY, Hazardous.MODID);
+    public static final ResourceKey<Registry<EffectEntry>> EFFECT_ENTRY_REGISTRY_KEY = ResourceKey.createRegistryKey(new ResourceLocation(Hazardous.MODID, "effectentries"));
+    public static final DeferredRegister<EffectEntry> EFFECT_ENTRY_DEFERRED_REGISTER = DeferredRegister.create(EFFECT_ENTRY_REGISTRY_KEY, Hazardous.MODID);
 
     public static void init(IEventBus bus) {
         HAZARD_TYPE_DEFERRED_REGISTER.register(bus);
         HAZARD_SOURCE_DEFERRED_REGISTER.register(bus);
+        EFFECT_ENTRY_DEFERRED_REGISTER.register(bus);
         bus.addListener((DataPackRegistryEvent.NewRegistry event) -> {
             event.dataPackRegistry(HAZARD_TYPE_REGISTRY_KEY, HazardType.CODEC);
             event.dataPackRegistry(HAZARD_SOURCE_REGISTRY_KEY, HazardSource.CODEC);
+            event.dataPackRegistry(EFFECT_ENTRY_REGISTRY_KEY, EffectEntry.CODEC);
         });
     }
 

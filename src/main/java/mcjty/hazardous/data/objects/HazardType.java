@@ -1,4 +1,4 @@
-package mcjty.hazardous.data;
+package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -36,6 +36,19 @@ public record HazardType(
     public sealed interface Transmission permits Transmission.Sky, Transmission.Point, Transmission.Contact {
 
         Set<HazardSource.Association.AssociationKind> supportedAssociations();
+        <R> R accept(HazardType type, Visitor<R> visitor);
+
+        interface Visitor<R> {
+            default R sky(HazardType type, Transmission.Sky a) {
+                throw new RuntimeException("sky not supported");
+            }
+            default R point(HazardType type, Transmission.Point a) {
+                throw new RuntimeException("point not supported");
+            }
+            default R contact(HazardType type, Transmission.Contact a) {
+                throw new RuntimeException("contact not supported");
+            }
+        }
 
         Codec<Transmission> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
                 HazardType::transmissionType,
@@ -67,6 +80,11 @@ public record HazardType(
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
                 return Set.of(HazardSource.Association.AssociationKind.LEVEL, HazardSource.Association.AssociationKind.BIOME);
             }
+
+            @Override
+            public <R> R accept(HazardType type, Visitor<R> visitor) {
+                return visitor.sky(type, this);
+            }
         }
 
         /**
@@ -91,6 +109,11 @@ public record HazardType(
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
                 return Set.of(HazardSource.Association.AssociationKind.LOCATIONS, HazardSource.Association.AssociationKind.ENTITY_TYPE);
             }
+
+            @Override
+            public <R> R accept(HazardType type, Visitor<R> visitor) {
+                return visitor.point(type, this);
+            }
         }
 
         /**
@@ -109,6 +132,11 @@ public record HazardType(
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
                 return Set.of(HazardSource.Association.AssociationKind.ENTITY_TYPE);
             }
+
+            @Override
+            public <R> R accept(HazardType type, Visitor<R> visitor) {
+                return visitor.contact(type, this);
+            }
         }
     }
 
@@ -116,6 +144,14 @@ public record HazardType(
         Codec<Falloff> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
                 HazardType::falloffType,
                 HazardType::getFalloffCodec));
+
+        /**
+         * Apply this falloff to the given base intensity at distance d.
+         * Implementations should not enforce maxDistance cut-off; the caller may apply a global cutoff.
+         */
+        default double apply(double base, double d, int maxDistance) {
+            return base;
+        }
 
         record None() implements Falloff {
             public static final None INSTANCE = new None();
@@ -128,12 +164,25 @@ public record HazardType(
                     instance.group(
                             Codec.DOUBLE.fieldOf("minDistance").forGetter(InverseSquare::minDistance)
                     ).apply(instance, InverseSquare::new));
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                double dd = Math.max(minDistance(), Math.max(0.0001, d));
+                return base * (1.0 / (dd * dd));
+            }
         }
 
         /** intensity *= max(0, 1 - d/maxDistance) */
         record Linear() implements Falloff {
             public static final Linear INSTANCE = new Linear();
             public static final Codec<Linear> CODEC = Codec.unit(INSTANCE);
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                if (maxDistance <= 0) return base; // no info; don't reduce
+                double f = Math.max(0.0, 1.0 - (d / (double) maxDistance));
+                return base * f;
+            }
         }
 
         /** intensity *= exp(-k * d) */
@@ -142,6 +191,11 @@ public record HazardType(
                     instance.group(
                             Codec.DOUBLE.fieldOf("k").forGetter(Exponential::k)
                     ).apply(instance, Exponential::new));
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                return base * Math.exp(-k() * d);
+            }
         }
     }
 

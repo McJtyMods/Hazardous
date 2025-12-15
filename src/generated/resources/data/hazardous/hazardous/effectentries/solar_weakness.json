@@ -1,0 +1,13 @@
+{
+  "action": {
+    "type": "potion",
+    "amplifier": 0,
+    "durationTicks": 200,
+    "effect": "minecraft:weakness"
+  },
+  "trigger": {
+    "type": "threshold",
+    "hysteresis": 0.01,
+    "min": 0.05
+  }
+}

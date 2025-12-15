@@ -1,4 +1,4 @@
-package mcjty.hazardous.data;
+package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

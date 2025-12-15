@@ -1,6 +1,7 @@
 package mcjty.hazardous.data;
 
 import mcjty.hazardous.Hazardous;
+import mcjty.hazardous.data.objects.HazardSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
