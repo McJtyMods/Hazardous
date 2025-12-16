@@ -5,11 +5,43 @@
     "solidBlockMultiplier": 0.6,
     "treatLeavesAsSolid": true
   },
+  "effects": [
+    {
+      "action": {
+        "type": "potion",
+        "amplifier": 0,
+        "durationTicks": 200,
+        "effect": "minecraft:weakness"
+      },
+      "trigger": {
+        "type": "threshold",
+        "hysteresis": 0.01,
+        "min": 0.05
+      }
+    },
+    {
+      "action": {
+        "type": "fire",
+        "scaleSeconds": {
+          "type": "linear01",
+          "max": 1.0,
+          "min": 0.2
+        },
+        "seconds": 2
+      },
+      "trigger": {
+        "type": "threshold",
+        "hysteresis": 0.02,
+        "min": 0.2
+      }
+    }
+  ],
   "exposure": {
-    "accumulatesDose": true,
+    "accumulate": true,
     "applyIntervalTicks": 20,
-    "doseDecayPerSecond": 0.02,
-    "maxDose": 120.0
+    "decayPerTick": 0.001,
+    "exponential": true,
+    "maximum": 120.0
   },
   "falloff": {
     "type": "none"

@@ -22,18 +22,15 @@ public class HazardManager {
         ResourceLocation typeId = types.getKey(type);
 
         var visitor = new PlayerTickVisitor(player);
-        long gameTime = level.getGameTime();
-        int intervalTicks = type.exposure().applyIntervalTicks();
         double value = 0.0;
-        if (intervalTicks <= 0 || gameTime % intervalTicks == 0) {
-            // Optimize by using a map of type -> source?
-            for (HazardSource source : sources) {
-                ResourceLocation hazardId = source.hazardType();
-                if (hazardId.equals(typeId)) {
-                    Double v = source.association().accept(type, visitor);
-                    if (v != null) {
-                        value += v;
-                    }
+        // Always compute the current exposure value here. Any tick-based throttling is handled by callers.
+        // Optimize by using a map of type -> source?
+        for (HazardSource source : sources) {
+            ResourceLocation hazardId = source.hazardType();
+            if (hazardId.equals(typeId)) {
+                Double v = source.association().accept(type, visitor);
+                if (v != null) {
+                    value += v;
                 }
             }
         }

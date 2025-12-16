@@ -3,10 +3,11 @@
     "type": "none"
   },
   "exposure": {
-    "accumulatesDose": false,
+    "accumulate": false,
     "applyIntervalTicks": 1,
-    "doseDecayPerSecond": 0.0,
-    "maxDose": 10.0
+    "decayPerTick": 0.0,
+    "exponential": false,
+    "maximum": 10.0
   },
   "falloff": {
     "type": "none"

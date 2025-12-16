@@ -4,6 +4,7 @@ import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.objects.HazardType;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.Map;
 
 public class DefaultHazardTypes {
@@ -26,8 +27,15 @@ public class DefaultHazardTypes {
                     new HazardType.Exposure(
                             20,
                             true,
-                            0.02,
-                            120.0)),
+                            true,
+                            120.0,
+                            0.02/20.0
+                    ),
+                    List.of(
+                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "solar_weakness")),
+                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "solar_ignite"))
+                    )
+            ),
             new ResourceLocation(Hazardous.MODID, "radioactive_source"),
             new HazardType(
                     new HazardType.Transmission.Point(
@@ -42,8 +50,15 @@ public class DefaultHazardTypes {
                     new HazardType.Exposure(
                             10,
                             true,
-                            0.04,
-                            200.0)),
+                            false,
+                            200.0,
+                            0.04/20.0
+                    ),
+                    List.of(
+                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "radiation_damage")),
+                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "radiation_geiger"))
+                    )
+            ),
             new ResourceLocation(Hazardous.MODID, "contact_burn"),
             new HazardType(
                     new HazardType.Transmission.Contact(
@@ -53,7 +68,11 @@ public class DefaultHazardTypes {
                     new HazardType.Exposure(
                             1,
                             false,
-                            0.0,
-                            10.0))
+                            false,
+                            10.0,
+                            0.0
+                    ),
+                    List.of()
+            )
     );
 }

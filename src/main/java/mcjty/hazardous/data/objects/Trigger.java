@@ -24,6 +24,12 @@ public sealed interface Trigger permits Trigger.Threshold, Trigger.Range, Trigge
 
     String triggerType();
 
+    /** Decide if this trigger should fire for the given value. Probability may use random. */
+    boolean shouldTrigger(double value, net.minecraft.util.RandomSource random);
+
+    /** Compute an intensity factor (0..1 typically) for actions to scale with this trigger. */
+    double factor(double value);
+
     /** Fires when value >= min (optionally with hysteresis). */
     record Threshold(double min, double hysteresis) implements Trigger {
         public static final Codec<Threshold> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -34,6 +40,16 @@ public sealed interface Trigger permits Trigger.Threshold, Trigger.Range, Trigge
         @Override
         public String triggerType() {
             return "threshold";
+        }
+
+        @Override
+        public boolean shouldTrigger(double value, net.minecraft.util.RandomSource random) {
+            return value >= min();
+        }
+
+        @Override
+        public double factor(double value) {
+            return value >= min() ? 1.0 : 0.0;
         }
     }
 
@@ -48,6 +64,19 @@ public sealed interface Trigger permits Trigger.Threshold, Trigger.Range, Trigge
         public String triggerType() {
             return "range";
         }
+
+        @Override
+        public boolean shouldTrigger(double value, net.minecraft.util.RandomSource random) {
+            return value >= min() && value <= max();
+        }
+
+        @Override
+        public double factor(double value) {
+            double denom = (max() - min());
+            if (denom <= 0) return value >= min() ? 1.0 : 0.0;
+            double f = (value - min()) / denom;
+            return Math.max(0.0, Math.min(1.0, f));
+        }
     }
 
     /** Chance per evaluation; chance can be constant or derived from value via simple curve. */
@@ -59,6 +88,21 @@ public sealed interface Trigger permits Trigger.Threshold, Trigger.Range, Trigge
         @Override
         public String triggerType() {
             return "probability";
+        }
+
+        @Override
+        public boolean shouldTrigger(double value, net.minecraft.util.RandomSource random) {
+            double chance = scaling().eval(value);
+            if (Double.isNaN(chance)) chance = 0.0;
+            chance = Math.max(0.0, Math.min(1.0, chance));
+            return random.nextDouble() < chance;
+        }
+
+        @Override
+        public double factor(double value) {
+            double f = scaling().eval(value);
+            if (Double.isNaN(f)) f = 0.0;
+            return Math.max(0.0, Math.min(1.0, f));
         }
     }
 }

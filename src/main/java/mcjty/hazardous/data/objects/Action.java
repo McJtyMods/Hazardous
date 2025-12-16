@@ -2,8 +2,13 @@ package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.UUID;
 
@@ -27,6 +32,9 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             Action::actionCodec
     ));
     String actionType();
+
+    /** Apply this action on the given player with provided dose value and scaling factor. */
+    void apply(Player player, double value, double factor);
 
     /** Apply a MobEffectInstance (vanilla potion effect). */
     record Potion(
@@ -52,6 +60,19 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         public String actionType() {
             return "potion";
         }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            if (factor <= 0) return;
+            MobEffect effect = BuiltInRegistries.MOB_EFFECT.get(effect());
+            if (effect != null) {
+                int duration = Math.max(1, durationTicks());
+                double scaled = intensityToAmplifier().eval(value) * factor;
+                int amp = Math.max(0, (int) Math.round(amplifier() * scaled));
+                MobEffectInstance inst = new MobEffectInstance(effect, duration, amp, ambient(), showParticles(), showIcon());
+                player.addEffect(inst);
+            }
+        }
     }
 
     /** Direct damage (custom damage type). */
@@ -70,6 +91,26 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         public String actionType() {
             return "damage";
         }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            if (factor <= 0) return;
+            double scaled = amount() * scaleAmount().eval(value) * factor;
+            float amt = (float) Math.max(0.0, scaled);
+            if (amt <= 0f) return;
+            String path = damageType().getPath();
+            if ("magic".equals(path)) {
+                player.hurt(player.damageSources().magic(), amt);
+            } else if ("on_fire".equals(path)) {
+                player.hurt(player.damageSources().onFire(), amt);
+            } else if ("in_fire".equals(path)) {
+                player.hurt(player.damageSources().inFire(), amt);
+            } else if ("wither".equals(path)) {
+                player.hurt(player.damageSources().wither(), amt);
+            } else {
+                player.hurt(player.damageSources().generic(), amt);
+            }
+        }
     }
 
     /** Ignite the entity for some seconds. */
@@ -82,6 +123,14 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         @Override
         public String actionType() {
             return "fire";
+        }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            if (factor <= 0) return;
+            double scaled = scaleSeconds().eval(value) * factor * seconds();
+            int secs = Mth.clamp((int) Math.round(scaled), 0, 600);
+            if (secs > 0) player.setSecondsOnFire(secs);
         }
     }
 
@@ -109,6 +158,11 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         public String actionType() {
             return  "attribute";
         }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            // Not implemented yet; placeholder no-op
+        }
     }
 
     /** Client-side only visuals (screen vignette, blur, particles, geiger clicks). */
@@ -127,6 +181,11 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         public String actionType() {
             return  "client_fx";
         }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            // Server-side: no-op placeholder
+        }
     }
 
     /** Execute a command (server) with placeholders later. */
@@ -138,6 +197,11 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         @Override
         public String actionType() {
             return "command";
+        }
+
+        @Override
+        public void apply(Player player, double value, double factor) {
+            // Not implemented for safety; placeholder no-op
         }
     }
 }

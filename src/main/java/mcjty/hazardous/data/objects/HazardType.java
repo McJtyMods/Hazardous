@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,8 +22,11 @@ public record HazardType(
         // How blocks/armor/etc can reduce exposure
         Blocking blocking,
 
-        // Exposure handling: does it accumulate, decay, etc.
-        Exposure exposure
+        // Exposure timing/intervals and input handling (merged)
+        Exposure exposure,
+
+        // List of consequence rules for this hazard type
+        List<EffectEntry> effects
 ) {
 
     public static final Codec<HazardType> CODEC = RecordCodecBuilder.create(instance ->
@@ -30,7 +34,8 @@ public record HazardType(
                     Transmission.CODEC.fieldOf("transmission").forGetter(HazardType::transmission),
                     Falloff.CODEC.fieldOf("falloff").forGetter(HazardType::falloff),
                     Blocking.CODEC.fieldOf("blocking").forGetter(HazardType::blocking),
-                    Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure)
+                    Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure),
+                    EffectEntry.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects)
             ).apply(instance, HazardType::new));
 
     public sealed interface Transmission permits Transmission.Sky, Transmission.Point, Transmission.Contact {
@@ -247,22 +252,64 @@ public record HazardType(
             // Start with 20 (once per second) to keep it cheap.
             int applyIntervalTicks,
 
-            // If true: store “dose” and apply effects based on thresholds.
-            boolean accumulatesDose,
+            // If true radiation is accumulated per player (dose buffer)
+            boolean accumulate,
 
-            // Dose decay per second (or per apply interval); 0 means no decay.
-            double doseDecayPerSecond,
+            // If true accumulation (up to the maximum) slows down as you approach max
+            // (diminishing returns near maximum)
+            boolean exponential,
 
-            // Optional: cap dose to avoid overflow and simplify balancing.
-            double maxDose
+            // The maximum amount of radiation that can be accumulated per player.
+            // Use <= 0 to mean "no cap".
+            double maximum,
+
+            // How much accumulated radiation decays per tick (applied every calculate() call).
+            // Typical: decayPerSecond / 20.0. Use 0 for no decay.
+            double decayPerTick
     ) {
         public static final Codec<Exposure> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
                         Codec.INT.fieldOf("applyIntervalTicks").forGetter(Exposure::applyIntervalTicks),
-                        Codec.BOOL.fieldOf("accumulatesDose").forGetter(Exposure::accumulatesDose),
-                        Codec.DOUBLE.fieldOf("doseDecayPerSecond").forGetter(Exposure::doseDecayPerSecond),
-                        Codec.DOUBLE.fieldOf("maxDose").forGetter(Exposure::maxDose)
+                        Codec.BOOL.fieldOf("accumulate").forGetter(Exposure::accumulate),
+                        Codec.BOOL.fieldOf("exponential").forGetter(Exposure::exponential),
+                        Codec.DOUBLE.fieldOf("maximum").forGetter(Exposure::maximum),
+                        Codec.DOUBLE.fieldOf("decayPerTick").forGetter(Exposure::decayPerTick)
                 ).apply(instance, Exposure::new));
+
+        public double calculate(double input, double current) {
+            final boolean capped = maximum > 0;
+            final double max = capped ? maximum : Double.POSITIVE_INFINITY;
+
+            double cur = accumulate ? current : 0.0;
+            if (accumulate && decayPerTick > 0) {
+                cur = Math.max(0.0, cur - decayPerTick);
+            }
+
+            double next;
+            if (!accumulate) {
+                next = input;
+            } else {
+                if (input >= 0) {
+                    if (exponential && capped) {
+                        double factor = 1.0 - (cur / max);
+                        factor = net.minecraft.util.Mth.clamp(factor, 0.0, 1.0);
+                        next = cur + (input * factor);
+                    } else {
+                        next = cur + input;
+                    }
+                } else {
+                    next = cur + input;
+                }
+            }
+
+            if (capped) {
+                next = net.minecraft.util.Mth.clamp(next, 0.0, max);
+            } else {
+                next = Math.max(0.0, next);
+            }
+
+            return next;
+        }
     }
 
     private static Codec<? extends Transmission> getTransmissionCodec(String type) {
