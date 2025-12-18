@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ClientRadiationData {
-    private static Map<ResourceLocation, Double> values = new HashMap<ResourceLocation, Double>();
+    private static Map<ResourceLocation, Double> values = new HashMap<>();
 
     public static void setValues(Map<ResourceLocation, Double> values) {
         ClientRadiationData.values = values;

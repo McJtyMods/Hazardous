@@ -10,8 +10,8 @@ import java.util.Map;
 
 public class RadiationOverlayRenderer {
 
-    public static void onRender(RenderGuiOverlayEvent event) {
-        if (event.isCancelable() || event.getOverlay() != VanillaGuiOverlay.BOSS_EVENT_PROGRESS.type()) {
+    public static void onRender(RenderGuiOverlayEvent.Post event) {
+        if (event.getOverlay() != VanillaGuiOverlay.BOSS_EVENT_PROGRESS.type()) {
             return;
         }
         Map<ResourceLocation, Double> values = ClientRadiationData.getValues();

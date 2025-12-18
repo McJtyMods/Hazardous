@@ -44,6 +44,8 @@ sourceSets.main.resources {
 dependencies {
     mc()
     mcjtylib()
+    lostcities()
+    curios()
 }
 
 cfdeps([], ['mcjtylib'], [])

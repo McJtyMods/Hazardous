@@ -1,7 +1,9 @@
 package mcjty.hazardous.data;
 
+import mcjty.hazardous.compat.LostCityCompat;
 import mcjty.hazardous.data.objects.HazardSource;
 import mcjty.hazardous.data.objects.HazardType;
+import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -12,8 +14,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class HazardManager {
+
+    private final static Map<Pair<ResourceKey<Level>, ResourceLocation>, Double> lastCachedValue = new HashMap<>();
 
     public static double getHazardValue(HazardType type, Level level, Player player) {
         Registry<HazardSource> sources = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_SOURCE_REGISTRY_KEY);
@@ -34,7 +42,12 @@ public class HazardManager {
                 }
             }
         }
+        lastCachedValue.put(Pair.of(level.dimension(), typeId), value);
         return value;
+    }
+
+    public static double getLastCachedValue(ResourceLocation typeId, Level level) {
+        return lastCachedValue.getOrDefault(Pair.of(level.dimension(), typeId), 0.0);
     }
 
     private static class PlayerTickVisitor implements HazardSource.Association.Visitor<Double> {
@@ -161,6 +174,40 @@ public class HazardManager {
                 @Override
                 public Double sky(HazardType type, HazardType.Transmission.Sky t) {
                     BlockPos pos = player.blockPosition();
+                    boolean canSeeSky = level.canSeeSky(pos);
+                    double intensity = t.baseIntensity();
+                    boolean isNight = level.isNight();
+                    if (isNight) {
+                        intensity *= t.nightMultiplier();
+                    }
+                    if (level.isThundering()) {
+                        intensity *= t.thunderMultiplier();
+                    } else if (level.isRaining()) {
+                        intensity *= t.rainMultiplier();
+                    }
+                    if (t.requiresDirectSky()) {
+                        if (!canSeeSky) {
+                            intensity *= t.indoorLeak();
+                        }
+                    }
+                    return Math.max(0.0, intensity);
+                }
+            });
+        }
+
+        @Override
+        public Double city(HazardType type, HazardSource.Association.City a) {
+            Level level = player.level();
+            if (!LostCityCompat.hasLostCities()) {
+                return 0.0;
+            }
+            BlockPos pos = player.blockPosition();
+            if (!LostCityCompat.isCity(level, pos)) {
+                return 0.0;
+            }
+            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+                @Override
+                public Double sky(HazardType type, HazardType.Transmission.Sky t) {
                     boolean canSeeSky = level.canSeeSky(pos);
                     double intensity = t.baseIntensity();
                     boolean isNight = level.isNight();

@@ -22,10 +22,10 @@ public record HazardSource(
                     Association.CODEC.fieldOf("association").forGetter(HazardSource::association)
             ).apply(instance, HazardSource::new));
 
-    public sealed interface Association permits Association.Level, Association.EntityType, Association.Locations, Association.Biome {
+    public sealed interface Association permits Association.Level, Association.EntityType, Association.Locations, Association.Biome, Association.City {
 
         enum AssociationKind {
-            LEVEL, ENTITY_TYPE, LOCATIONS, BIOME
+            LEVEL, ENTITY_TYPE, LOCATIONS, BIOME, CITY
         }
 
         <R> R accept(HazardType type, Visitor<R> visitor);
@@ -36,6 +36,7 @@ public record HazardSource(
             R entityType(HazardType type, Association.EntityType a);
             R locations(HazardType type, Association.Locations a);
             R biome(HazardType type, Association.Biome a);
+            R city(HazardType type, Association.City a);
         }
 
         Codec<Association> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
@@ -122,6 +123,24 @@ public record HazardSource(
                 return AssociationKind.BIOME;
             }
         }
+
+        /**
+         * Hazard applies when inside a Lost Cities city (if Lost Cities is present).
+         */
+        record City() implements Association {
+            public static final City INSTANCE = new City();
+            public static final Codec<City> CODEC = Codec.unit(INSTANCE);
+
+            @Override
+            public <R> R accept(HazardType type, Visitor<R> visitor) {
+                return visitor.city(type, this);
+            }
+
+            @Override
+            public AssociationKind kind() {
+                return AssociationKind.CITY;
+            }
+        }
     }
 
     private static Codec<? extends Association> getAssociationCodec(String type) {
@@ -130,6 +149,7 @@ public record HazardSource(
             case "entity_type" -> Association.EntityType.CODEC;
             case "locations" -> Association.Locations.CODEC;
             case "biome" -> Association.Biome.CODEC;
+            case "city" -> Association.City.CODEC;
             default -> throw new IllegalStateException("Unknown association type '" + type + "'");
         };
     }
@@ -143,6 +163,8 @@ public record HazardSource(
             return "locations";
         } else if (association instanceof Association.Biome) {
             return "biome";
+        } else if (association instanceof Association.City) {
+            return "city";
         }
         throw new IllegalStateException("Unknown association: " + association);
     }

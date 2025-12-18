@@ -83,7 +83,11 @@ public record HazardType(
 
             @Override
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
-                return Set.of(HazardSource.Association.AssociationKind.LEVEL, HazardSource.Association.AssociationKind.BIOME);
+                return Set.of(
+                        HazardSource.Association.AssociationKind.LEVEL,
+                        HazardSource.Association.AssociationKind.BIOME,
+                        HazardSource.Association.AssociationKind.CITY
+                );
             }
 
             @Override

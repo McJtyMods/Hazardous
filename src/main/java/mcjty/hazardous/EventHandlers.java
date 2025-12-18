@@ -63,7 +63,7 @@ public class EventHandlers {
 
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
-            Map<ResourceLocation, Double> forClient = new HashMap<>();
+            boolean clientNeedsUpdate = false;
             for (HazardType type : types) {
                 ResourceLocation typeId = types.getKey(type);
                 if (typeId == null) {
@@ -75,12 +75,11 @@ public class EventHandlers {
                     continue;
                 }
 
+                clientNeedsUpdate = true;
+
                 double input = HazardManager.getHazardValue(type, level, event.player);
                 double current = store.getDose(typeId);
                 double value = type.exposure().calculate(input, current);
-
-                forClient.put(typeId, input);
-
                 store.setDose(typeId, value);
 
                 for (EffectEntry effect : type.effects()) {
@@ -91,8 +90,13 @@ public class EventHandlers {
                     }
                 }
             }
-            if (!forClient.isEmpty()) {
-
+            if (clientNeedsUpdate) {
+                Map<ResourceLocation, Double> forClient = new HashMap<>();
+                for (HazardType type : types) {
+                    ResourceLocation typeId = types.getKey(type);
+                    forClient.put(typeId, HazardManager.getLastCachedValue(typeId,  level));
+                }
+                Messages.sendToPlayer(new PacketRadiationAtPos(forClient),  event.player);
             }
         });
     }

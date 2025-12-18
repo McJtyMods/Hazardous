@@ -1,5 +1,6 @@
 package mcjty.hazardous.setup;
 
+import mcjty.hazardous.compat.LostCityCompat;
 import mcjty.lib.setup.DefaultModSetup;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
@@ -13,6 +14,6 @@ public class ModSetup extends DefaultModSetup {
 
     @Override
     protected void setupModCompat() {
-        // No external compat yet
+        LostCityCompat.register();
     }
 }
