@@ -1,0 +1,17 @@
+{
+  "action": {
+    "type": "damage",
+    "amount": 1.0,
+    "damageType": "minecraft:on_fire",
+    "scaleAmount": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.05
+    }
+  },
+  "trigger": {
+    "type": "range",
+    "max": 1.0,
+    "min": 0.1
+  }
+}

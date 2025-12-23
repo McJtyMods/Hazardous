@@ -60,6 +60,7 @@ public class EventHandlers {
         }
         Level level = event.player.level();
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
+        Registry<EffectEntry> effectEntries = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.EFFECT_ENTRY_REGISTRY_KEY);
 
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
@@ -82,7 +83,11 @@ public class EventHandlers {
                 double value = type.exposure().calculate(input, current);
                 store.setDose(typeId, value);
 
-                for (EffectEntry effect : type.effects()) {
+                for (ResourceLocation effectId : type.effects()) {
+                    EffectEntry effect = effectEntries.get(effectId);
+                    if (effect == null) {
+                        continue;
+                    }
                     // Evaluate trigger with the current dose value and apply action if it fires
                     if (effect.trigger().shouldTrigger(value, event.player.getRandom())) {
                         double factor = effect.trigger().factor(value);

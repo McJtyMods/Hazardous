@@ -25,8 +25,8 @@ public record HazardType(
         // Exposure timing/intervals and input handling (merged)
         Exposure exposure,
 
-        // List of consequence rules for this hazard type
-        List<EffectEntry> effects
+        // List of effect entry ids for this hazard type
+        List<ResourceLocation> effects
 ) {
 
     public static final Codec<HazardType> CODEC = RecordCodecBuilder.create(instance ->
@@ -35,7 +35,7 @@ public record HazardType(
                     Falloff.CODEC.fieldOf("falloff").forGetter(HazardType::falloff),
                     Blocking.CODEC.fieldOf("blocking").forGetter(HazardType::blocking),
                     Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure),
-                    EffectEntry.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects)
+                    ResourceLocation.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects)
             ).apply(instance, HazardType::new));
 
     public sealed interface Transmission permits Transmission.Sky, Transmission.Point, Transmission.Contact {
@@ -116,7 +116,11 @@ public record HazardType(
 
             @Override
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
-                return Set.of(HazardSource.Association.AssociationKind.LOCATIONS, HazardSource.Association.AssociationKind.ENTITY_TYPE);
+                return Set.of(
+                        HazardSource.Association.AssociationKind.LOCATIONS,
+                        HazardSource.Association.AssociationKind.ENTITY_TYPE,
+                        HazardSource.Association.AssociationKind.BLOCK
+                );
             }
 
             @Override
@@ -139,7 +143,10 @@ public record HazardType(
 
             @Override
             public Set<HazardSource.Association.AssociationKind> supportedAssociations() {
-                return Set.of(HazardSource.Association.AssociationKind.ENTITY_TYPE);
+                return Set.of(
+                        HazardSource.Association.AssociationKind.ENTITY_TYPE,
+                        HazardSource.Association.AssociationKind.BLOCK
+                );
             }
 
             @Override

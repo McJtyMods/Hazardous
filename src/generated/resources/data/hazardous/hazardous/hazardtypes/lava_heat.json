@@ -1,0 +1,28 @@
+{
+  "blocking": {
+    "type": "simple",
+    "fluidMultiplier": 0.9,
+    "solidBlockMultiplier": 0.8,
+    "treatLeavesAsSolid": true
+  },
+  "effects": [
+    "hazardous:lava_fire_damage"
+  ],
+  "exposure": {
+    "accumulate": false,
+    "applyIntervalTicks": 10,
+    "decayPerTick": 0.0,
+    "exponential": false,
+    "maximum": 0.0
+  },
+  "falloff": {
+    "type": "linear"
+  },
+  "transmission": {
+    "type": "point",
+    "airAttenuationPerBlock": 0.0,
+    "baseIntensity": 0.8,
+    "maxDistance": 4,
+    "requiresLineOfSight": false
+  }
+}

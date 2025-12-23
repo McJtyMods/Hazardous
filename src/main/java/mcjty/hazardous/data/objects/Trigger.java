@@ -67,11 +67,14 @@ public sealed interface Trigger permits Trigger.Threshold, Trigger.Range, Trigge
 
         @Override
         public boolean shouldTrigger(double value, net.minecraft.util.RandomSource random) {
-            return value >= min() && value <= max();
+            return value >= min();
         }
 
         @Override
         public double factor(double value) {
+            if (value > max()) {
+                value = max();
+            }
             double denom = (max() - min());
             if (denom <= 0) return value >= min() ? 1.0 : 0.0;
             double f = (value - min()) / denom;

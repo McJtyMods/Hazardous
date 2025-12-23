@@ -32,8 +32,8 @@ public class DefaultHazardTypes {
                             0.02/20.0
                     ),
                     List.of(
-                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "solar_weakness")),
-                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "solar_ignite"))
+                            new ResourceLocation(Hazardous.MODID, "solar_weakness"),
+                            new ResourceLocation(Hazardous.MODID, "solar_ignite")
                     )
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_source"),
@@ -55,24 +55,32 @@ public class DefaultHazardTypes {
                             0.04/20.0
                     ),
                     List.of(
-                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "radiation_damage")),
-                            DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.get(new ResourceLocation(Hazardous.MODID, "radiation_geiger"))
+                            new ResourceLocation(Hazardous.MODID, "radiation_damage"),
+                            new ResourceLocation(Hazardous.MODID, "radiation_geiger")
                     )
             ),
-            new ResourceLocation(Hazardous.MODID, "contact_burn"),
+            new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
-                    new HazardType.Transmission.Contact(
-                            2.5),
-                    HazardType.Falloff.None.INSTANCE,
-                    HazardType.Blocking.None.INSTANCE,
+                    new HazardType.Transmission.Point(
+                            0.8,
+                            4,
+                            false,
+                            0.0),
+                    HazardType.Falloff.Linear.INSTANCE,
+                    new HazardType.Blocking.SimpleOcclusion(
+                            0.8,
+                            0.9,
+                            true),
                     new HazardType.Exposure(
-                            1,
+                            10,
                             false,
                             false,
-                            10.0,
+                            0.0,
                             0.0
                     ),
-                    List.of()
+                    List.of(
+                            new ResourceLocation(Hazardous.MODID, "lava_fire_damage")
+                    )
             )
     );
 }

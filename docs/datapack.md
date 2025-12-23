@@ -1,9 +1,9 @@
 # Hazardous Datapack Guide
 
 This document explains how to add and configure hazards via datapacks. It focuses on the JSON formats for:
-- **Hazard types**: a hazard type represents a hazard or a type of radiation. For example, 'nucleair' could be a hazard type. Or 'solar burn' could be another. 
-- **Hazard sources**: a source represents something that is the source of a hazard. For example, a biome, an entity, an item.
-- **Effect entries**: effect entries contain triggers and actions to decide what should happen to the player if a value for a certain hazard type reaches some value
+- **Hazard types**: define what a hazard is and how it behaves (intensity, falloff, blocking, exposure, and effects).
+- **Hazard sources**: tell the game where a hazard exists (dimension, biome, block/tag, entity type, etc.) and which hazard type to use.
+- **Effect entries**: define what happens once the current exposure value crosses a threshold or range.
 
 These are regular data-pack registries exposed by the mod and loaded from your datapack.
 
@@ -12,7 +12,13 @@ These are regular data-pack registries exposed by the mod and loaded from your d
   - Hazard sources: data/<namespace>/hazardous/hazardsources/*.json
   - Effect entries: data/<namespace>/hazardous/effectentries/*.json
 
-Tip: You can define shared EffectEntry records and reference them from HazardTypes (see examples). The game validates that sources reference existing hazard types and that the type’s transmission supports the association used by the source.
+Tip: HazardTypes reference EffectEntry ids (resource locations) defined in the effect entry registry. The game validates that sources reference existing hazard types and that the type’s transmission supports the association used by the source.
+
+How it fits together (mental model):
+1) **Sources** decide when a hazard applies and produce a raw intensity.
+2) **Transmission + falloff** turn distance and weather/LOS rules into a final intensity.
+3) **Exposure** accumulates or decays the value over time.
+4) **Effect entries** read that exposure value and trigger actions.
 
 
 ## 1) HazardType JSON
@@ -35,7 +41,7 @@ Top-level object fields:
   - simple
   - absorption
 - exposure: describes timing and accumulation behavior
-- effects: array of EffectEntry (optional, defaults to empty array)
+- effects: array of EffectEntry ids (resource locations, optional, defaults to empty array)
 
 ### 1.1 Transmission
 Select with the field "type". Available variants:
@@ -56,12 +62,12 @@ Select with the field "type". Available variants:
   - maxDistance: int (hard cutoff distance)
   - requiresLineOfSight: boolean (whether LOS matters)
   - airAttenuationPerBlock: double (extra exponential attenuation per block, often 0)
-  - Supported associations for sources: locations, entity_type
+  - Supported associations for sources: locations, entity_type, block
 
 - Contact
   - type: "contact"
   - baseIntensity: double
-  - Supported associations for sources: entity_type
+  - Supported associations for sources: entity_type, block
 
 ### 1.2 Falloff
 - none
@@ -134,25 +140,14 @@ File: data/example/hazardous/hazardtypes/solar.json
     "decayPerTick": 0.0
   },
   "effects": [
-    {
-      "trigger": { "type": "threshold", "min": 0.05 },
-      "action": {
-        "type": "potion",
-        "effect": "minecraft:wither",
-        "durationTicks": 100,
-        "amplifier": 1,
-        "ambient": false,
-        "showParticles": true,
-        "showIcon": true,
-        "intensityToAmplifier": { "type": "constant", "value": 1.0 }
-      }
-    }
+    "example:solar_wither"
   ]
 }
 
 
 ## 2) HazardSource JSON
 A HazardSource tells the game where a hazard appears and which HazardType to use.
+Think of this as the "where" and "which" part; the HazardType is the "how".
 
 Codec: mcjty.hazardous.data.objects.HazardSource.CODEC
 
@@ -164,6 +159,7 @@ Top-level object fields:
   - locations
   - biome
   - city (Lost Cities compat; only active if the mod is present)
+  - block
 
 Select association with the field "type" and provide fields for that variant:
 
@@ -175,6 +171,7 @@ Select association with the field "type" and provide fields for that variant:
 - entity_type
   - type: "entity_type"
   - entityType: resource location (e.g., "minecraft:zombie")
+  - maxDistance: double (search radius around the player for matching entities; required)
   - Supported transmissions: Point, Contact
 
 - locations
@@ -193,7 +190,16 @@ Select association with the field "type" and provide fields for that variant:
   - No further fields
   - Supported transmissions: Sky
 
+- block
+  - type: "block"
+  - block: resource location (single block id, e.g., "minecraft:coal_ore")
+  - tag: resource location (block tag id, e.g., "minecraft:logs")
+  - maxDistance: double (search radius around the player for matching blocks; required)
+  - Use exactly one of block or tag
+  - Supported transmissions: Point, Contact
+
 Validation: On datapack reload the mod checks that the chosen HazardType.transmission supports the association you used here. If not, the datapack load will fail with an error.
+Note: For point hazards there are two distance knobs: association.maxDistance limits how far the game searches for matching entities/blocks, while transmission.maxDistance limits how far the intensity can reach (falloff still applies).
 
 ### 2.1 Examples
 - Entire overworld has mild solar burn:
@@ -223,13 +229,25 @@ Validation: On datapack reload the mod checks that the chosen HazardType.transmi
   "hazardType": "example:zombie_touch",
   "association": {
     "type": "entity_type",
-    "entityType": "minecraft:zombie"
+    "entityType": "minecraft:zombie",
+    "maxDistance": 16.0
+  }
+}
+
+- Hazard from nearby uranium ore blocks (point type):
+
+{
+  "hazardType": "example:uranium_point",
+  "association": {
+    "type": "block",
+    "block": "example:uranium_ore",
+    "maxDistance": 12.0
   }
 }
 
 
 ## 3) EffectEntry JSON
-An EffectEntry defines a rule: when to trigger (Trigger) and what to do (Action). These can be embedded in HazardType.effects or registered separately as data/example/hazardous/effectentries/*.json.
+An EffectEntry defines a rule: when to trigger (Trigger) and what to do (Action). These are registered separately as data/<namespace>/hazardous/effectentries/*.json and referenced by HazardType.effects.
 
 Codec: mcjty.hazardous.data.objects.EffectEntry.CODEC
 
@@ -340,10 +358,8 @@ Variants:
   "blocking": { "type": "simple", "solidBlockMultiplier": 0.6, "fluidMultiplier": 0.3, "treatLeavesAsSolid": true },
   "exposure": { "applyIntervalTicks": 20, "accumulate": true, "exponential": true, "maximum": 5.0, "decayPerTick": 0.0 },
   "effects": [
-    { "trigger": { "type": "threshold", "min": 0.2 },
-      "action": { "type": "damage", "damageType": "minecraft:magic", "amount": 1.0, "scaleAmount": {"type":"linear01", "min": 0.2, "max": 1.0} } },
-    { "trigger": { "type": "probability", "scaling": { "type": "linear01", "min": 0.1, "max": 1.0 } },
-      "action": { "type": "client_fx", "fxId": "geiger", "intensity": {"type":"constant", "value": 1.0}, "durationTicks": 20 } }
+    "example:radiation_damage",
+    "example:radiation_geiger"
   ]
 }
 
@@ -370,8 +386,9 @@ Variants:
   "falloff": { "type": "none" },
   "blocking": { "type": "none" },
   "exposure": { "applyIntervalTicks": 20, "accumulate": true, "exponential": true, "maximum": 10.0, "decayPerTick": 0.0 },
-  "effects": [ { "trigger": { "type": "range", "min": 0.1, "max": 10.0 },
-                 "action": { "type": "fire", "seconds": 2, "scaleSeconds": {"type":"linear01", "min":0.1, "max": 1.0 } } } ]
+  "effects": [
+    "example:city_scorch_fire"
+  ]
 }
 
 - HazardSource (active in cities only): data/example/hazardous/hazardsources/city_scorch.json

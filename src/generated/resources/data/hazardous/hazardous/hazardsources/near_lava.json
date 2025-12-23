@@ -1,0 +1,8 @@
+{
+  "association": {
+    "type": "block",
+    "block": "minecraft:lava",
+    "maxDistance": 4.0
+  },
+  "hazardType": "hazardous:lava_heat"
+}

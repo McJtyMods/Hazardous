@@ -3,7 +3,6 @@ package mcjty.hazardous.data;
 import mcjty.hazardous.compat.LostCityCompat;
 import mcjty.hazardous.data.objects.HazardSource;
 import mcjty.hazardous.data.objects.HazardType;
-import mcjty.lib.varia.LevelTools;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -11,9 +10,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -107,26 +111,46 @@ public class HazardManager {
 
         @Override
         public Double entityType(HazardType type, HazardSource.Association.EntityType a) {
-            // Compare against the player's own entity type for a minimal implementation
-            ResourceLocation playerTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(player.getType());
-            if (playerTypeId == null || !playerTypeId.equals(a.entityType())) {
+            double maxDistance = a.maxDistance();
+            if (maxDistance <= 0) {
+                return 0.0;
+            }
+            var entityType = BuiltInRegistries.ENTITY_TYPE.get(a.entityType());
+            if (entityType == null) {
+                return 0.0;
+            }
+            Level level = player.level();
+            AABB bounds = player.getBoundingBox().inflate(maxDistance);
+            var entities = level.getEntities(entityType, bounds, entity -> entity != player);
+            if (entities.isEmpty()) {
                 return 0.0;
             }
             return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
                 @Override
                 public Double point(HazardType type, HazardType.Transmission.Point t) {
-                    // Treat source as at the player's position (distance 0)
-                    double base = t.baseIntensity();
-                    // Air attenuation per block (distance in blocks)
-                    double d = 0.0;
-                    double atten = t.airAttenuationPerBlock() > 0 ? Math.exp(-t.airAttenuationPerBlock() * d) : 1.0;
-                    double withFalloff = applyFalloff(base, d, t.maxDistance(), type.falloff());
-                    return Math.max(0.0, withFalloff * atten);
+                    double sum = 0.0;
+                    for (Entity entity : entities) {
+                        double d = player.distanceTo(entity);
+                        if (d > maxDistance) {
+                            continue;
+                        }
+                        double base = t.baseIntensity();
+                        double atten = t.airAttenuationPerBlock() > 0 ? Math.exp(-t.airAttenuationPerBlock() * d) : 1.0;
+                        double withFalloff = applyFalloff(base, d, t.maxDistance(), type.falloff());
+                        sum += Math.max(0.0, withFalloff * atten);
+                    }
+                    return sum;
                 }
 
                 @Override
                 public Double contact(HazardType type, HazardType.Transmission.Contact t) {
-                    return Math.max(0.0, t.baseIntensity());
+                    double sum = 0.0;
+                    for (Entity entity : entities) {
+                        if (player.getBoundingBox().intersects(entity.getBoundingBox())) {
+                            sum += t.baseIntensity();
+                        }
+                    }
+                    return Math.max(0.0, sum);
                 }
             });
         }
@@ -225,6 +249,80 @@ public class HazardManager {
                         }
                     }
                     return Math.max(0.0, intensity);
+                }
+            });
+        }
+
+        @Override
+        public Double block(HazardType type, HazardSource.Association.Block a) {
+            double maxDistance = a.maxDistance();
+            if (maxDistance <= 0) {
+                return 0.0;
+            }
+            Level level = player.level();
+            int radius = (int) Math.ceil(maxDistance);
+            BlockPos center = player.blockPosition();
+            boolean isTag = a.isTag();
+            TagKey<Block> tag = isTag ? TagKey.create(Registries.BLOCK, a.blockOrTag()) : null;
+            Block block = null;
+            if (!isTag) {
+                if (!BuiltInRegistries.BLOCK.containsKey(a.blockOrTag())) {
+                    return 0.0;
+                }
+                block = BuiltInRegistries.BLOCK.get(a.blockOrTag());
+            }
+            Block finalBlock = block;
+            TagKey<Block> finalTag = tag;
+
+            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+                private boolean matches(BlockState state) {
+                    return isTag ? state.is(finalTag) : state.is(finalBlock);
+                }
+
+                @Override
+                public Double point(HazardType type, HazardType.Transmission.Point t) {
+                    double sum = 0.0;
+                    BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+                    for (int dx = -radius; dx <= radius; dx++) {
+                        for (int dy = -radius; dy <= radius; dy++) {
+                            for (int dz = -radius; dz <= radius; dz++) {
+                                mutable.set(center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                                BlockState state = level.getBlockState(mutable);
+                                if (!matches(state)) {
+                                    continue;
+                                }
+                                double x = mutable.getX() + 0.5;
+                                double y = mutable.getY() + 0.5;
+                                double z = mutable.getZ() + 0.5;
+                                double d = distanceTo(player, x, y, z);
+                                if (d > maxDistance) {
+                                    continue;
+                                }
+                                double base = t.baseIntensity();
+                                double atten = t.airAttenuationPerBlock() > 0 ? Math.exp(-t.airAttenuationPerBlock() * d) : 1.0;
+                                double withFalloff = applyFalloff(base, d, t.maxDistance(), type.falloff());
+                                sum += Math.max(0.0, withFalloff * atten);
+                            }
+                        }
+                    }
+                    return sum;
+                }
+
+                @Override
+                public Double contact(HazardType type, HazardType.Transmission.Contact t) {
+                    AABB bounds = player.getBoundingBox();
+                    int minX = (int) Math.floor(bounds.minX);
+                    int minY = (int) Math.floor(bounds.minY);
+                    int minZ = (int) Math.floor(bounds.minZ);
+                    int maxX = (int) Math.floor(bounds.maxX);
+                    int maxY = (int) Math.floor(bounds.maxY);
+                    int maxZ = (int) Math.floor(bounds.maxZ);
+                    for (BlockPos pos : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
+                        if (matches(level.getBlockState(pos))) {
+                            return Math.max(0.0, t.baseIntensity());
+                        }
+                    }
+                    return 0.0;
                 }
             });
         }

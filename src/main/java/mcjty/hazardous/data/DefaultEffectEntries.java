@@ -61,6 +61,17 @@ public class DefaultEffectEntries {
                             new Scaling.Constant(1.0),
                             20
                     )
+            ),
+
+            // Fire damage near lava
+            new ResourceLocation(Hazardous.MODID, "lava_fire_damage"),
+            new EffectEntry(
+                    new Trigger.Range(0.10, 1.0),
+                    new Action.Damage(
+                            new ResourceLocation("minecraft", "on_fire"),
+                            1.0,
+                            new Scaling.Linear01(0.05, 1.0)
+                    )
             )
     );
 }
