@@ -19,6 +19,11 @@ public class DefaultHazardSources {
                     new ResourceLocation(Hazardous.MODID, "radioactive_source"),
                     new HazardSource.Association.EntityType(new ResourceLocation("minecraft", "zombie"), 3.0)
             ),
+            new ResourceLocation(Hazardous.MODID, "lostcity_buildings"),
+            new HazardSource(
+                    new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
+                    HazardSource.Association.City.INSTANCE
+            ),
             new ResourceLocation(Hazardous.MODID, "near_lava"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),

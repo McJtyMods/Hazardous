@@ -59,6 +59,31 @@ public class DefaultHazardTypes {
                             new ResourceLocation(Hazardous.MODID, "radiation_geiger")
                     )
             ),
+            new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
+            new HazardType(
+                    new HazardType.Transmission.Sky(
+                            0.03,
+                            false,
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0),
+                    HazardType.Falloff.None.INSTANCE,
+                    new HazardType.Blocking.Absorption(
+                            new ResourceLocation(Hazardous.MODID, "absorption_hints"),
+                            0.2),
+                    new HazardType.Exposure(
+                            10,
+                            true,
+                            false,
+                            200.0,
+                            0.04/20.0
+                    ),
+                    List.of(
+                            new ResourceLocation(Hazardous.MODID, "radiation_damage"),
+                            new ResourceLocation(Hazardous.MODID, "radiation_geiger")
+                    )
+            ),
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
                     new HazardType.Transmission.Point(

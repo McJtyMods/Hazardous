@@ -15,14 +15,23 @@ public class Config {
     private static final String CATEGORY_GENERAL = "general";
 
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_TYPES;
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_SOURCES;
 
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of(
             Hazardous.MODID + ":solar_burn",
             Hazardous.MODID + ":radioactive_source",
+            Hazardous.MODID + ":lostcity_radiation",
             Hazardous.MODID + ":lava_heat"
+    );
+    private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of(
+            Hazardous.MODID + ":overworld_solar",
+            Hazardous.MODID + ":radioactive_zombie",
+            Hazardous.MODID + ":lostcity_buildings",
+            Hazardous.MODID + ":near_lava"
     );
 
     private static Set<ResourceLocation> enabledHazardTypes = null;
+    private static Set<ResourceLocation> enabledHazardSources = null;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -32,6 +41,9 @@ public class Config {
         ENABLED_HAZARD_TYPES = builder
                 .comment("List of hazard type ids that are enabled. Only these will be used in the game")
                 .defineList("enabledHazardTypes", DEFAULT_ENABLED_HAZARD_TYPES, s -> s instanceof String);
+        ENABLED_HAZARD_SOURCES = builder
+                .comment("List of hazard source ids that are enabled. Only these will be used in the game")
+                .defineList("enabledHazardSources", DEFAULT_ENABLED_HAZARD_SOURCES, s -> s instanceof String);
 
         builder.pop();
 
@@ -40,6 +52,10 @@ public class Config {
 
     public static boolean isHazardTypeEnabled(ResourceLocation id) {
         return getEnabledHazardTypes().contains(id);
+    }
+
+    public static boolean isHazardSourceEnabled(ResourceLocation id) {
+        return getEnabledHazardSources().contains(id);
     }
 
     private static Set<ResourceLocation> getEnabledHazardTypes() {
@@ -55,5 +71,20 @@ public class Config {
             }
         }
         return enabledHazardTypes;
+    }
+
+    private static Set<ResourceLocation> getEnabledHazardSources() {
+        if (enabledHazardSources == null) {
+            enabledHazardSources = new HashSet<>();
+            for (String s : ENABLED_HAZARD_SOURCES.get()) {
+                ResourceLocation rl = ResourceLocation.tryParse(s);
+                if (rl == null) {
+                    Hazardous.LOGGER.warn("Invalid hazard source id '{}' in config 'enabledHazardSources'", s);
+                    continue;
+                }
+                enabledHazardSources.add(rl);
+            }
+        }
+        return enabledHazardSources;
     }
 }

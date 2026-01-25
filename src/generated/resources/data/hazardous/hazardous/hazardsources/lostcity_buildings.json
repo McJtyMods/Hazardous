@@ -1,0 +1,6 @@
+{
+  "association": {
+    "type": "city"
+  },
+  "hazardType": "hazardous:lostcity_radiation"
+}

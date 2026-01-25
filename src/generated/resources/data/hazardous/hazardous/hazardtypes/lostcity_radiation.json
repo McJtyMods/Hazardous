@@ -1,0 +1,30 @@
+{
+  "blocking": {
+    "type": "absorption",
+    "absorptionRegistryHint": "hazardous:absorption_hints",
+    "defaultAbsorption": 0.2
+  },
+  "effects": [
+    "hazardous:radiation_damage",
+    "hazardous:radiation_geiger"
+  ],
+  "exposure": {
+    "accumulate": true,
+    "applyIntervalTicks": 10,
+    "decayPerTick": 0.002,
+    "exponential": false,
+    "maximum": 200.0
+  },
+  "falloff": {
+    "type": "none"
+  },
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.03,
+    "indoorLeak": 1.0,
+    "nightMultiplier": 1.0,
+    "rainMultiplier": 1.0,
+    "requiresDirectSky": false,
+    "thunderMultiplier": 1.0
+  }
+}

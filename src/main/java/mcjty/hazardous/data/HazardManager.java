@@ -3,6 +3,7 @@ package mcjty.hazardous.data;
 import mcjty.hazardous.compat.LostCityCompat;
 import mcjty.hazardous.data.objects.HazardSource;
 import mcjty.hazardous.data.objects.HazardType;
+import mcjty.hazardous.setup.Config;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -38,6 +39,10 @@ public class HazardManager {
         // Always compute the current exposure value here. Any tick-based throttling is handled by callers.
         // Optimize by using a map of type -> source?
         for (HazardSource source : sources) {
+            ResourceLocation sourceId = sources.getKey(source);
+            if (sourceId == null || !Config.isHazardSourceEnabled(sourceId)) {
+                continue;
+            }
             ResourceLocation hazardId = source.hazardType();
             if (hazardId.equals(typeId)) {
                 Double v = source.association().accept(type, visitor);
