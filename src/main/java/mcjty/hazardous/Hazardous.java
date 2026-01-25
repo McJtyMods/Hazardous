@@ -3,6 +3,7 @@ package mcjty.hazardous;
 import mcjty.hazardous.client.RadiationOverlayRenderer;
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.datagen.DataGenerators;
+import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.ModSetup;
 import mcjty.hazardous.setup.Registration;
 import mcjty.lib.datagen.DataGen;
@@ -30,6 +31,7 @@ public class Hazardous {
         Dist dist = FMLEnvironment.dist;
         instance = this;
 
+        Config.register();
         Registration.register(bus);
         bus.addListener(setup::init);
         bus.addListener(this::onDataGen);

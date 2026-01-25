@@ -7,6 +7,7 @@ import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.network.PacketRadiationAtPos;
+import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
 import mcjty.hazardous.setup.Messages;
 import mcjty.lib.varia.Tools;
@@ -67,7 +68,7 @@ public class EventHandlers {
             boolean clientNeedsUpdate = false;
             for (HazardType type : types) {
                 ResourceLocation typeId = types.getKey(type);
-                if (typeId == null) {
+                if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
                     continue;
                 }
                 int intervalTicks = type.exposure().applyIntervalTicks();
@@ -99,6 +100,9 @@ public class EventHandlers {
                 Map<ResourceLocation, Double> forClient = new HashMap<>();
                 for (HazardType type : types) {
                     ResourceLocation typeId = types.getKey(type);
+                    if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
+                        continue;
+                    }
                     forClient.put(typeId, HazardManager.getLastCachedValue(typeId,  level));
                 }
                 Messages.sendToPlayer(new PacketRadiationAtPos(forClient),  event.player);

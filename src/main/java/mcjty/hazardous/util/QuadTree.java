@@ -3,9 +3,6 @@ package mcjty.hazardous.util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Created by McJty
- */
 public class QuadTree {
 
     private final SimpleAABB box;
@@ -103,6 +100,12 @@ public class QuadTree {
     public double factor(int x1, int y1, int z1, int x2, int y2, int z2) {
         Vec3 p1 = new Vec3(x1 + .5, y1 + .5, z1 + .5);
         Vec3 p2 = new Vec3(x2 + .5, y2 + .5, z2 + .5);
+        return factor(new Ray(p1, p2));
+    }
+
+    public double factor(double x1, double y1, double z1, double x2, double y2, double z2) {
+        Vec3 p1 = new Vec3(x1, y1, z1);
+        Vec3 p2 = new Vec3(x2, y2, z2);
         return factor(new Ray(p1, p2));
     }
 

@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.data.HazardManager;
 import mcjty.hazardous.data.objects.HazardType;
+import mcjty.hazardous.setup.Config;
 import mcjty.lib.varia.Tools;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -38,7 +39,9 @@ public class CommandRadiationHere implements Command<CommandSourceStack> {
 
         for (HazardType type : types) {
             ResourceLocation id = types.getKey(type);
-            if (id == null) continue;
+            if (id == null || !Config.isHazardTypeEnabled(id)) {
+                continue;
+            }
             double value = HazardManager.getHazardValue(type, level, player);
             source.sendSuccess(() -> Component.literal("- " + id + ": " + String.format("%.4f", value)), false);
         }
