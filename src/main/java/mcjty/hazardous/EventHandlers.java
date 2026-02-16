@@ -6,6 +6,7 @@ import mcjty.hazardous.data.PlayerDoseData;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.HazardType;
+import mcjty.hazardous.items.GasmaskItem;
 import mcjty.hazardous.network.PacketRadiationAtPos;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
@@ -80,6 +81,7 @@ public class EventHandlers {
                 clientNeedsUpdate = true;
 
                 double input = HazardManager.getHazardValue(type, level, event.player);
+                input = GasmaskItem.applyProtectionAndDamage(event.player, typeId, input);
                 double current = store.getDose(typeId);
                 double value = type.exposure().calculate(input, current);
                 store.setDose(typeId, value);

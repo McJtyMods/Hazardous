@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:comparator"
+    },
+    "d": {
+      "item": "minecraft:diamond"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "q": {
+      "item": "minecraft:quartz"
+    },
+    "t": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    "qtq",
+    "dcd",
+    "qiq"
+  ],
+  "result": {
+    "item": "hazardous:geiger_counter"
+  },
+  "show_notification": true
+}

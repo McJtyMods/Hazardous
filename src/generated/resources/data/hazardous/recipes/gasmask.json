@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "f": {
+      "item": "hazardous:filter"
+    },
+    "g": {
+      "item": "minecraft:glass"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "iii",
+    "gfg",
+    "iii"
+  ],
+  "result": {
+    "item": "hazardous:gasmask"
+  },
+  "show_notification": true
+}

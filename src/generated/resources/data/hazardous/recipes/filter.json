@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:charcoal"
+    },
+    "g": {
+      "item": "minecraft:gravel"
+    },
+    "s": {
+      "item": "minecraft:sand"
+    }
+  },
+  "pattern": [
+    "gcg",
+    "csc",
+    "gcg"
+  ],
+  "result": {
+    "item": "hazardous:filter"
+  },
+  "show_notification": true
+}

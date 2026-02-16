@@ -1,3 +1,15 @@
 {
-  "item.hazardous.geiger_counter": "Geiger Counter"
+  "item.hazardous.filter": "Filter",
+  "item.hazardous.gasmask": "Gas Mask",
+  "item.hazardous.geiger_counter": "Geiger Counter",
+  "message.hazardous.filter.crafting": "Can also be combined with a damaged gas mask in a crafting grid",
+  "message.hazardous.filter.desc": "Refills a worn gas mask",
+  "message.hazardous.filter.header": "Gas Mask Filter",
+  "message.hazardous.filter.restore": "Durability restored: ",
+  "message.hazardous.filter.rightclick": "Right-click while wearing a gas mask to refill it",
+  "message.hazardous.gasmask.desc": "Protects against one configured radiation source",
+  "message.hazardous.gasmask.durability": "At zero durability it stays equipped but provides no protection",
+  "message.hazardous.gasmask.header": "Gas Mask",
+  "message.hazardous.gasmask.protection": "Protection level: ",
+  "message.hazardous.gasmask.source": "Protected source: "
 }

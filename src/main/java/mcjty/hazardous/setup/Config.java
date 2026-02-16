@@ -19,6 +19,9 @@ public class Config {
 
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_TYPES;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_SOURCES;
+    public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_SOURCE;
+    public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
+    public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_RESOURCE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
@@ -52,6 +55,15 @@ public class Config {
         ENABLED_HAZARD_SOURCES = builder
                 .comment("List of hazard source ids that are enabled. Only these will be used in the game")
                 .defineList("enabledHazardSources", DEFAULT_ENABLED_HAZARD_SOURCES, s -> s instanceof String);
+        GASMASK_PROTECTED_SOURCE = builder
+                .comment("Hazard type id the gasmask protects against. Leave empty to disable protection")
+                .define("gasmaskProtectedSource", Hazardous.MODID + ":radioactive_source");
+        GASMASK_PROTECTION_LEVEL = builder
+                .comment("Fraction of input exposure blocked by a usable gasmask (0.0 - 1.0)")
+                .defineInRange("gasmaskProtectionLevel", 0.75, 0.0, 1.0);
+        GASMASK_FILTER_RESTORE = builder
+                .comment("Durability restored when using a filter on a gasmask (right-click or crafting)")
+                .defineInRange("gasmaskFilterRestore", 250, 1, 1_000_000);
 
         builder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());
@@ -119,6 +131,14 @@ public class Config {
 
     public static Optional<ResourceLocation> getGeigerDisplayResource() {
         String value = GEIGER_DISPLAY_RESOURCE.get();
+        if (value == null || value.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(ResourceLocation.tryParse(value));
+    }
+
+    public static Optional<ResourceLocation> getGasmaskProtectedSource() {
+        String value = GASMASK_PROTECTED_SOURCE.get();
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }
