@@ -27,3 +27,9 @@ A simple minimal mod used for testing hazardous features
     versionRange="[1.20-8.0.4,)"
     ordering="AFTER"
     side="BOTH"
+[[dependencies.hazardous]]
+    modId="curios"
+    mandatory=false
+    versionRange="[5.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
