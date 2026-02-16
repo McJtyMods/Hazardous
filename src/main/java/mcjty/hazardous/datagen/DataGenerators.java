@@ -92,6 +92,21 @@ public class DataGenerators {
                                 .pattern("gfg")
                                 .pattern("iii")
                                 .unlockedBy("has_filter", InventoryChangeTrigger.TriggerInstance.hasItems(Registration.FILTER.get()))
+                                .save(consumer)),
+                Dob.itemBuilder(Registration.PILLS)
+                        .name("Pills")
+                        .generatedItem("item/pills")
+                        .keyedMessage("header", "Anti-Rad Pills")
+                        .keyedMessage("desc", "Reduces your accumulated personal dose")
+                        .keyedMessage("heal", "Dose restored per use: ")
+                        .keyedMessage("usage", "Right-click to consume and reduce dose")
+                        .recipeConsumer(() -> consumer -> ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Registration.PILLS.get())
+                                .define('c', Items.CHARCOAL)
+                                .define('g', Items.GOLDEN_APPLE)
+                                .pattern("ccc")
+                                .pattern("cgc")
+                                .pattern("ccc")
+                                .unlockedBy("has_golden_apple", InventoryChangeTrigger.TriggerInstance.hasItems(Items.GOLDEN_APPLE))
                                 .save(consumer))
         );
     }

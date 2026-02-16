@@ -2,6 +2,7 @@
   "item.hazardous.filter": "Filter",
   "item.hazardous.gasmask": "Gas Mask",
   "item.hazardous.geiger_counter": "Geiger Counter",
+  "item.hazardous.pills": "Pills",
   "message.hazardous.filter.crafting": "Can also be combined with a damaged gas mask in a crafting grid",
   "message.hazardous.filter.desc": "Refills a worn gas mask",
   "message.hazardous.filter.header": "Gas Mask Filter",
@@ -11,5 +12,9 @@
   "message.hazardous.gasmask.durability": "At zero durability it stays equipped but provides no protection",
   "message.hazardous.gasmask.header": "Gas Mask",
   "message.hazardous.gasmask.protection": "Protection level: ",
-  "message.hazardous.gasmask.source": "Protected source: "
+  "message.hazardous.gasmask.source": "Protected source: ",
+  "message.hazardous.pills.desc": "Reduces your accumulated personal dose",
+  "message.hazardous.pills.header": "Anti-Rad Pills",
+  "message.hazardous.pills.heal": "Dose restored per use: ",
+  "message.hazardous.pills.usage": "Right-click to consume and reduce dose"
 }

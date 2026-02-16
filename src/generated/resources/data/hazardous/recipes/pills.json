@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:charcoal"
+    },
+    "g": {
+      "item": "minecraft:golden_apple"
+    }
+  },
+  "pattern": [
+    "ccc",
+    "cgc",
+    "ccc"
+  ],
+  "result": {
+    "item": "hazardous:pills"
+  },
+  "show_notification": true
+}

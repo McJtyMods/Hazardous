@@ -22,6 +22,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_SOURCE;
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
+    public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_RESOURCE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
@@ -64,6 +65,9 @@ public class Config {
         GASMASK_FILTER_RESTORE = builder
                 .comment("Durability restored when using a filter on a gasmask (right-click or crafting)")
                 .defineInRange("gasmaskFilterRestore", 250, 1, 1_000_000);
+        PILLS_DOSE_HEAL = builder
+                .comment("Dose removed from all accumulated personal hazard dose entries when using pills")
+                .defineInRange("pillsDoseHeal", 20.0, 0.0, 1_000_000.0);
 
         builder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());

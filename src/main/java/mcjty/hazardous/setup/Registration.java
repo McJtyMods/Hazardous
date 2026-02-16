@@ -5,6 +5,7 @@ import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.items.FilterItem;
 import mcjty.hazardous.items.GasmaskItem;
 import mcjty.hazardous.items.GeigerCounterItem;
+import mcjty.hazardous.items.PillsItem;
 import mcjty.hazardous.recipes.GasmaskFilterRecipe;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.lib.setup.DeferredItems;
@@ -26,6 +27,8 @@ public class Registration {
             GasmaskItem::new);
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter",
             FilterItem::new);
+    public static final DeferredItem<PillsItem> PILLS = ITEMS.register("pills",
+            PillsItem::new);
 
     public static final RegistryObject<SimpleCraftingRecipeSerializer<GasmaskFilterRecipe>> GASMASK_FILTER_RECIPE = RECIPE_SERIALIZERS.register("gasmask_filter_refill",
             () -> new SimpleCraftingRecipeSerializer<>(GasmaskFilterRecipe::new));

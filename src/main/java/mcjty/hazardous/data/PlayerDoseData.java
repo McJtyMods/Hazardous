@@ -8,6 +8,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -37,6 +38,26 @@ public class PlayerDoseData {
             return;
         }
         setDose(hazardType, getDose(hazardType) + amount);
+    }
+
+    public boolean removeDoseFromAll(double amount) {
+        if (amount <= 0.0 || doses.isEmpty()) {
+            return false;
+        }
+        boolean changed = false;
+        Iterator<Map.Entry<ResourceLocation, Double>> iterator = doses.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<ResourceLocation, Double> entry = iterator.next();
+            double newValue = Math.max(0.0, entry.getValue() - amount);
+            if (newValue <= 0.0) {
+                iterator.remove();
+                changed = true;
+            } else if (newValue != entry.getValue()) {
+                entry.setValue(newValue);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     public void clear() {
