@@ -256,7 +256,28 @@ Top-level fields:
 - currently a no-op placeholder
 
 `client_fx`
-- currently a server-side no-op placeholder
+- sends a client FX packet to the affected player
+- fields:
+  - `fxId` (string): effect id on client
+  - `intensity` (scaling, optional): defaults to constant `1.0`
+  - `durationTicks` (int, optional): defaults to `40`
+- server-side clamps:
+  - final intensity must be `> 0` to send
+  - `durationTicks` is clamped to `1..1200`
+- client-side clamps:
+  - intensity is clamped to `0.0..2.0`
+  - duration is clamped to `1..1200`
+- repeated activations with the same `fxId` refresh the effect:
+  - peak intensity becomes the max of old/new
+  - remaining duration becomes the max of old/new
+  - intensity then linearly fades to zero over remaining duration
+- currently recognized `fxId` values:
+  - `darken`: draws a black full-screen overlay (vignette-like darkening)
+  - `blur`: draws a gray full-screen haze overlay
+  - `shake` or `shaking`: camera yaw/pitch jitter
+  - `warp` or `warping`: camera roll/yaw/pitch wobble
+- unknown `fxId` values are accepted and tracked but have no visible effect unless client code uses them
+- note: `geiger` is used by default data but currently has no dedicated visual/audio behavior in `ClientFxManager`
 
 `command`
 - currently a no-op placeholder (disabled for safety)
@@ -279,7 +300,7 @@ Example probability trigger with scaling:
   },
   "action": {
     "type": "client_fx",
-    "fxId": "geiger",
+    "fxId": "shake",
     "durationTicks": 20
   }
 }
