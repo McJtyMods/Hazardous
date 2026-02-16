@@ -29,18 +29,8 @@ public class Config {
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_Y;
 
-    private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of(
-            Hazardous.MODID + ":solar_burn",
-            Hazardous.MODID + ":radioactive_source",
-            Hazardous.MODID + ":lostcity_radiation",
-            Hazardous.MODID + ":lava_heat"
-    );
-    private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of(
-            Hazardous.MODID + ":overworld_solar",
-            Hazardous.MODID + ":radioactive_zombie",
-            Hazardous.MODID + ":lostcity_buildings",
-            Hazardous.MODID + ":near_lava"
-    );
+    private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
+    private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
 
     private static Set<ResourceLocation> enabledHazardTypes = null;
     private static Set<ResourceLocation> enabledHazardSources = null;

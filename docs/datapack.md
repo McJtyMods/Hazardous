@@ -8,6 +8,45 @@ This guide is up to date with the current project state, including the recent ga
 
 It covers both datapack JSON formats and how those formats interact with the new items and config.
 
+## 0) Config Setup First (Required)
+
+`hazardous-server.toml` now defaults to:
+
+```toml
+enabledHazardTypes = []
+enabledHazardSources = []
+```
+
+That means no hazards run until you opt in.
+
+Built-in hazard type ids you can enable:
+- `hazardous:solar_burn`
+- `hazardous:radioactive_source`
+- `hazardous:lostcity_radiation`
+- `hazardous:lava_heat`
+
+Built-in hazard source ids you can enable:
+- `hazardous:overworld_solar`
+- `hazardous:radioactive_zombie`
+- `hazardous:lostcity_buildings`
+- `hazardous:near_lava`
+
+Enable hazards by listing both:
+1. The hazard type id in `enabledHazardTypes`
+2. The hazard source id in `enabledHazardSources`
+
+Example (enable solar + lava only):
+
+```toml
+enabledHazardTypes = ["hazardous:solar_burn", "hazardous:lava_heat"]
+enabledHazardSources = ["hazardous:overworld_solar", "hazardous:near_lava"]
+```
+
+Rules for correct setup:
+- Every id must be a valid resource location (`namespace:path`).
+- A source only works if its referenced hazard type is also enabled.
+- Custom datapack ids are allowed, but they must exist in loaded datapacks.
+
 ## Quick Start
 
 Put custom hazard JSON files in your datapack under:
@@ -393,37 +432,39 @@ Recipe:
 }
 ```
 
-## 5) Config Examples
+## 5) Remaining Config Options (Server + Client)
 
-Server config (`hazardous-server.toml`) example:
+This section documents the rest of config options besides `enabledHazardTypes` and `enabledHazardSources`.
+
+Server config (`hazardous-server.toml`):
+- `gasmaskProtectedSource` (string resource location, default `hazardous:radioactive_source`)
+- `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`)
+- `gasmaskFilterRestore` (int `1..1000000`, default `250`)
+- `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
+
+Client config (`hazardous-client.toml`):
+- `geigerDisplayResource` (string resource location, default `hazardous:radioactive_source`, empty disables dial target)
+- `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
+- `geigerHudAnchor` (string: `top_left`, `top_right`, `bottom_left`, `bottom_right`; default `top_right`)
+- `geigerHudOffsetX` (int `-5000..5000`, default `8`)
+- `geigerHudOffsetY` (int `-5000..5000`, default `8`)
+
+Example:
 
 ```toml
-enabledHazardTypes = ["hazardous:solar_burn", "hazardous:radioactive_source", "hazardous:lostcity_radiation", "hazardous:lava_heat"]
-enabledHazardSources = ["hazardous:overworld_solar", "hazardous:radioactive_zombie", "hazardous:lostcity_buildings", "hazardous:near_lava"]
-
+# hazardous-server.toml
 gasmaskProtectedSource = "hazardous:radioactive_source"
 gasmaskProtectionLevel = 0.75
 gasmaskFilterRestore = 250
 pillsDoseHeal = 20.0
-```
 
-Client config (`hazardous-client.toml`) example:
-
-```toml
+# hazardous-client.toml
 geigerDisplayResource = "hazardous:radioactive_source"
 geigerMaxRadiation = 100.0
-geigerHudAnchor = "top_right"   # top_left, top_right, bottom_left, bottom_right
+geigerHudAnchor = "top_right"
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
 ```
-
-Practical tuning examples:
-- Track sun hazard instead of radiation:
-  - `geigerDisplayResource = "hazardous:solar_burn"`
-- Make gas mask protect Lost Cities radiation instead:
-  - `gasmaskProtectedSource = "hazardous:lostcity_radiation"`
-- Make pills stronger:
-  - `pillsDoseHeal = 60.0`
 
 ## 6) Debugging and Testing
 
