@@ -33,7 +33,8 @@ public class DefaultHazardTypes {
                     ),
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "solar_weakness"),
-                            new ResourceLocation(Hazardous.MODID, "solar_ignite")
+                            new ResourceLocation(Hazardous.MODID, "solar_ignite"),
+                            new ResourceLocation(Hazardous.MODID, "solar_darken")
                     )
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_source"),
@@ -56,7 +57,9 @@ public class DefaultHazardTypes {
                     ),
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
-                            new ResourceLocation(Hazardous.MODID, "radiation_geiger")
+                            new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
+                            new ResourceLocation(Hazardous.MODID, "radiation_shake"),
+                            new ResourceLocation(Hazardous.MODID, "radiation_warp")
                     )
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
@@ -81,7 +84,8 @@ public class DefaultHazardTypes {
                     ),
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
-                            new ResourceLocation(Hazardous.MODID, "radiation_geiger")
+                            new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
+                            new ResourceLocation(Hazardous.MODID, "radiation_warp")
                     )
             ),
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
@@ -104,7 +108,8 @@ public class DefaultHazardTypes {
                             0.0
                     ),
                     List.of(
-                            new ResourceLocation(Hazardous.MODID, "lava_fire_damage")
+                            new ResourceLocation(Hazardous.MODID, "lava_fire_damage"),
+                            new ResourceLocation(Hazardous.MODID, "lava_blur")
                     )
             )
     );

@@ -6,7 +6,8 @@
     "treatLeavesAsSolid": true
   },
   "effects": [
-    "hazardous:lava_fire_damage"
+    "hazardous:lava_fire_damage",
+    "hazardous:lava_blur"
   ],
   "exposure": {
     "accumulate": false,

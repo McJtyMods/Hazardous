@@ -41,6 +41,17 @@ public class DefaultEffectEntries {
                     )
             ),
 
+            // Solar burn can temporarily darken vision
+            new ResourceLocation(Hazardous.MODID, "solar_darken"),
+            new EffectEntry(
+                    new Trigger.Threshold(0.12, 0.01),
+                    new Action.ClientFx(
+                            "darken",
+                            new Scaling.Linear01(0.12, 1.0),
+                            35
+                    )
+            ),
+
             // Radiation causes magic damage scaling with intensity
             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
             new EffectEntry(
@@ -52,6 +63,28 @@ public class DefaultEffectEntries {
                     )
             ),
 
+            // Intense radiation can shake the camera
+            new ResourceLocation(Hazardous.MODID, "radiation_shake"),
+            new EffectEntry(
+                    new Trigger.Threshold(0.30, 0.02),
+                    new Action.ClientFx(
+                            "shake",
+                            new Scaling.Linear01(0.30, 1.0),
+                            18
+                    )
+            ),
+
+            // Intense radiation can warp player vision
+            new ResourceLocation(Hazardous.MODID, "radiation_warp"),
+            new EffectEntry(
+                    new Trigger.Threshold(0.45, 0.02),
+                    new Action.ClientFx(
+                            "warp",
+                            new Scaling.Linear01(0.45, 1.0),
+                            24
+                    )
+            ),
+
             // Client geiger click effect with probability increasing with intensity
             new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
             new EffectEntry(
@@ -60,6 +93,17 @@ public class DefaultEffectEntries {
                             "geiger",
                             new Scaling.Constant(1.0),
                             20
+                    )
+            ),
+
+            // Heat haze around lava can blur vision
+            new ResourceLocation(Hazardous.MODID, "lava_blur"),
+            new EffectEntry(
+                    new Trigger.Threshold(0.25, 0.03),
+                    new Action.ClientFx(
+                            "blur",
+                            new Scaling.Linear01(0.25, 1.0),
+                            16
                     )
             ),
 

@@ -2,10 +2,13 @@ package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import mcjty.hazardous.network.PacketClientFx;
+import mcjty.hazardous.setup.Messages;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
@@ -184,7 +187,15 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
 
         @Override
         public void apply(Player player, double value, double factor) {
-            // Server-side: no-op placeholder
+            if (factor <= 0 || !(player instanceof ServerPlayer serverPlayer)) {
+                return;
+            }
+            double scaledIntensity = Math.max(0.0, intensity().eval(value) * factor);
+            if (scaledIntensity <= 0.0) {
+                return;
+            }
+            int ticks = Mth.clamp(durationTicks(), 1, 20 * 60);
+            Messages.sendToPlayer(new PacketClientFx(fxId(), scaledIntensity, ticks), serverPlayer);
         }
     }
 
