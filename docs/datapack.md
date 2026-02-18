@@ -1,16 +1,16 @@
 # Hazardous Datapack Guide
 
-This guide is up to date with the current project state, including the recent gameplay additions:
+This guide covers Hazardous datapack formats, config, gameplay items, and testing.
+
+Included gameplay items:
 - `hazardous:gasmask`
 - `hazardous:filter`
 - `hazardous:geiger_counter`
 - `hazardous:pills`
 
-It covers both datapack JSON formats and how those formats interact with the new items and config.
-
 ## 0) Config Setup First (Required)
 
-`hazardous-server.toml` now defaults to:
+`hazardous-server.toml` defaults to:
 
 ```toml
 enabledHazardTypes = []
@@ -123,9 +123,9 @@ Top-level fields:
 - `absorptionRegistryHint` (resource location)
 - `defaultAbsorption` (double)
 
-Important current behavior:
+Known runtime behavior:
 - `blocking` is parsed and stored but not yet applied in runtime hazard calculations.
-- `point.requiresLineOfSight` is currently not enforced in runtime hazard calculations.
+- `point.requiresLineOfSight` is not enforced in runtime hazard calculations.
 
 These fields are still useful for forward-compatible datapacks.
 
@@ -269,12 +269,12 @@ Top-level fields:
 
 `threshold`
 - `min`
-- optional `hysteresis` (currently parsed but not used by runtime logic)
+- optional `hysteresis` (parsed but not used by runtime logic)
 
 `range`
 - `min`
 - `max`
-- current runtime behavior: trigger condition is `value >= min` (not hard-capped at `max`)
+- runtime behavior: trigger condition is `value >= min` (not hard-capped at `max`)
 - `max` is still used to clamp computed factor to `0..1`
 
 `probability`
@@ -292,7 +292,7 @@ Top-level fields:
 - sets fire seconds (scaled and clamped)
 
 `attribute`
-- currently a no-op placeholder
+- no-op placeholder
 
 `client_fx`
 - sends a client FX packet to the affected player
@@ -310,16 +310,16 @@ Top-level fields:
   - peak intensity becomes the max of old/new
   - remaining duration becomes the max of old/new
   - intensity then linearly fades to zero over remaining duration
-- currently recognized `fxId` values:
+- recognized `fxId` values:
   - `darken`: draws a black full-screen overlay (vignette-like darkening)
   - `blur`: draws a gray full-screen haze overlay
   - `shake` or `shaking`: camera yaw/pitch jitter
   - `warp` or `warping`: camera roll/yaw/pitch wobble
 - unknown `fxId` values are accepted and tracked but have no visible effect unless client code uses them
-- note: `geiger` is used by default data but currently has no dedicated visual/audio behavior in `ClientFxManager`
+- note: `geiger` is used by default data and has no dedicated visual/audio behavior in `ClientFxManager`
 
 `command`
-- currently a no-op placeholder (disabled for safety)
+- no-op placeholder (disabled for safety)
 
 ### 3.3 Scaling
 
@@ -345,9 +345,9 @@ Example probability trigger with scaling:
 }
 ```
 
-## 4) New Items and Hazard Interaction
+## 4) Items and Hazard Interaction
 
-This section documents the recent additions and their practical use.
+This section documents item behavior and practical use.
 
 ### 4.1 Gas Mask (`hazardous:gasmask`)
 
@@ -432,9 +432,9 @@ Recipe:
 }
 ```
 
-## 5) Remaining Config Options (Server + Client)
+## 5) Config Options (Server + Client)
 
-This section documents the rest of config options besides `enabledHazardTypes` and `enabledHazardSources`.
+This section documents config options besides `enabledHazardTypes` and `enabledHazardSources`.
 
 Server config (`hazardous-server.toml`):
 - `gasmaskProtectedSource` (string resource location, default `hazardous:radioactive_source`)
@@ -484,9 +484,9 @@ Suggested workflow:
 3. Use pills and run `/haz dose` again to confirm dose reduction.
 4. Wear gas mask and compare `/haz dose` growth with and without mask.
 
-## 7) Bundled Default Data (Reference)
+## 7) Built-In Data (Reference)
 
-Current built-in ids:
+Built-in ids:
 - Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_source`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
 - Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
 - Effect entries: `hazardous:solar_weakness`, `hazardous:solar_ignite`, `hazardous:radiation_damage`, `hazardous:radiation_geiger`, `hazardous:lava_fire_damage`
