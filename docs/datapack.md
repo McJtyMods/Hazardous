@@ -267,67 +267,148 @@ Top-level fields:
 
 ### 3.1 Trigger
 
-`threshold`
-- `min`
-- optional `hysteresis` (parsed but not used by runtime logic)
+All trigger objects require a `type` field.
 
-`range`
-- `min`
-- `max`
-- runtime behavior: trigger condition is `value >= min` (not hard-capped at `max`)
-- `max` is still used to clamp computed factor to `0..1`
+`threshold` trigger
+- Required fields:
+  - `type` = `"threshold"`
+  - `min` (double)
+- Optional fields:
+  - `hysteresis` (double, default `0.0`)
+- Runtime behavior:
+  - fires when `value >= min`
+  - factor is `1.0` when `value >= min`, otherwise `0.0`
+  - `hysteresis` is parsed and stored but not used in current runtime logic
 
-`probability`
-- `scaling`: produces chance, clamped to `0..1`
+`range` trigger
+- Required fields:
+  - `type` = `"range"`
+  - `min` (double)
+  - `max` (double)
+- Runtime behavior:
+  - fires when `value >= min` (not hard-stopped at `max`)
+  - factor is normalized with `(value - min) / (max - min)` and clamped to `0..1`
+  - if `value > max`, value is treated as `max` for factor calculation
+  - if `max <= min`, factor becomes `1.0` for `value >= min`, else `0.0`
+
+`probability` trigger
+- Required fields:
+  - `type` = `"probability"`
+  - `scaling` (Scaling object; see section 3.3)
+- Runtime behavior:
+  - chance is `scaling.eval(value)` clamped to `0..1`
+  - NaN chance is treated as `0.0`
+  - fires when `random < chance`
+  - factor is also `scaling.eval(value)` clamped to `0..1`
 
 ### 3.2 Action
 
-`potion`
-- applies a mob effect
+All action objects require a `type` field.
 
-`damage`
-- uses `damageType` by path (`magic`, `on_fire`, `in_fire`, `wither`, fallback generic)
+`potion` action
+- Required fields:
+  - `type` = `"potion"`
+  - `effect` (resource location in `minecraft:mob_effect` registry)
+  - `durationTicks` (int)
+  - `amplifier` (int)
+- Optional fields:
+  - `ambient` (boolean, default `false`)
+  - `showParticles` (boolean, default `true`)
+  - `showIcon` (boolean, default `true`)
+  - `intensityToAmplifier` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
+- Runtime behavior:
+  - skipped when trigger factor `<= 0`
+  - duration is clamped to at least `1`
+  - final amplifier = `round(amplifier * intensityToAmplifier.eval(value) * factor)`, clamped to `>= 0`
+  - if `effect` id is unknown, action does nothing
 
-`fire`
-- sets fire seconds (scaled and clamped)
+`damage` action
+- Required fields:
+  - `type` = `"damage"`
+  - `damageType` (resource location; path is used for mapping)
+  - `amount` (double)
+- Optional fields:
+  - `scaleAmount` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
+- Runtime behavior:
+  - skipped when factor `<= 0`
+  - final damage = `amount * scaleAmount.eval(value) * factor`, clamped to `>= 0`
+  - supported mapped paths:
+    - `magic` -> magic damage source
+    - `on_fire` -> on-fire damage source
+    - `in_fire` -> in-fire damage source
+    - `wither` -> wither damage source
+  - any other path falls back to generic damage
 
-`attribute`
-- no-op placeholder
+`fire` action
+- Required fields:
+  - `type` = `"fire"`
+  - `seconds` (int)
+- Optional fields:
+  - `scaleSeconds` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
+- Runtime behavior:
+  - skipped when factor `<= 0`
+  - final fire time = `round(seconds * scaleSeconds.eval(value) * factor)`, clamped to `0..600`
+  - applies only if final fire time `> 0`
 
-`client_fx`
-- sends a client FX packet to the affected player
-- fields:
-  - `fxId` (string): effect id on client
-  - `intensity` (scaling, optional): defaults to constant `1.0`
-  - `durationTicks` (int, optional): defaults to `40`
-- server-side clamps:
-  - final intensity must be `> 0` to send
-  - `durationTicks` is clamped to `1..1200`
-- client-side clamps:
-  - intensity is clamped to `0.0..2.0`
-  - duration is clamped to `1..1200`
-- repeated activations with the same `fxId` refresh the effect:
-  - peak intensity becomes the max of old/new
-  - remaining duration becomes the max of old/new
-  - intensity then linearly fades to zero over remaining duration
-- recognized `fxId` values:
-  - `darken`: draws a black full-screen overlay (vignette-like darkening)
-  - `blur`: draws a gray full-screen haze overlay
-  - `shake` or `shaking`: camera yaw/pitch jitter
-  - `warp` or `warping`: camera roll/yaw/pitch wobble
-- unknown `fxId` values are accepted and tracked but have no visible effect unless client code uses them
-- note: `geiger` is used by default data and has no dedicated visual/audio behavior in `ClientFxManager`
+`attribute` action
+- Required fields:
+  - `type` = `"attribute"`
+  - `attribute` (resource location)
+  - `uuid` (string UUID, e.g. `"123e4567-e89b-12d3-a456-426614174000"`)
+  - `name` (string)
+  - `amount` (double)
+  - `operation` (string, intended values: `add`, `multiply_base`, `multiply_total`)
+  - `durationTicks` (int)
+- Optional fields:
+  - `scaleAmount` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
+- Runtime behavior:
+  - currently not implemented (no-op placeholder)
 
-`command`
-- no-op placeholder (disabled for safety)
+`client_fx` action
+- Required fields:
+  - `type` = `"client_fx"`
+  - `fxId` (string)
+- Optional fields:
+  - `intensity` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
+  - `durationTicks` (int, default `40`)
+- Runtime behavior:
+  - server-side:
+    - only applies to server-side players
+    - skipped when factor `<= 0`
+    - computed intensity is `intensity.eval(value) * factor`, clamped to `>= 0`, must be `> 0` to send
+    - `durationTicks` is clamped to `1..1200`
+  - client-side:
+    - intensity is clamped to `0.0..2.0`
+    - duration is clamped to `1..1200`
+    - reapplying same `fxId` refreshes effect using max intensity and max remaining duration
+  - recognized `fxId` values:
+    - `darken`, `blur`, `shake`, `shaking`, `warp`, `warping`
+  - unknown `fxId` values are accepted but have no visible effect unless custom client code handles them
+  - `geiger` is used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`
+
+`command` action
+- Required fields:
+  - `type` = `"command"`
+  - `command` (string)
+- Runtime behavior:
+  - currently disabled for safety (no-op placeholder)
 
 ### 3.3 Scaling
 
 Variants:
 - `constant`
+  - required fields: `type = "constant"`, `value` (double)
+  - behavior: returns `value`
 - `linear01`
+  - required fields: `type = "linear01"`, `min` (double), `max` (double)
+  - behavior: `clamp((v - min) / (max - min), 0..1)`
+  - special case: if `max == min`, returns `1.0` when `v >= min`, else `0.0`
 - `clamp`
+  - required fields: `type = "clamp"`, `inner` (Scaling), `min` (double), `max` (double)
+  - behavior: `clamp(inner.eval(v), min..max)`
 - `power`
+  - required fields: `type = "power"`, `inner` (Scaling), `exponent` (double)
+  - behavior: `pow(inner.eval(v), exponent)`
 
 Example probability trigger with scaling:
 
