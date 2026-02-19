@@ -2,5 +2,14 @@
   "association": {
     "type": "city"
   },
-  "hazardType": "hazardous:lostcity_radiation"
+  "hazardType": "hazardous:lostcity_radiation",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.03,
+    "indoorLeak": 1.0,
+    "nightMultiplier": 1.0,
+    "rainMultiplier": 1.0,
+    "requiresDirectSky": false,
+    "thunderMultiplier": 1.0
+  }
 }

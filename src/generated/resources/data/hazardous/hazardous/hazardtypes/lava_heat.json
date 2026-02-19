@@ -18,12 +18,5 @@
   },
   "falloff": {
     "type": "linear"
-  },
-  "transmission": {
-    "type": "point",
-    "airAttenuationPerBlock": 0.0,
-    "baseIntensity": 0.8,
-    "maxDistance": 4,
-    "requiresLineOfSight": false
   }
 }

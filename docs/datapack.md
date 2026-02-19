@@ -56,44 +56,22 @@ Put custom hazard JSON files in your datapack under:
 
 Mental model:
 1. A `hazardsource` says where a hazard exists.
-2. A `hazardtype` says how strong it is and how exposure accumulates.
-3. `effectentries` say what happens when exposure or dose reaches certain values.
-4. Items and config (gas mask, pills, geiger) modify or visualize runtime behavior.
+2. A `hazardsource` also says how the hazard transmits (`sky`, `point`, `contact`).
+3. A `hazardtype` says falloff, blocking, exposure, and effects.
+4. `effectentries` say what happens when exposure or dose reaches certain values.
+5. Items and config (gas mask, pills, geiger) modify or visualize runtime behavior.
 
 ## 1) HazardType JSON
 
 Codec: `mcjty.hazardous.data.objects.HazardType.CODEC`
 
 Top-level fields:
-- `transmission`: `sky`, `point`, or `contact`
 - `falloff`: `none`, `inverse_square`, `linear`, or `exponential`
 - `blocking`: `none`, `simple`, or `absorption`
 - `exposure`: timing plus accumulation behavior
 - `effects`: list of effect entry ids (optional, defaults to `[]`)
 
-### 1.1 Transmission
-
-`sky`
-- `baseIntensity` (double)
-- `requiresDirectSky` (boolean)
-- `rainMultiplier` (double)
-- `thunderMultiplier` (double)
-- `nightMultiplier` (double)
-- `indoorLeak` (double)
-- Works with source associations: `level`, `biome`, `city`
-
-`point`
-- `baseIntensity` (double)
-- `maxDistance` (int)
-- `requiresLineOfSight` (boolean)
-- `airAttenuationPerBlock` (double)
-- Works with source associations: `locations`, `entity_type`, `block`
-
-`contact`
-- `baseIntensity` (double)
-- Works with source associations: `entity_type`, `block`
-
-### 1.2 Falloff
+### 1.1 Falloff
 
 `none`
 - no fields
@@ -109,7 +87,7 @@ Top-level fields:
 - `k` (double)
 - behavior: `base * exp(-k * d)`
 
-### 1.3 Blocking
+### 1.2 Blocking
 
 `none`
 - no fields
@@ -125,7 +103,7 @@ Top-level fields:
 
 Known runtime behavior:
 - `blocking` is parsed and stored but not yet applied in runtime hazard calculations.
-- `point.requiresLineOfSight` is not enforced in runtime hazard calculations.
+- `hazardsource.transmission.point.requiresLineOfSight` is not enforced in runtime hazard calculations.
 
 These fields are still useful for forward-compatible datapacks.
 
@@ -137,19 +115,12 @@ These fields are still useful for forward-compatible datapacks.
 - `maximum` (double): `<= 0` means uncapped
 - `decayPerTick` (double): decay applied at each evaluation
 
-### 1.5 Example HazardType (point radiation)
+### 1.5 Example HazardType (point radiation shared settings)
 
 `data/example/hazardous/hazardtypes/radiation_point.json`
 
 ```json
 {
-  "transmission": {
-    "type": "point",
-    "baseIntensity": 1.0,
-    "maxDistance": 12,
-    "requiresLineOfSight": true,
-    "airAttenuationPerBlock": 0.05
-  },
   "falloff": { "type": "exponential", "k": 0.18 },
   "blocking": {
     "type": "absorption",
@@ -175,43 +146,63 @@ Codec: `mcjty.hazardous.data.objects.HazardSource.CODEC`
 
 Top-level fields:
 - `hazardType`: resource location
+- `transmission`: `sky`, `point`, or `contact`
 - `association`: where this hazard exists
+
+Transmission variants:
+
+`sky`
+- `type: "sky"`
+- `baseIntensity` (double)
+- `requiresDirectSky` (boolean)
+- `rainMultiplier` (double)
+- `thunderMultiplier` (double)
+- `nightMultiplier` (double)
+- `indoorLeak` (double)
+- valid with associations: `level`, `biome`, `city`
+
+`point`
+- `type: "point"`
+- `baseIntensity` (double)
+- `maxDistance` (int)
+- `requiresLineOfSight` (boolean)
+- `airAttenuationPerBlock` (double)
+- valid with associations: `locations`, `entity_type`, `block`
+
+`contact`
+- `type: "contact"`
+- `baseIntensity` (double)
+- valid with associations: `entity_type`, `block`
 
 Association variants:
 
 `level`
 - `type: "level"`
 - `level`: dimension id
-- valid with `sky`
 
 `entity_type`
 - `type: "entity_type"`
 - `entityType`
 - `maxDistance`
-- valid with `point`, `contact`
 
 `locations`
 - `type: "locations"`
 - `level`
 - `positions`: list of `{ "x": ..., "y": ..., "z": ... }`
-- valid with `point`
 
 `biome`
 - `type: "biome"`
 - `biome`
-- valid with `sky`
 
 `city`
 - `type: "city"`
 - no extra fields
-- valid with `sky`
 - only works when Lost Cities is installed
 
 `block`
 - `type: "block"`
 - exactly one of `block` or `tag`
 - `maxDistance`
-- valid with `point`, `contact`
 
 Validation note:
 - Reload validates association and transmission compatibility.
@@ -224,6 +215,15 @@ Entire overworld gets solar hazard:
 ```json
 {
   "hazardType": "example:solar_burn",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.12,
+    "requiresDirectSky": true,
+    "rainMultiplier": 0.25,
+    "thunderMultiplier": 0.1,
+    "nightMultiplier": 0.0,
+    "indoorLeak": 0.05
+  },
   "association": {
     "type": "level",
     "level": "minecraft:overworld"
@@ -236,6 +236,13 @@ All zombies act as radioactive point sources:
 ```json
 {
   "hazardType": "example:radioactive_source",
+  "transmission": {
+    "type": "point",
+    "baseIntensity": 1.0,
+    "maxDistance": 12,
+    "requiresLineOfSight": true,
+    "airAttenuationPerBlock": 0.05
+  },
   "association": {
     "type": "entity_type",
     "entityType": "minecraft:zombie",
@@ -249,6 +256,13 @@ Near-lava heat hazard:
 ```json
 {
   "hazardType": "example:lava_heat",
+  "transmission": {
+    "type": "point",
+    "baseIntensity": 0.8,
+    "maxDistance": 4,
+    "requiresLineOfSight": false,
+    "airAttenuationPerBlock": 0.0
+  },
   "association": {
     "type": "block",
     "block": "minecraft:lava",

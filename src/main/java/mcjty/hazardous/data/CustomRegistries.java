@@ -46,7 +46,7 @@ public class CustomRegistries {
                 Hazardous.LOGGER.error("HazardSource refers to missing HazardType '{}'", s.hazardType());
                 throw new RuntimeException("HazardSource refers to missing HazardType '" + s.hazardType() + "'!");
             }
-            var transmission = type.transmission();
+            var transmission = s.transmission();
             if (!transmission.supportedAssociations().contains(s.association().kind())) {
                 Hazardous.LOGGER.error("Incompatible hazard source: type='{}' transmission='{}' does not support association='{}' ({})",
                         s.hazardType(),

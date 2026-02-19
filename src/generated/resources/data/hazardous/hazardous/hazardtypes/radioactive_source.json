@@ -20,12 +20,5 @@
   "falloff": {
     "type": "exponential",
     "k": 0.18
-  },
-  "transmission": {
-    "type": "point",
-    "airAttenuationPerBlock": 0.05,
-    "baseIntensity": 1.0,
-    "maxDistance": 12,
-    "requiresLineOfSight": true
   }
 }

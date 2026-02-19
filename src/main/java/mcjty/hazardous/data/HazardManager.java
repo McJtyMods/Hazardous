@@ -45,7 +45,7 @@ public class HazardManager {
             }
             ResourceLocation hazardId = source.hazardType();
             if (hazardId.equals(typeId)) {
-                Double v = source.association().accept(type, visitor);
+                Double v = source.association().accept(type, visitor.withTransmission(source.transmission()));
                 if (v != null) {
                     value += v;
                 }
@@ -61,9 +61,15 @@ public class HazardManager {
 
     private static class PlayerTickVisitor implements HazardSource.Association.Visitor<Double> {
         private final Player player;
+        private HazardSource.Transmission transmission;
 
         public PlayerTickVisitor(Player player) {
             this.player = player;
+        }
+
+        public PlayerTickVisitor withTransmission(HazardSource.Transmission transmission) {
+            this.transmission = transmission;
+            return this;
         }
 
         private static double applyFalloff(double base, double d, int maxDistance, HazardType.Falloff falloff) {
@@ -87,9 +93,9 @@ public class HazardManager {
             if (!currentLevel.equals(a.level())) {
                 return 0.0;
             }
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
-                public Double sky(HazardType type, HazardType.Transmission.Sky t) {
+                public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
                     BlockPos pos = player.blockPosition();
                     boolean canSeeSky = level.canSeeSky(pos);
                     double intensity = t.baseIntensity();
@@ -130,9 +136,9 @@ public class HazardManager {
             if (entities.isEmpty()) {
                 return 0.0;
             }
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
-                public Double point(HazardType type, HazardType.Transmission.Point t) {
+                public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
                     for (Entity entity : entities) {
                         double d = player.distanceTo(entity);
@@ -148,7 +154,7 @@ public class HazardManager {
                 }
 
                 @Override
-                public Double contact(HazardType type, HazardType.Transmission.Contact t) {
+                public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
                     double sum = 0.0;
                     for (Entity entity : entities) {
                         if (player.getBoundingBox().intersects(entity.getBoundingBox())) {
@@ -167,9 +173,9 @@ public class HazardManager {
             if (!currentLevel.equals(a.level())) {
                 return 0.0;
             }
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
-                public Double point(HazardType type, HazardType.Transmission.Point t) {
+                public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
                     for (BlockPos p : a.positions()) {
                         double x = p.getX() + 0.5;
@@ -185,7 +191,7 @@ public class HazardManager {
                 }
 
                 @Override
-                public Double contact(HazardType type, HazardType.Transmission.Contact t) {
+                public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
                     // Contact is not supported for locations in current model
                     return 0.0;
                 }
@@ -199,9 +205,9 @@ public class HazardManager {
             if (!level.getBiome(player.blockPosition()).is(biomeKey)) {
                 return 0.0;
             }
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
-                public Double sky(HazardType type, HazardType.Transmission.Sky t) {
+                public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
                     BlockPos pos = player.blockPosition();
                     boolean canSeeSky = level.canSeeSky(pos);
                     double intensity = t.baseIntensity();
@@ -234,9 +240,9 @@ public class HazardManager {
             if (!LostCityCompat.isCity(level, pos)) {
                 return 0.0;
             }
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
-                public Double sky(HazardType type, HazardType.Transmission.Sky t) {
+                public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
                     boolean canSeeSky = level.canSeeSky(pos);
                     double intensity = t.baseIntensity();
                     boolean isNight = level.isNight();
@@ -279,13 +285,13 @@ public class HazardManager {
             Block finalBlock = block;
             TagKey<Block> finalTag = tag;
 
-            return type.transmission().accept(type, new HazardType.Transmission.Visitor<>() {
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 private boolean matches(BlockState state) {
                     return isTag ? state.is(finalTag) : state.is(finalBlock);
                 }
 
                 @Override
-                public Double point(HazardType type, HazardType.Transmission.Point t) {
+                public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
                     BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
                     for (int dx = -radius; dx <= radius; dx++) {
@@ -314,7 +320,7 @@ public class HazardManager {
                 }
 
                 @Override
-                public Double contact(HazardType type, HazardType.Transmission.Contact t) {
+                public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
                     AABB bounds = player.getBoundingBox();
                     int minX = (int) Math.floor(bounds.minX);
                     int minY = (int) Math.floor(bounds.minY);

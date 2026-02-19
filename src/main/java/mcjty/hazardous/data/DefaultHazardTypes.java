@@ -12,13 +12,6 @@ public class DefaultHazardTypes {
     public static final Map<ResourceLocation, HazardType> DEFAULT_HAZARD_TYPES = Map.of(
             new ResourceLocation(Hazardous.MODID, "solar_burn"),
             new HazardType(
-                    new HazardType.Transmission.Sky(
-                            0.12,
-                            true,
-                            0.25,
-                            0.1,
-                            0.0,
-                            0.05),
                     HazardType.Falloff.None.INSTANCE,
                     new HazardType.Blocking.SimpleOcclusion(
                             0.6,
@@ -39,11 +32,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_source"),
             new HazardType(
-                    new HazardType.Transmission.Point(
-                            1.0,
-                            12,
-                            true,
-                            0.05),
                     new HazardType.Falloff.Exponential(0.18),
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
@@ -64,13 +52,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
             new HazardType(
-                    new HazardType.Transmission.Sky(
-                            0.03,
-                            false,
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0),
                     HazardType.Falloff.None.INSTANCE,
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
@@ -90,11 +71,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
-                    new HazardType.Transmission.Point(
-                            0.8,
-                            4,
-                            false,
-                            0.0),
                     HazardType.Falloff.Linear.INSTANCE,
                     new HazardType.Blocking.SimpleOcclusion(
                             0.8,

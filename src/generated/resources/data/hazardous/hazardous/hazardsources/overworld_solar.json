@@ -3,5 +3,14 @@
     "type": "level",
     "level": "minecraft:overworld"
   },
-  "hazardType": "hazardous:solar_burn"
+  "hazardType": "hazardous:solar_burn",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.12,
+    "indoorLeak": 0.05,
+    "nightMultiplier": 0.0,
+    "rainMultiplier": 0.25,
+    "requiresDirectSky": true,
+    "thunderMultiplier": 0.1
+  }
 }
