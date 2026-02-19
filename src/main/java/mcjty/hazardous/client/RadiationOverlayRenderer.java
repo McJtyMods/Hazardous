@@ -65,14 +65,17 @@ public class RadiationOverlayRenderer {
         int screenHeight = minecraft.getWindow().getGuiScaledHeight();
         int offsetX = Config.GEIGER_HUD_OFFSET_X.get();
         int offsetY = Config.GEIGER_HUD_OFFSET_Y.get();
+        Config.GeigerHudAnchor anchor = Config.getGeigerHudAnchor();
 
-        int x = switch (Config.getGeigerHudAnchor()) {
-            case TOP_LEFT, BOTTOM_LEFT -> offsetX;
-            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - scaledWidth - offsetX;
+        int x = switch (anchor) {
+            case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> offsetX;
+            case TOP_CENTER, BOTTOM_CENTER -> (screenWidth - scaledWidth) / 2 + offsetX;
+            case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> screenWidth - scaledWidth - offsetX;
         };
-        int y = switch (Config.getGeigerHudAnchor()) {
-            case TOP_LEFT, TOP_RIGHT -> offsetY;
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
+        int y = switch (anchor) {
+            case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> offsetY;
+            case CENTER_LEFT, CENTER_RIGHT -> (screenHeight - scaledHeight) / 2 + offsetY;
+            case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
         };
 
         event.getGuiGraphics().pose().pushPose();

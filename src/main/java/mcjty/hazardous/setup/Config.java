@@ -72,7 +72,7 @@ public class Config {
                 .comment("Value treated as 100% dial fill")
                 .defineInRange("geigerMaxRadiation", 100.0, 0.0001, 1_000_000.0);
         GEIGER_HUD_ANCHOR = clientBuilder
-                .comment("HUD anchor: top_left, top_right, bottom_left, bottom_right")
+                .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("geigerHudAnchor", "top_right");
         GEIGER_HUD_OFFSET_X = clientBuilder
                 .comment("Horizontal HUD offset from anchor in pixels")
@@ -145,8 +145,12 @@ public class Config {
 
     public enum GeigerHudAnchor {
         TOP_LEFT,
+        TOP_CENTER,
         TOP_RIGHT,
+        CENTER_LEFT,
+        CENTER_RIGHT,
         BOTTOM_LEFT,
+        BOTTOM_CENTER,
         BOTTOM_RIGHT;
 
         public static GeigerHudAnchor fromName(String value) {
@@ -155,7 +159,11 @@ public class Config {
             }
             return switch (value.toLowerCase(Locale.ROOT)) {
                 case "top_left" -> TOP_LEFT;
+                case "top_center" -> TOP_CENTER;
                 case "bottom_left" -> BOTTOM_LEFT;
+                case "center_left" -> CENTER_LEFT;
+                case "center_right" -> CENTER_RIGHT;
+                case "bottom_center" -> BOTTOM_CENTER;
                 case "bottom_right" -> BOTTOM_RIGHT;
                 default -> TOP_RIGHT;
             };
