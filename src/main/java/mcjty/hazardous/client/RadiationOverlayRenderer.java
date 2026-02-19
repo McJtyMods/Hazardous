@@ -28,7 +28,6 @@ public class RadiationOverlayRenderer {
     private static final float POINTER_PIVOT_X = POINTER_TEX_W / 2.0f;
     private static final float POINTER_PIVOT_Y = POINTER_TEX_H - 1.0f;
 
-    private static final float UI_SCALE = 1.0f;
     private static final float ZERO_RADIATION_DEG = 225.0f; // South-west
     private static final float MAX_RADIATION_DEG = 135.0f; // South-east
 
@@ -58,9 +57,10 @@ public class RadiationOverlayRenderer {
 
         double radiation = values.getOrDefault(displayResource.get(), 0.0);
         float pointerAngle = calculatePointerAngle(radiation);
+        float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
 
-        int scaledWidth = Mth.floor(UI_TEX_W * UI_SCALE);
-        int scaledHeight = Mth.floor(UI_TEX_H * UI_SCALE);
+        int scaledWidth = Mth.floor(UI_TEX_W * uiScale);
+        int scaledHeight = Mth.floor(UI_TEX_H * uiScale);
         int screenWidth = minecraft.getWindow().getGuiScaledWidth();
         int screenHeight = minecraft.getWindow().getGuiScaledHeight();
         int offsetX = Config.GEIGER_HUD_OFFSET_X.get();
@@ -80,7 +80,7 @@ public class RadiationOverlayRenderer {
 
         event.getGuiGraphics().pose().pushPose();
         event.getGuiGraphics().pose().translate(x, y, 0.0f);
-        event.getGuiGraphics().pose().scale(UI_SCALE, UI_SCALE, 1.0f);
+        event.getGuiGraphics().pose().scale(uiScale, uiScale, 1.0f);
 
         event.getGuiGraphics().blit(GEIGER_UI, 0, 0, 0, 0, UI_TEX_W, UI_TEX_H, UI_TEX_W, UI_TEX_H);
 

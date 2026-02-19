@@ -26,6 +26,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_RESOURCE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
+    public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_Y;
 
@@ -74,6 +75,9 @@ public class Config {
         GEIGER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("geigerHudAnchor", "top_right");
+        GEIGER_HUD_SCALE = clientBuilder
+                .comment("Scale factor for the geiger HUD (1.0 = normal, 2.0 = twice as large, 0.5 = half size)")
+                .defineInRange("geigerHudScale", 1.0, 0.1, 10.0);
         GEIGER_HUD_OFFSET_X = clientBuilder
                 .comment("Horizontal HUD offset from anchor in pixels")
                 .defineInRange("geigerHudOffsetX", 8, -5000, 5000);
