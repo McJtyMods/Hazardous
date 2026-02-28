@@ -1,5 +1,6 @@
 package mcjty.hazardous.items;
 
+import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Config;
 import mcjty.lib.builder.TooltipBuilder;
@@ -19,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PillsItem extends BaseItem {
 
@@ -47,9 +48,9 @@ public class PillsItem extends BaseItem {
             return InteractionResultHolder.pass(stack);
         }
 
-        AtomicBoolean changed = new AtomicBoolean(false);
-        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(data -> changed.set(data.removeDoseFromAll(healAmount)));
-        if (!changed.get()) {
+        AtomicReference<Double> curedDose = new AtomicReference<>(0.0);
+        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(data -> curedDose.set(data.removeDoseFromAll(healAmount)));
+        if (curedDose.get() <= 0.0) {
             return InteractionResultHolder.pass(stack);
         }
 
@@ -57,6 +58,13 @@ public class PillsItem extends BaseItem {
             stack.shrink(1);
         }
         player.playSound(SoundEvents.GENERIC_DRINK, 0.6f, 1.1f);
+        player.displayClientMessage(
+                Component.translatable(
+                        "message." + Hazardous.MODID + ".pills.cured",
+                        String.format(Locale.ROOT, "%.2f", curedDose.get())
+                ),
+                false
+        );
         return InteractionResultHolder.sidedSuccess(stack, false);
     }
 

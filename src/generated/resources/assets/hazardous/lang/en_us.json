@@ -14,6 +14,7 @@
   "message.hazardous.gasmask.header": "Gas Mask",
   "message.hazardous.gasmask.protection": "Protection level: ",
   "message.hazardous.gasmask.source": "Protected source: ",
+  "message.hazardous.pills.cured": "Radiation cured: %s",
   "message.hazardous.pills.desc": "Reduces your accumulated personal dose",
   "message.hazardous.pills.header": "Anti-Rad Pills",
   "message.hazardous.pills.heal": "Dose restored per use: ",
