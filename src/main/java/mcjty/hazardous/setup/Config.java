@@ -23,7 +23,7 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
-    public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_RESOURCE;
+    public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_HAZARD_TYPE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
@@ -66,9 +66,9 @@ public class Config {
         ForgeConfigSpec.Builder clientBuilder = new ForgeConfigSpec.Builder();
         clientBuilder.comment("Client settings").push(CATEGORY_CLIENT);
 
-        GEIGER_DISPLAY_RESOURCE = clientBuilder
-                .comment("Resource location from client radiation data to display on the geiger dial (example: hazardous:radioactive_source). Leave empty to disable")
-                .define("geigerDisplayResource", Hazardous.MODID + ":radioactive_source");
+        GEIGER_DISPLAY_HAZARD_TYPE = clientBuilder
+                .comment("Hazard type id from client radiation data to display on the geiger dial (example: hazardous:radioactive_source). Leave empty to disable")
+                .define("geigerDisplayHazardType", Hazardous.MODID + ":radioactive_source");
         GEIGER_MAX_RADIATION = clientBuilder
                 .comment("Value treated as 100% dial fill")
                 .defineInRange("geigerMaxRadiation", 100.0, 0.0001, 1_000_000.0);
@@ -127,8 +127,8 @@ public class Config {
         return enabledHazardSources;
     }
 
-    public static Optional<ResourceLocation> getGeigerDisplayResource() {
-        String value = GEIGER_DISPLAY_RESOURCE.get();
+    public static Optional<ResourceLocation> getGeigerDisplayHazardType() {
+        String value = GEIGER_DISPLAY_HAZARD_TYPE.get();
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }

@@ -503,7 +503,7 @@ Behavior:
 - Shows HUD dial when:
 1. Held in selected hotbar slot, or
 2. Equipped in Curios (if Curios is installed)
-- Reads a configured hazard id from client radiation data: `geigerDisplayResource`.
+- Reads a configured hazard type id from client radiation data: `geigerDisplayHazardType`.
 - Dial full scale is `geigerMaxRadiation`.
 - Position controlled by `geigerHudAnchor`, `geigerHudOffsetX`, `geigerHudOffsetY`.
 
@@ -538,7 +538,7 @@ Server config (`hazardous-server.toml`):
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
 
 Client config (`hazardous-client.toml`):
-- `geigerDisplayResource` (string resource location, default `hazardous:radioactive_source`, empty disables dial target)
+- `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_source`, empty disables dial target)
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
 - `geigerHudAnchor` (string: `top_left`, `top_right`, `bottom_left`, `bottom_right`; default `top_right`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
@@ -554,7 +554,7 @@ gasmaskFilterRestore = 250
 pillsDoseHeal = 20.0
 
 # hazardous-client.toml
-geigerDisplayResource = "hazardous:radioactive_source"
+geigerDisplayHazardType = "hazardous:radioactive_source"
 geigerMaxRadiation = 100.0
 geigerHudAnchor = "top_right"
 geigerHudOffsetX = 8

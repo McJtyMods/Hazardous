@@ -45,7 +45,7 @@ public class RadiationOverlayRenderer {
             return;
         }
 
-        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayResource();
+        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
         if (displayResource.isEmpty()) {
             return;
         }
