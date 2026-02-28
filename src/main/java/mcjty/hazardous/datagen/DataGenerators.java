@@ -44,6 +44,8 @@ public class DataGenerators {
                         .codecObjectSupplier("effectentries", () -> DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.entrySet().stream()
                                 .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
                                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))),
+                Dob.builder()
+                        .message("itemGroup." + Hazardous.MODID, "Hazardous"),
                 Dob.itemBuilder(Registration.GEIGER_COUNTER)
                         .name("Geiger Counter")
                         .generatedItem("item/geigercounter")

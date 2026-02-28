@@ -58,7 +58,7 @@ public class Registration {
         return Hazardous.instance.setup.tab(supplier);
     }
 
-    public static RegistryObject<CreativeModeTab> TAB = TABS.register("fancytrinkets", () -> CreativeModeTab.builder()
+    public static RegistryObject<CreativeModeTab> TAB = TABS.register("hazardous", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup." + Hazardous.MODID))
             .icon(() -> new ItemStack(GEIGER_COUNTER.get()))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)

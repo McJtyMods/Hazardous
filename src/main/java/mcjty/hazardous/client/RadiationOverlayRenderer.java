@@ -30,7 +30,8 @@ public class RadiationOverlayRenderer {
     private static final float POINTER_PIVOT_Y = POINTER_TEX_H - 1.0f;
 
     private static final float ZERO_RADIATION_DEG = 225.0f; // South-west
-    private static final float MAX_RADIATION_DEG = 135.0f; // South-east
+    // Use equivalent south-east angle +360 so lerp sweeps over the top arc instead of the bottom.
+    private static final float MAX_RADIATION_DEG = 495.0f; // South-east
 
     // Dial center ratios based on the original art layout so this keeps working after resizes.
     private static final float DIAL_CENTER_X_RATIO = 199.0f / 400.0f;

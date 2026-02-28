@@ -3,6 +3,7 @@
   "item.hazardous.gasmask": "Gas Mask",
   "item.hazardous.geiger_counter": "Geiger Counter",
   "item.hazardous.pills": "Pills",
+  "itemGroup.hazardous": "Hazardous",
   "message.hazardous.filter.crafting": "Can also be combined with a damaged gas mask in a crafting grid",
   "message.hazardous.filter.desc": "Refills a worn gas mask",
   "message.hazardous.filter.header": "Gas Mask Filter",
