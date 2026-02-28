@@ -25,6 +25,8 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_HAZARD_TYPE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
+    public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_MEDIUM_MIN_RADIATION;
+    public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_HIGH_MIN_RADIATION;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
@@ -72,6 +74,12 @@ public class Config {
         GEIGER_MAX_RADIATION = clientBuilder
                 .comment("Value treated as 100% dial fill")
                 .defineInRange("geigerMaxRadiation", 100.0, 0.0001, 1_000_000.0);
+        GEIGER_SOUND_MEDIUM_MIN_RADIATION = clientBuilder
+                .comment("Minimum displayed radiation required to play the medium geiger loop")
+                .defineInRange("geigerSoundMediumMinRadiation", 1.0, 0.0, 1_000_000.0);
+        GEIGER_SOUND_HIGH_MIN_RADIATION = clientBuilder
+                .comment("Minimum displayed radiation required to switch from medium to high geiger loop")
+                .defineInRange("geigerSoundHighMinRadiation", 25.0, 0.0, 1_000_000.0);
         GEIGER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("geigerHudAnchor", "top_right");

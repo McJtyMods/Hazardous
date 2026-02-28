@@ -15,6 +15,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class RadiationOverlayRenderer {
 
@@ -41,21 +42,14 @@ public class RadiationOverlayRenderer {
         }
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (player == null || !hasActiveGeiger(player)) {
+        if (player == null) {
             return;
         }
-
-        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
-        if (displayResource.isEmpty()) {
+        OptionalDouble radiationValue = getDisplayedRadiation(player);
+        if (radiationValue.isEmpty()) {
             return;
         }
-
-        Map<ResourceLocation, Double> values = ClientRadiationData.getValues();
-        if (values == null) {
-            return;
-        }
-
-        double radiation = values.getOrDefault(displayResource.get(), 0.0);
+        double radiation = radiationValue.getAsDouble();
         float pointerAngle = calculatePointerAngle(radiation);
         float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
 
@@ -103,7 +97,22 @@ public class RadiationOverlayRenderer {
         return Mth.lerp(ratio, ZERO_RADIATION_DEG, MAX_RADIATION_DEG);
     }
 
-    private static boolean hasActiveGeiger(Player player) {
+    public static OptionalDouble getDisplayedRadiation(Player player) {
+        if (!isGeigerHudVisible(player)) {
+            return OptionalDouble.empty();
+        }
+        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
+        if (displayResource.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+        Map<ResourceLocation, Double> values = ClientRadiationData.getValues();
+        if (values == null) {
+            return OptionalDouble.empty();
+        }
+        return OptionalDouble.of(values.getOrDefault(displayResource.get(), 0.0));
+    }
+
+    public static boolean isGeigerHudVisible(Player player) {
         if (player.getInventory().getSelected().is(Registration.GEIGER_COUNTER.get())) {
             return true;
         }

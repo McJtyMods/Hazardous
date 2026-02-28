@@ -506,9 +506,15 @@ Behavior:
 - Reads a configured hazard type id from client radiation data: `geigerDisplayHazardType`.
 - Dial full scale is `geigerMaxRadiation`.
 - Position controlled by `geigerHudAnchor`, `geigerHudOffsetX`, `geigerHudOffsetY`.
+- Plays looped Geiger audio while the HUD is visible:
+1. No sound below `geigerSoundMediumMinRadiation`
+2. `hazardous:geiger.mediumdose` loop at/above `geigerSoundMediumMinRadiation`
+3. `hazardous:geiger.highdose` loop at/above `geigerSoundHighMinRadiation`
+- Sound loops stop immediately when the Geiger HUD is no longer visible (not selected / unequipped).
 
 Important:
 - The geiger HUD does not depend on `client_fx`; it uses hazard values synced from server to client.
+- Geiger audio uses the same displayed hazard value as the HUD dial.
 
 Recipe:
 
@@ -540,6 +546,8 @@ Server config (`hazardous-server.toml`):
 Client config (`hazardous-client.toml`):
 - `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_source`, empty disables dial target)
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
+- `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
+- `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
 - `geigerHudAnchor` (string: `top_left`, `top_right`, `bottom_left`, `bottom_right`; default `top_right`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
 - `geigerHudOffsetY` (int `-5000..5000`, default `8`)
@@ -556,6 +564,8 @@ pillsDoseHeal = 20.0
 # hazardous-client.toml
 geigerDisplayHazardType = "hazardous:radioactive_source"
 geigerMaxRadiation = 100.0
+geigerSoundMediumMinRadiation = 1.0
+geigerSoundHighMinRadiation = 25.0
 geigerHudAnchor = "top_right"
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
