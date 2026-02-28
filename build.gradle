@@ -43,6 +43,8 @@ sourceSets.main.resources {
 
 dependencies {
     mc()
+    jei()
+    top()
     mcjtylib()
     lostcities()
     curios()
