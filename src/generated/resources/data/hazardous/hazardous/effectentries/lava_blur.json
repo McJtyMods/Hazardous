@@ -1,0 +1,17 @@
+{
+  "action": {
+    "type": "client_fx",
+    "durationTicks": 16,
+    "fxId": "blur",
+    "intensity": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.25
+    }
+  },
+  "trigger": {
+    "type": "threshold",
+    "hysteresis": 0.03,
+    "min": 0.25
+  }
+}

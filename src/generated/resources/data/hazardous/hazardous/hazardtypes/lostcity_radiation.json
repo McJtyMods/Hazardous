@@ -2,7 +2,17 @@
   "blocking": {
     "type": "absorption",
     "absorptionRegistryHint": "hazardous:absorption_hints",
-    "defaultAbsorption": 0.2
+    "defaultAbsorption": 0.2,
+    "blocks": [
+      {
+        "block": "minecraft:obsidian",
+        "absorption": 0.75
+      },
+      {
+        "block": "minecraft:crying_obsidian",
+        "absorption": 0.85
+      }
+    ]
   },
   "effects": [
     "hazardous:radiation_damage",

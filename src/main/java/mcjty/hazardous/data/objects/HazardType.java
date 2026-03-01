@@ -125,13 +125,33 @@ public record HazardType(
          */
         record Absorption(
                 ResourceLocation absorptionRegistryHint,
-                double defaultAbsorption
+                double defaultAbsorption,
+                List<BlockEntry> blocks,
+                List<TagEntry> tags
         ) implements Blocking {
             public static final Codec<Absorption> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             ResourceLocation.CODEC.fieldOf("absorptionRegistryHint").forGetter(Absorption::absorptionRegistryHint),
-                            Codec.DOUBLE.fieldOf("defaultAbsorption").forGetter(Absorption::defaultAbsorption)
+                            Codec.DOUBLE.fieldOf("defaultAbsorption").forGetter(Absorption::defaultAbsorption),
+                            BlockEntry.CODEC.listOf().optionalFieldOf("blocks", List.of()).forGetter(Absorption::blocks),
+                            TagEntry.CODEC.listOf().optionalFieldOf("tags", List.of()).forGetter(Absorption::tags)
                     ).apply(instance, Absorption::new));
+
+            public record BlockEntry(ResourceLocation block, double absorption) {
+                public static final Codec<BlockEntry> CODEC = RecordCodecBuilder.create(instance ->
+                        instance.group(
+                                ResourceLocation.CODEC.fieldOf("block").forGetter(BlockEntry::block),
+                                Codec.DOUBLE.fieldOf("absorption").forGetter(BlockEntry::absorption)
+                        ).apply(instance, BlockEntry::new));
+            }
+
+            public record TagEntry(ResourceLocation tag, double absorption) {
+                public static final Codec<TagEntry> CODEC = RecordCodecBuilder.create(instance ->
+                        instance.group(
+                                ResourceLocation.CODEC.fieldOf("tag").forGetter(TagEntry::tag),
+                                Codec.DOUBLE.fieldOf("absorption").forGetter(TagEntry::absorption)
+                        ).apply(instance, TagEntry::new));
+            }
         }
     }
 

@@ -100,9 +100,17 @@ Top-level fields:
 `absorption`
 - `absorptionRegistryHint` (resource location)
 - `defaultAbsorption` (double)
+- `blocks` (optional list): per-block overrides
+  - `block` (resource location)
+  - `absorption` (double `0.0..1.0`)
+- `tags` (optional list): per-tag overrides
+  - `tag` (resource location)
+  - `absorption` (double `0.0..1.0`)
 
 Known runtime behavior:
-- `blocking` is parsed and stored but not yet applied in runtime hazard calculations.
+- `blocking.type = absorption` is applied for `transmission = sky` and `transmission = point`.
+- Sky absorption traces vertically from world top to player.
+- Point absorption traces from source to player body/head and applies multiplicative attenuation.
 - `hazardsource.transmission.point.requiresLineOfSight` is not enforced in runtime hazard calculations.
 
 These fields are still useful for forward-compatible datapacks.

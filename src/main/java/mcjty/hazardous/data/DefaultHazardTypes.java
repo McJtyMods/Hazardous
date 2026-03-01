@@ -35,7 +35,12 @@ public class DefaultHazardTypes {
                     new HazardType.Falloff.Exponential(0.18),
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
-                            0.2),
+                            0.2,
+                            List.of(
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "obsidian"), 0.75),
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "crying_obsidian"), 0.85)
+                            ),
+                            List.of()),
                     new HazardType.Exposure(
                             10,
                             true,
@@ -55,7 +60,12 @@ public class DefaultHazardTypes {
                     HazardType.Falloff.None.INSTANCE,
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
-                            0.2),
+                            0.2,
+                            List.of(
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "obsidian"), 0.75),
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "crying_obsidian"), 0.85)
+                            ),
+                            List.of()),
                     new HazardType.Exposure(
                             10,
                             true,
