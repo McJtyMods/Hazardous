@@ -6,6 +6,7 @@ import mcjty.hazardous.compat.CuriosCompat;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -44,9 +45,6 @@ public class RadiationOverlayRenderer {
     // Use equivalent south-east angle +360 so lerp sweeps over the top arc instead of the bottom.
     private static final float MAX_RADIATION_DEG = 495.0f; // South-east
 
-    private static final float ZERO_RADIATION_DEG = 225.0f;
-    private static final float MAX_RADIATION_DEG = 135.0f;
-
     private static final float DIAL_CENTER_X_RATIO = 199.0f / 400.0f;
     private static final float DIAL_CENTER_Y_RATIO = 117.0f / 576.0f;
 
@@ -69,55 +67,57 @@ public class RadiationOverlayRenderer {
     }
 
     private static void renderGeiger(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
-        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayResource();
+        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
         if (displayResource.isEmpty()) {
-        if (player == null) {
-            return;
+            LocalPlayer player = minecraft.player;
+            if (player == null) {
+                return;
+            }
+            OptionalDouble radiationValue = getDisplayedRadiation(player);
+            if (radiationValue.isEmpty()) {
+                return;
+            }
+            double radiation = radiationValue.getAsDouble();
+            float pointerAngle = calculatePointerAngle(radiation);
+            float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
+
+            int scaledWidth = Mth.floor(GEIGER_UI_TEX_W * uiScale);
+            int scaledHeight = Mth.floor(GEIGER_UI_TEX_H * uiScale);
+            int screenWidth = minecraft.getWindow().getGuiScaledWidth();
+            int screenHeight = minecraft.getWindow().getGuiScaledHeight();
+            int offsetX = Config.GEIGER_HUD_OFFSET_X.get();
+            int offsetY = Config.GEIGER_HUD_OFFSET_Y.get();
+            Config.GeigerHudAnchor anchor = Config.getGeigerHudAnchor();
+
+            int x = switch (anchor) {
+                case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> offsetX;
+                case TOP_CENTER, BOTTOM_CENTER -> (screenWidth - scaledWidth) / 2 + offsetX;
+                case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> screenWidth - scaledWidth - offsetX;
+            };
+            int y = switch (anchor) {
+                case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> offsetY;
+                case CENTER_LEFT, CENTER_RIGHT -> (screenHeight - scaledHeight) / 2 + offsetY;
+                case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
+            };
+
+            event.getGuiGraphics().pose().pushPose();
+            event.getGuiGraphics().pose().translate(x, y, 0.0f);
+            event.getGuiGraphics().pose().scale(uiScale, uiScale, 1.0f);
+
+            event.getGuiGraphics().blit(GEIGER_UI, 0, 0, 0, 0, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H);
+
+            int dialCenterX = Mth.floor(GEIGER_UI_TEX_W * DIAL_CENTER_X_RATIO);
+            int dialCenterY = Mth.floor(GEIGER_UI_TEX_H * DIAL_CENTER_Y_RATIO);
+
+            event.getGuiGraphics().pose().pushPose();
+            event.getGuiGraphics().pose().translate(dialCenterX, dialCenterY, 0.0f);
+            event.getGuiGraphics().pose().mulPose(Axis.ZP.rotationDegrees(pointerAngle));
+            event.getGuiGraphics().pose().translate(-POINTER_PIVOT_X, -POINTER_PIVOT_Y, 0.0f);
+            event.getGuiGraphics().blit(GEIGER_UI_POINTER, 0, 0, 0, 0, POINTER_TEX_W, POINTER_TEX_H, POINTER_TEX_W, POINTER_TEX_H);
+            event.getGuiGraphics().pose().popPose();
+
+            event.getGuiGraphics().pose().popPose();
         }
-        OptionalDouble radiationValue = getDisplayedRadiation(player);
-        if (radiationValue.isEmpty()) {
-            return;
-        }
-        double radiation = radiationValue.getAsDouble();
-        float pointerAngle = calculatePointerAngle(radiation);
-        float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
-
-        int scaledWidth = Mth.floor(GEIGER_UI_TEX_W * uiScale);
-        int scaledHeight = Mth.floor(GEIGER_UI_TEX_H * uiScale);
-        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
-        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
-        int offsetX = Config.GEIGER_HUD_OFFSET_X.get();
-        int offsetY = Config.GEIGER_HUD_OFFSET_Y.get();
-        Config.GeigerHudAnchor anchor = Config.getGeigerHudAnchor();
-
-        int x = switch (anchor) {
-            case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> offsetX;
-            case TOP_CENTER, BOTTOM_CENTER -> (screenWidth - scaledWidth) / 2 + offsetX;
-            case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> screenWidth - scaledWidth - offsetX;
-        };
-        int y = switch (anchor) {
-            case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> offsetY;
-            case CENTER_LEFT, CENTER_RIGHT -> (screenHeight - scaledHeight) / 2 + offsetY;
-            case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
-        };
-
-        event.getGuiGraphics().pose().pushPose();
-        event.getGuiGraphics().pose().translate(x, y, 0.0f);
-        event.getGuiGraphics().pose().scale(uiScale, uiScale, 1.0f);
-
-        event.getGuiGraphics().blit(GEIGER_UI, 0, 0, 0, 0, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H);
-
-        int dialCenterX = Mth.floor(GEIGER_UI_TEX_W * DIAL_CENTER_X_RATIO);
-        int dialCenterY = Mth.floor(GEIGER_UI_TEX_H * DIAL_CENTER_Y_RATIO);
-
-        event.getGuiGraphics().pose().pushPose();
-        event.getGuiGraphics().pose().translate(dialCenterX, dialCenterY, 0.0f);
-        event.getGuiGraphics().pose().mulPose(Axis.ZP.rotationDegrees(pointerAngle));
-        event.getGuiGraphics().pose().translate(-POINTER_PIVOT_X, -POINTER_PIVOT_Y, 0.0f);
-        event.getGuiGraphics().blit(GEIGER_UI_POINTER, 0, 0, 0, 0, POINTER_TEX_W, POINTER_TEX_H, POINTER_TEX_W, POINTER_TEX_H);
-        event.getGuiGraphics().pose().popPose();
-
-        event.getGuiGraphics().pose().popPose();
     }
 
     private static void renderDosimeter(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
@@ -212,7 +212,6 @@ public class RadiationOverlayRenderer {
         return total;
     }
 
-    private static boolean hasActiveGeiger(Player player) {
     public static OptionalDouble getDisplayedRadiation(Player player) {
         if (!isGeigerHudVisible(player)) {
             return OptionalDouble.empty();
@@ -240,5 +239,12 @@ public class RadiationOverlayRenderer {
             return true;
         }
         return ModList.get().isLoaded("curios") && CuriosCompat.hasActiveDosimeter(player);
+    }
+
+    private static boolean hasActiveGeiger(Player player) {
+        if (player.getInventory().getSelected().is(Registration.GEIGER_COUNTER.get())) {
+            return true;
+        }
+        return ModList.get().isLoaded("curios") && CuriosCompat.hasActiveGeigerCounter(player);
     }
 }
