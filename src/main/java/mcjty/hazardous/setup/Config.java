@@ -29,6 +29,14 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_Y;
+    public static ForgeConfigSpec.ConfigValue<String> DOSIMETER_DISPLAY_RESOURCE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_MAX_DOSE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_MEDIUM_DOSE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_HIGH_DOSE;
+    public static ForgeConfigSpec.ConfigValue<String> DOSIMETER_HUD_ANCHOR;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_HUD_SCALE;
+    public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_X;
+    public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_Y;
 
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
     private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
@@ -84,6 +92,30 @@ public class Config {
         GEIGER_HUD_OFFSET_Y = clientBuilder
                 .comment("Vertical HUD offset from anchor in pixels")
                 .defineInRange("geigerHudOffsetY", 8, -5000, 5000);
+        DOSIMETER_DISPLAY_RESOURCE = clientBuilder
+                .comment("Resource location from player dose data to display on the dosimeter (example: hazardous:radioactive_source). Leave empty to display sum of all dose entries")
+                .define("dosimeterDisplayResource", Hazardous.MODID + ":radioactive_source");
+        DOSIMETER_MAX_DOSE = clientBuilder
+                .comment("Dose value treated as 100% dosimeter bar fill")
+                .defineInRange("dosimeterMaxDose", 200.0, 0.0001, 1_000_000.0);
+        DOSIMETER_MEDIUM_DOSE = clientBuilder
+                .comment("Dose threshold where dosimeter bar changes from green to yellow/orange")
+                .defineInRange("dosimeterMediumDose", 50.0, 0.0, 1_000_000.0);
+        DOSIMETER_HIGH_DOSE = clientBuilder
+                .comment("Dose threshold where dosimeter bar changes from yellow/orange to red")
+                .defineInRange("dosimeterHighDose", 120.0, 0.0, 1_000_000.0);
+        DOSIMETER_HUD_ANCHOR = clientBuilder
+                .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
+                .define("dosimeterHudAnchor", "top_right");
+        DOSIMETER_HUD_SCALE = clientBuilder
+                .comment("Scale factor for the dosimeter HUD (1.0 = normal, 2.0 = twice as large, 0.5 = half size)")
+                .defineInRange("dosimeterHudScale", 1.0, 0.1, 10.0);
+        DOSIMETER_HUD_OFFSET_X = clientBuilder
+                .comment("Horizontal HUD offset from anchor in pixels")
+                .defineInRange("dosimeterHudOffsetX", 8, -5000, 5000);
+        DOSIMETER_HUD_OFFSET_Y = clientBuilder
+                .comment("Vertical HUD offset from anchor in pixels")
+                .defineInRange("dosimeterHudOffsetY", 84, -5000, 5000);
 
         clientBuilder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientBuilder.build());
@@ -143,8 +175,20 @@ public class Config {
         return Optional.ofNullable(ResourceLocation.tryParse(value));
     }
 
+    public static Optional<ResourceLocation> getDosimeterDisplayResource() {
+        String value = DOSIMETER_DISPLAY_RESOURCE.get();
+        if (value == null || value.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(ResourceLocation.tryParse(value));
+    }
+
     public static GeigerHudAnchor getGeigerHudAnchor() {
         return GeigerHudAnchor.fromName(GEIGER_HUD_ANCHOR.get());
+    }
+
+    public static GeigerHudAnchor getDosimeterHudAnchor() {
+        return GeigerHudAnchor.fromName(DOSIMETER_HUD_ANCHOR.get());
     }
 
     public enum GeigerHudAnchor {

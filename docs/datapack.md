@@ -6,6 +6,7 @@ Included gameplay items:
 - `hazardous:gasmask`
 - `hazardous:filter`
 - `hazardous:geiger_counter`
+- `hazardous:dosimeter`
 - `hazardous:pills`
 
 ## 0) Config Setup First (Required)
@@ -59,7 +60,7 @@ Mental model:
 2. A `hazardsource` also says how the hazard transmits (`sky`, `point`, `contact`).
 3. A `hazardtype` says falloff, blocking, exposure, and effects.
 4. `effectentries` say what happens when exposure or dose reaches certain values.
-5. Items and config (gas mask, pills, geiger) modify or visualize runtime behavior.
+5. Items and config (gas mask, pills, geiger, dosimeter) modify or visualize runtime behavior.
 
 ## 1) HazardType JSON
 
@@ -527,6 +528,38 @@ Recipe:
 }
 ```
 
+### 4.5 Dosimeter (`hazardous:dosimeter`)
+
+Behavior:
+- Shows HUD panel when:
+1. Held in selected hotbar slot, or
+2. Equipped in Curios (if Curios is installed)
+- Reads accumulated player dose values synced from server to client.
+- Displays either one configured hazard-type dose (`dosimeterDisplayResource`) or, if that config is empty, the sum of all player dose entries.
+- Vertical bar fill reaches full height at `dosimeterMaxDose`.
+- Entire filled bar color is selected by thresholds:
+1. Green below `dosimeterMediumDose`
+2. Yellow/Orange from `dosimeterMediumDose` up to `dosimeterHighDose`
+3. Red at and above `dosimeterHighDose`
+- Position/size controlled by `dosimeterHudAnchor`, `dosimeterHudOffsetX`, `dosimeterHudOffsetY`, `dosimeterHudScale`.
+
+Recipe:
+
+```json
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["qtq", "ici", "qgq"],
+  "key": {
+    "q": { "item": "minecraft:quartz" },
+    "t": { "item": "minecraft:redstone_torch" },
+    "i": { "item": "minecraft:iron_ingot" },
+    "c": { "item": "minecraft:clock" },
+    "g": { "item": "minecraft:gold_ingot" }
+  },
+  "result": { "item": "hazardous:dosimeter" }
+}
+```
+
 ## 5) Config Options (Server + Client)
 
 This section documents config options besides `enabledHazardTypes` and `enabledHazardSources`.
@@ -540,9 +573,18 @@ Server config (`hazardous-server.toml`):
 Client config (`hazardous-client.toml`):
 - `geigerDisplayResource` (string resource location, default `hazardous:radioactive_source`, empty disables dial target)
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
-- `geigerHudAnchor` (string: `top_left`, `top_right`, `bottom_left`, `bottom_right`; default `top_right`)
+- `geigerHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
 - `geigerHudOffsetY` (int `-5000..5000`, default `8`)
+- `geigerHudScale` (double `0.1..10.0`, default `1.0`)
+- `dosimeterDisplayResource` (string resource location, default `hazardous:radioactive_source`, empty displays total dose over all hazard types)
+- `dosimeterMaxDose` (double `0.0001..1000000.0`, default `200.0`)
+- `dosimeterMediumDose` (double `0.0..1000000.0`, default `50.0`)
+- `dosimeterHighDose` (double `0.0..1000000.0`, default `120.0`)
+- `dosimeterHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
+- `dosimeterHudOffsetX` (int `-5000..5000`, default `8`)
+- `dosimeterHudOffsetY` (int `-5000..5000`, default `84`)
+- `dosimeterHudScale` (double `0.1..10.0`, default `1.0`)
 
 Example:
 
@@ -559,6 +601,16 @@ geigerMaxRadiation = 100.0
 geigerHudAnchor = "top_right"
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
+geigerHudScale = 1.0
+
+dosimeterDisplayResource = "hazardous:radioactive_source"
+dosimeterMaxDose = 200.0
+dosimeterMediumDose = 50.0
+dosimeterHighDose = 120.0
+dosimeterHudAnchor = "top_right"
+dosimeterHudOffsetX = 8
+dosimeterHudOffsetY = 84
+dosimeterHudScale = 1.0
 ```
 
 ## 6) Debugging and Testing

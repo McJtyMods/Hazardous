@@ -9,4 +9,8 @@ public class CuriosCompat {
     public static boolean hasActiveGeigerCounter(Player player) {
         return CuriosApi.getCuriosHelper().findFirstCurio(player, Registration.GEIGER_COUNTER.get()).isPresent();
     }
+
+    public static boolean hasActiveDosimeter(Player player) {
+        return CuriosApi.getCuriosHelper().findFirstCurio(player, Registration.DOSIMETER.get()).isPresent();
+    }
 }

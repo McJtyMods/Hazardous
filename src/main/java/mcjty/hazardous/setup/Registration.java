@@ -2,6 +2,7 @@ package mcjty.hazardous.setup;
 
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.CustomRegistries;
+import mcjty.hazardous.items.DosimeterItem;
 import mcjty.hazardous.items.FilterItem;
 import mcjty.hazardous.items.GasmaskItem;
 import mcjty.hazardous.items.GeigerCounterItem;
@@ -25,6 +26,7 @@ public class Registration {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Hazardous.MODID);
 
     public static final DeferredItem<GeigerCounterItem> GEIGER_COUNTER = ITEMS.register("geiger_counter", tab(GeigerCounterItem::new));
+    public static final DeferredItem<DosimeterItem> DOSIMETER = ITEMS.register("dosimeter", tab(DosimeterItem::new));
     public static final DeferredItem<GasmaskItem> GASMASK = ITEMS.register("gasmask", tab(GasmaskItem::new));
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", tab(FilterItem::new));
     public static final DeferredItem<PillsItem> PILLS = ITEMS.register("pills", tab(PillsItem::new));

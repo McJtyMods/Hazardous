@@ -2,6 +2,7 @@ package mcjty.hazardous.setup;
 
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.network.PacketClientFx;
+import mcjty.hazardous.network.PacketPlayerDose;
 import mcjty.hazardous.network.PacketRadiationAtPos;
 import mcjty.lib.network.IPayloadRegistrar;
 import mcjty.lib.network.Networking;
@@ -21,6 +22,7 @@ public class Messages {
                 .optional();
 
         registrar.play(PacketRadiationAtPos.class, PacketRadiationAtPos::create, handler -> handler.client(PacketRadiationAtPos::handle));
+        registrar.play(PacketPlayerDose.class, PacketPlayerDose::create, handler -> handler.client(PacketPlayerDose::handle));
         registrar.play(PacketClientFx.class, PacketClientFx::create, handler -> handler.client(PacketClientFx::handle));
     }
 

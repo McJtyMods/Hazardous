@@ -1,5 +1,6 @@
 {
   "values": [
-    "hazardous:geiger_counter"
+    "hazardous:geiger_counter",
+    "hazardous:dosimeter"
   ]
 }

@@ -7,6 +7,7 @@ import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.items.GasmaskItem;
+import mcjty.hazardous.network.PacketPlayerDose;
 import mcjty.hazardous.network.PacketRadiationAtPos;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
@@ -100,14 +101,17 @@ public class EventHandlers {
             }
             if (clientNeedsUpdate) {
                 Map<ResourceLocation, Double> forClient = new HashMap<>();
+                Map<ResourceLocation, Double> doseForClient = new HashMap<>();
                 for (HazardType type : types) {
                     ResourceLocation typeId = types.getKey(type);
                     if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
                         continue;
                     }
                     forClient.put(typeId, HazardManager.getLastCachedValue(typeId,  level));
+                    doseForClient.put(typeId, store.getDose(typeId));
                 }
                 Messages.sendToPlayer(new PacketRadiationAtPos(forClient),  event.player);
+                Messages.sendToPlayer(new PacketPlayerDose(doseForClient), event.player);
             }
         });
     }
