@@ -15,6 +15,7 @@ import net.minecraftforge.fml.ModList;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class RadiationOverlayRenderer {
 
@@ -39,6 +40,9 @@ public class RadiationOverlayRenderer {
     private static final int DOSIMETER_LOW_COLOR = 0xFF39855A;
     private static final int DOSIMETER_MEDIUM_COLOR = 0xFFFFBF36;
     private static final int DOSIMETER_HIGH_COLOR = 0xFFE14141;
+    private static final float ZERO_RADIATION_DEG = 225.0f; // South-west
+    // Use equivalent south-east angle +360 so lerp sweeps over the top arc instead of the bottom.
+    private static final float MAX_RADIATION_DEG = 495.0f; // South-east
 
     private static final float ZERO_RADIATION_DEG = 225.0f;
     private static final float MAX_RADIATION_DEG = 135.0f;
@@ -67,15 +71,14 @@ public class RadiationOverlayRenderer {
     private static void renderGeiger(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
         Optional<ResourceLocation> displayResource = Config.getGeigerDisplayResource();
         if (displayResource.isEmpty()) {
+        if (player == null) {
             return;
         }
-
-        Map<ResourceLocation, Double> values = ClientRadiationData.getValues();
-        if (values == null) {
+        OptionalDouble radiationValue = getDisplayedRadiation(player);
+        if (radiationValue.isEmpty()) {
             return;
         }
-
-        double radiation = values.getOrDefault(displayResource.get(), 0.0);
+        double radiation = radiationValue.getAsDouble();
         float pointerAngle = calculatePointerAngle(radiation);
         float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
 
@@ -210,6 +213,22 @@ public class RadiationOverlayRenderer {
     }
 
     private static boolean hasActiveGeiger(Player player) {
+    public static OptionalDouble getDisplayedRadiation(Player player) {
+        if (!isGeigerHudVisible(player)) {
+            return OptionalDouble.empty();
+        }
+        Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
+        if (displayResource.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+        Map<ResourceLocation, Double> values = ClientRadiationData.getValues();
+        if (values == null) {
+            return OptionalDouble.empty();
+        }
+        return OptionalDouble.of(values.getOrDefault(displayResource.get(), 0.0));
+    }
+
+    public static boolean isGeigerHudVisible(Player player) {
         if (player.getInventory().getSelected().is(Registration.GEIGER_COUNTER.get())) {
             return true;
         }

@@ -2,6 +2,7 @@ package mcjty.hazardous;
 
 import mcjty.hazardous.client.RadiationOverlayRenderer;
 import mcjty.hazardous.client.ClientFxManager;
+import mcjty.hazardous.client.GeigerSoundController;
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.datagen.DataGenerators;
 import mcjty.hazardous.setup.Config;
@@ -49,6 +50,7 @@ public class Hazardous {
             forgeBus.addListener(ClientFxManager::onCameraAngles);
             forgeBus.addListener(ClientFxManager::onRenderOverlay);
             forgeBus.addListener(RadiationOverlayRenderer::onRender);
+            forgeBus.addListener(GeigerSoundController::onClientTick);
         }
     }
 

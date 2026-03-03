@@ -1,0 +1,17 @@
+{
+  "action": {
+    "type": "client_fx",
+    "durationTicks": 24,
+    "fxId": "warp",
+    "intensity": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.45
+    }
+  },
+  "trigger": {
+    "type": "threshold",
+    "hysteresis": 0.02,
+    "min": 0.45
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "action": {
+    "type": "client_fx",
+    "durationTicks": 18,
+    "fxId": "shake",
+    "intensity": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.3
+    }
+  },
+  "trigger": {
+    "type": "threshold",
+    "hysteresis": 0.02,
+    "min": 0.3
+  }
+}

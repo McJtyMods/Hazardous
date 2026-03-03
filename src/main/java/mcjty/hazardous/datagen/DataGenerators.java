@@ -44,6 +44,8 @@ public class DataGenerators {
                         .codecObjectSupplier("effectentries", () -> DefaultEffectEntries.DEFAULT_EFFECT_ENTRIES.entrySet().stream()
                                 .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
                                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))),
+                Dob.builder()
+                        .message("itemGroup." + Hazardous.MODID, "Hazardous"),
                 Dob.itemBuilder(Registration.GEIGER_COUNTER)
                         .name("Geiger Counter")
                         .generatedItem("item/geigercounter")
@@ -114,6 +116,7 @@ public class DataGenerators {
                         .keyedMessage("header", "Anti-Rad Pills")
                         .keyedMessage("desc", "Reduces your accumulated personal dose")
                         .keyedMessage("heal", "Dose restored per use: ")
+                        .keyedMessage("cured", "Radiation cured: %s")
                         .keyedMessage("usage", "Right-click to consume and reduce dose")
                         .recipeConsumer(() -> consumer -> ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Registration.PILLS.get())
                                 .define('c', Items.CHARCOAL)

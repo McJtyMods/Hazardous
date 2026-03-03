@@ -1,0 +1,17 @@
+{
+  "action": {
+    "type": "client_fx",
+    "durationTicks": 35,
+    "fxId": "darken",
+    "intensity": {
+      "type": "linear01",
+      "max": 1.0,
+      "min": 0.12
+    }
+  },
+  "trigger": {
+    "type": "threshold",
+    "hysteresis": 0.01,
+    "min": 0.12
+  }
+}

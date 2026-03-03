@@ -40,24 +40,24 @@ public class PlayerDoseData {
         setDose(hazardType, getDose(hazardType) + amount);
     }
 
-    public boolean removeDoseFromAll(double amount) {
+    public double removeDoseFromAll(double amount) {
         if (amount <= 0.0 || doses.isEmpty()) {
-            return false;
+            return 0.0;
         }
-        boolean changed = false;
+        double removed = 0.0;
         Iterator<Map.Entry<ResourceLocation, Double>> iterator = doses.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<ResourceLocation, Double> entry = iterator.next();
-            double newValue = Math.max(0.0, entry.getValue() - amount);
+            double currentValue = entry.getValue();
+            double newValue = Math.max(0.0, currentValue - amount);
+            removed += currentValue - newValue;
             if (newValue <= 0.0) {
                 iterator.remove();
-                changed = true;
-            } else if (newValue != entry.getValue()) {
+            } else if (newValue != currentValue) {
                 entry.setValue(newValue);
-                changed = true;
             }
         }
-        return changed;
+        return removed;
     }
 
     public void clear() {

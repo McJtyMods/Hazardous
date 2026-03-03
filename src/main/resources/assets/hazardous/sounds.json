@@ -1,0 +1,4 @@
+{
+  "geiger.mediumdose" : {"category": "misc", "sounds": ["hazardous:mediumdose"]},
+  "geiger.highdose" : {"category": "misc", "sounds": ["hazardous:highdose"]}
+}
