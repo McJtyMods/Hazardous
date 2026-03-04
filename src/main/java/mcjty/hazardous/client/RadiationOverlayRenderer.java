@@ -68,7 +68,7 @@ public class RadiationOverlayRenderer {
 
     private static void renderGeiger(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
         Optional<ResourceLocation> displayResource = Config.getGeigerDisplayHazardType();
-        if (displayResource.isEmpty()) {
+        if (displayResource.isPresent()) {
             LocalPlayer player = minecraft.player;
             if (player == null) {
                 return;

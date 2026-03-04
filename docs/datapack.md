@@ -6,6 +6,7 @@ Included gameplay items:
 - `hazardous:gasmask`
 - `hazardous:filter`
 - `hazardous:geiger_counter`
+- `hazardous:dosimeter`
 - `hazardous:pills`
 
 ## 0) Config Setup First (Required)
@@ -541,6 +542,40 @@ Recipe:
 }
 ```
 
+### 4.5 Dosimeter (`hazardous:dosimeter`)
+
+Behavior:
+- Shows HUD when:
+1. Held in selected hotbar slot, or
+2. Equipped in Curios (if Curios is installed)
+- Uses synchronized player dose data (accumulated dose per enabled hazard type).
+- Displayed value selection:
+1. If `dosimeterDisplayResource` is set, shows that one hazard type dose.
+2. If `dosimeterDisplayResource` is empty, shows the sum of all positive stored dose entries.
+- Bar fill is `dose / dosimeterMaxDose`, clamped to `0..1`.
+- Bar color thresholds:
+1. Green below `dosimeterMediumDose`
+2. Yellow/orange at/above `dosimeterMediumDose`
+3. Red at/above `dosimeterHighDose` (internally clamped to be at least `dosimeterMediumDose`)
+- Position controlled by `dosimeterHudAnchor`, `dosimeterHudScale`, `dosimeterHudOffsetX`, `dosimeterHudOffsetY`.
+
+Recipe:
+
+```json
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["qtq", "ici", "qgq"],
+  "key": {
+    "q": { "item": "minecraft:quartz" },
+    "t": { "item": "minecraft:redstone_torch" },
+    "i": { "item": "minecraft:iron_ingot" },
+    "c": { "item": "minecraft:clock" },
+    "g": { "item": "minecraft:gold_ingot" }
+  },
+  "result": { "item": "hazardous:dosimeter" }
+}
+```
+
 ## 5) Config Options (Server + Client)
 
 This section documents config options besides `enabledHazardTypes` and `enabledHazardSources`.
@@ -556,9 +591,18 @@ Client config (`hazardous-client.toml`):
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
 - `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
 - `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
-- `geigerHudAnchor` (string: `top_left`, `top_right`, `bottom_left`, `bottom_right`; default `top_right`)
+- `geigerHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
+- `geigerHudScale` (double `0.1..10.0`, default `1.0`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
 - `geigerHudOffsetY` (int `-5000..5000`, default `8`)
+- `dosimeterDisplayResource` (string resource location from player dose data, default `hazardous:radioactive_source`; empty = sum of all dose entries)
+- `dosimeterMaxDose` (double `0.0001..1000000.0`, default `200.0`; value treated as full bar)
+- `dosimeterMediumDose` (double `0.0..1000000.0`, default `50.0`; yellow/orange threshold)
+- `dosimeterHighDose` (double `0.0..1000000.0`, default `120.0`; red threshold, clamped to at least medium threshold)
+- `dosimeterHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
+- `dosimeterHudScale` (double `0.1..10.0`, default `1.0`)
+- `dosimeterHudOffsetX` (int `-5000..5000`, default `8`)
+- `dosimeterHudOffsetY` (int `-5000..5000`, default `84`)
 
 Example:
 
@@ -575,8 +619,17 @@ geigerMaxRadiation = 100.0
 geigerSoundMediumMinRadiation = 1.0
 geigerSoundHighMinRadiation = 25.0
 geigerHudAnchor = "top_right"
+geigerHudScale = 1.0
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
+dosimeterDisplayResource = "hazardous:radioactive_source"
+dosimeterMaxDose = 200.0
+dosimeterMediumDose = 50.0
+dosimeterHighDose = 120.0
+dosimeterHudAnchor = "top_right"
+dosimeterHudScale = 1.0
+dosimeterHudOffsetX = 8
+dosimeterHudOffsetY = 84
 ```
 
 ## 6) Debugging and Testing

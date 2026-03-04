@@ -105,13 +105,13 @@ public class Config {
                 .define("dosimeterDisplayResource", Hazardous.MODID + ":radioactive_source");
         DOSIMETER_MAX_DOSE = clientBuilder
                 .comment("Dose value treated as 100% dosimeter bar fill")
-                .defineInRange("dosimeterMaxDose", 200.0, 0.0001, 1_000_000.0);
+                .defineInRange("dosimeterMaxDose", 20.0, 0.0001, 1_000_000.0);
         DOSIMETER_MEDIUM_DOSE = clientBuilder
                 .comment("Dose threshold where dosimeter bar changes from green to yellow/orange")
-                .defineInRange("dosimeterMediumDose", 50.0, 0.0, 1_000_000.0);
+                .defineInRange("dosimeterMediumDose", 3.0, 0.0, 1_000_000.0);
         DOSIMETER_HIGH_DOSE = clientBuilder
                 .comment("Dose threshold where dosimeter bar changes from yellow/orange to red")
-                .defineInRange("dosimeterHighDose", 120.0, 0.0, 1_000_000.0);
+                .defineInRange("dosimeterHighDose", 6.0, 0.0, 1_000_000.0);
         DOSIMETER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("dosimeterHudAnchor", "top_right");
