@@ -15,6 +15,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.fml.ModList;
 
 import java.util.Map;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
@@ -37,6 +38,10 @@ public class RadiationOverlayRenderer {
     private static final int DOSIMETER_BAR_Y = 7;
     private static final int DOSIMETER_BAR_W = 5;
     private static final int DOSIMETER_BAR_H = 25;
+    private static final int DOSIMETER_TEXT_X = 11;
+    private static final int DOSIMETER_TEXT_Y = 19;
+    private static final float DOSIMETER_TEXT_SCALE = 0.5f;
+    private static final int DOSIMETER_TEXT_COLOR = 0xFFFFFFFF;
     private static final int DOSIMETER_BAR_BG_COLOR = 0xFF111111;
     private static final int DOSIMETER_LOW_COLOR = 0xFF39855A;
     private static final int DOSIMETER_MEDIUM_COLOR = 0xFFFFBF36;
@@ -164,7 +169,31 @@ public class RadiationOverlayRenderer {
             event.getGuiGraphics().fill(DOSIMETER_BAR_X, fillTop, DOSIMETER_BAR_X + DOSIMETER_BAR_W, DOSIMETER_BAR_Y + DOSIMETER_BAR_H, barColor);
         }
 
+        renderDosimeterDoseText(event, minecraft, dose);
+
         event.getGuiGraphics().pose().popPose();
+    }
+
+    private static void renderDosimeterDoseText(RenderGuiOverlayEvent.Post event, Minecraft minecraft, double dose) {
+        String text = formatDosimeterDose(dose);
+        float inverseScale = 1.0f / DOSIMETER_TEXT_SCALE;
+        int drawX = Mth.floor(DOSIMETER_TEXT_X * inverseScale);
+        int drawY = Mth.floor(DOSIMETER_TEXT_Y * inverseScale);
+
+        event.getGuiGraphics().pose().pushPose();
+        event.getGuiGraphics().pose().scale(DOSIMETER_TEXT_SCALE, DOSIMETER_TEXT_SCALE, 1.0f);
+        event.getGuiGraphics().drawString(minecraft.font, text, drawX, drawY, DOSIMETER_TEXT_COLOR, false);
+        event.getGuiGraphics().pose().popPose();
+    }
+
+    private static String formatDosimeterDose(double dose) {
+        if (dose >= 100.0) {
+            return String.format(Locale.ROOT, "%.0f", dose);
+        }
+        if (dose >= 10.0) {
+            return String.format(Locale.ROOT, "%.1f", dose);
+        }
+        return String.format(Locale.ROOT, "%.2f", dose);
     }
 
     private static float calculatePointerAngle(double radiation) {
