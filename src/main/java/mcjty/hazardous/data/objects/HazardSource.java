@@ -2,6 +2,7 @@ package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import mcjty.hazardous.util.BiomeMatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
@@ -239,10 +240,10 @@ public record HazardSource(
         /**
          * Hazard is attached to everything inside a biome.
          */
-        record Biome(ResourceLocation biome) implements Association {
+        record Biome(BiomeMatcher biome) implements Association {
             public static final Codec<Biome> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
-                            ResourceLocation.CODEC.fieldOf("biome").forGetter(Biome::biome)
+                            BiomeMatcher.CODEC.fieldOf("biome").forGetter(Biome::biome)
                     ).apply(instance, Biome::new));
 
             @Override

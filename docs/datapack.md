@@ -201,7 +201,11 @@ Association variants:
 
 `biome`
 - `type: "biome"`
-- `biome`
+- `biome`: biome matcher object
+  - `if_all` (optional): list of biome selectors, all must match
+  - `if_any` (optional): list of biome selectors, at least one must match
+  - `excluding` (optional): list of biome selectors, none may match
+  - biome selectors support biome ids and biome tags (`#namespace:tag`)
 
 `city`
 - `type: "city"`
@@ -276,6 +280,35 @@ Near-lava heat hazard:
     "type": "block",
     "block": "minecraft:lava",
     "maxDistance": 4.0
+  }
+}
+```
+
+Biome-based sky hazard with biome matcher:
+
+```json
+{
+  "hazardType": "example:solar_burn",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.12,
+    "requiresDirectSky": true,
+    "rainMultiplier": 0.25,
+    "thunderMultiplier": 0.1,
+    "nightMultiplier": 0.0,
+    "indoorLeak": 0.05
+  },
+  "association": {
+    "type": "biome",
+    "biome": {
+      "if_any": [
+        "#minecraft:is_overworld",
+        "minecraft:desert"
+      ],
+      "excluding": [
+        "#minecraft:is_forest"
+      ]
+    }
   }
 }
 ```

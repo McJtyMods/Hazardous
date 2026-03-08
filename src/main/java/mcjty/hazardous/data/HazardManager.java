@@ -17,7 +17,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -282,8 +281,7 @@ public class HazardManager {
         @Override
         public Double biome(HazardType type, HazardSource.Association.Biome a) {
             Level level = player.level();
-            ResourceKey<Biome> biomeKey = ResourceKey.create(Registries.BIOME, a.biome());
-            if (!level.getBiome(player.blockPosition()).is(biomeKey)) {
+            if (!a.biome().test(level.getBiome(player.blockPosition()))) {
                 return 0.0;
             }
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
