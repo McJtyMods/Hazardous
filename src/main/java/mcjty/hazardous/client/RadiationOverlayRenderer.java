@@ -169,7 +169,27 @@ public class RadiationOverlayRenderer {
 
     private static float calculatePointerAngle(double radiation) {
         double maxRadiation = Config.GEIGER_MAX_RADIATION.get();
-        float ratio = (float) (maxRadiation <= 0 ? 0.0 : Mth.clamp(radiation / maxRadiation, 0.0, 1.0));
+        if (maxRadiation <= 0.0) {
+            return ZERO_RADIATION_DEG;
+        }
+
+        double medium = Mth.clamp(Config.GEIGER_MEDIUM_THRESSHOLD.get(), 0.0, maxRadiation);
+        double high = Mth.clamp(Config.GEIGER_HIGH_TRESSHOLD.get(), medium, maxRadiation);
+
+        float ratio;
+        if (radiation <= medium || medium <= 0.0) {
+            double denom = medium <= 0.0 ? 1.0 : medium;
+            float local = (float) Mth.clamp(radiation / denom, 0.0, 1.0);
+            ratio = local / 3.0f;
+        } else if (radiation <= high || high <= medium) {
+            double denom = high <= medium ? 1.0 : (high - medium);
+            float local = (float) Mth.clamp((radiation - medium) / denom, 0.0, 1.0);
+            ratio = (1.0f / 3.0f) + (local / 3.0f);
+        } else {
+            double denom = maxRadiation <= high ? 1.0 : (maxRadiation - high);
+            float local = (float) Mth.clamp((radiation - high) / denom, 0.0, 1.0);
+            ratio = (2.0f / 3.0f) + (local / 3.0f);
+        }
         return Mth.lerp(ratio, ZERO_RADIATION_DEG, MAX_RADIATION_DEG);
     }
 
