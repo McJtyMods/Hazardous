@@ -1,5 +1,6 @@
 package mcjty.hazardous.items;
 
+import mcjty.hazardous.client.GasmaskItemClient;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
@@ -12,12 +13,14 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class GasmaskItem extends ArmorItem {
 
@@ -40,6 +43,11 @@ public class GasmaskItem extends ArmorItem {
         if (id != null && TOOLTIP.isActive()) {
             TOOLTIP.makeTooltip(id, stack, tooltip, flag);
         }
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new GasmaskItemClient());
     }
 
     public static double applyProtectionAndDamage(Player player, ResourceLocation hazardType, double input) {
