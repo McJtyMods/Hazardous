@@ -48,10 +48,10 @@ public class DefaultHazardSources {
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),
                     new HazardSource.Transmission.Point(
                             0.8,
-                            4,
+                            32,
                             false,
                             0.0),
-                    new HazardSource.Association.Block(new ResourceLocation("minecraft", "lava"), false, 4.0)
+                    new HazardSource.Association.Block(new ResourceLocation("minecraft", "lava"), false, 32.0)
             )
     );
 }

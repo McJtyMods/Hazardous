@@ -82,10 +82,14 @@ public class DefaultHazardTypes {
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
                     HazardType.Falloff.Linear.INSTANCE,
-                    new HazardType.Blocking.SimpleOcclusion(
-                            0.8,
-                            0.9,
-                            true),
+                    new HazardType.Blocking.Absorption(
+                            new ResourceLocation(Hazardous.MODID, "absorption_hints"),
+                            0.2,
+                            List.of(
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "obsidian"), 0.75),
+                                    new HazardType.Blocking.Absorption.BlockEntry(new ResourceLocation("minecraft", "crying_obsidian"), 0.85)
+                            ),
+                            List.of()),
                     new HazardType.Exposure(
                             10,
                             false,

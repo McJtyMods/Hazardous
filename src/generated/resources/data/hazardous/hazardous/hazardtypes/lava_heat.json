@@ -1,9 +1,18 @@
 {
   "blocking": {
-    "type": "simple",
-    "fluidMultiplier": 0.9,
-    "solidBlockMultiplier": 0.8,
-    "treatLeavesAsSolid": true
+    "type": "absorption",
+    "absorptionRegistryHint": "hazardous:absorption_hints",
+    "defaultAbsorption": 0.2,
+    "blocks": [
+      {
+        "block": "minecraft:obsidian",
+        "absorption": 0.75
+      },
+      {
+        "block": "minecraft:crying_obsidian",
+        "absorption": 0.85
+      }
+    ]
   },
   "effects": [
     "hazardous:lava_fire_damage",
