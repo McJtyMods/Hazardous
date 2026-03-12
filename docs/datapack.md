@@ -22,7 +22,7 @@ That means no hazards run until you opt in.
 
 Built-in hazard type ids you can enable:
 - `hazardous:solar_burn`
-- `hazardous:radioactive_source`
+- `hazardous:radioactive_type`
 - `hazardous:lostcity_radiation`
 - `hazardous:lava_heat`
 
@@ -248,7 +248,7 @@ All zombies act as radioactive point sources:
 
 ```json
 {
-  "hazardType": "example:radioactive_source",
+  "hazardType": "example:radioactive_type",
   "transmission": {
     "type": "point",
     "baseIntensity": 1.0,
@@ -490,7 +490,7 @@ This section documents item behavior and practical use.
 
 Behavior:
 - Must be worn in helmet slot.
-- Only protects one configured hazard type id (`gasmaskProtectedSource`).
+- Only protects one configured hazard type id (`gasmaskProtectedType`).
 - Protection amount is `gasmaskProtectionLevel` (0.0 to 1.0).
 - Each protection application consumes 1 durability.
 - At 0 durability it stays equipped but no longer protects.
@@ -546,6 +546,7 @@ Behavior:
 1. Held in selected hotbar slot, or
 2. Equipped in Curios (if Curios is installed)
 - Reads a configured hazard type id from client radiation data: `geigerDisplayHazardType`.
+- When the server applies gas mask protection to that hazard type, the displayed client value reflects the reduced exposure after protection.
 - Dial full scale is `geigerMaxRadiation`.
 - Position controlled by `geigerHudAnchor`, `geigerHudOffsetX`, `geigerHudOffsetY`.
 - Plays looped Geiger audio while the HUD is visible:
@@ -614,13 +615,13 @@ Recipe:
 This section documents config options besides `enabledHazardTypes` and `enabledHazardSources`.
 
 Server config (`hazardous-server.toml`):
-- `gasmaskProtectedSource` (string resource location, default `hazardous:radioactive_source`)
+- `gasmaskProtectedType` (string resource location, default `hazardous:radioactive_type`)
 - `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`)
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
 
 Client config (`hazardous-client.toml`):
-- `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_source`, empty disables dial target)
+- `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_type`, empty disables dial target)
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
 - `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
 - `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
@@ -628,7 +629,7 @@ Client config (`hazardous-client.toml`):
 - `geigerHudScale` (double `0.1..10.0`, default `1.0`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
 - `geigerHudOffsetY` (int `-5000..5000`, default `8`)
-- `dosimeterDisplayResource` (string resource location from player dose data, default `hazardous:radioactive_source`; empty = sum of all dose entries)
+- `dosimeterDisplayResource` (string resource location from player dose data, default `hazardous:radioactive_type`; empty = sum of all dose entries)
 - `dosimeterMaxDose` (double `0.0001..1000000.0`, default `200.0`; value treated as full bar)
 - `dosimeterMediumDose` (double `0.0..1000000.0`, default `50.0`; yellow/orange threshold)
 - `dosimeterHighDose` (double `0.0..1000000.0`, default `120.0`; red threshold, clamped to at least medium threshold)
@@ -641,13 +642,13 @@ Example:
 
 ```toml
 # hazardous-server.toml
-gasmaskProtectedSource = "hazardous:radioactive_source"
+gasmaskProtectedType = "hazardous:radioactive_type"
 gasmaskProtectionLevel = 0.75
 gasmaskFilterRestore = 250
 pillsDoseHeal = 20.0
 
 # hazardous-client.toml
-geigerDisplayHazardType = "hazardous:radioactive_source"
+geigerDisplayHazardType = "hazardous:radioactive_type"
 geigerMaxRadiation = 100.0
 geigerSoundMediumMinRadiation = 1.0
 geigerSoundHighMinRadiation = 25.0
@@ -655,7 +656,7 @@ geigerHudAnchor = "top_right"
 geigerHudScale = 1.0
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
-dosimeterDisplayResource = "hazardous:radioactive_source"
+dosimeterDisplayResource = "hazardous:radioactive_type"
 dosimeterMaxDose = 200.0
 dosimeterMediumDose = 50.0
 dosimeterHighDose = 120.0
@@ -686,7 +687,7 @@ Suggested workflow:
 ## 7) Built-In Data (Reference)
 
 Built-in ids:
-- Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_source`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
+- Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_type`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
 - Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
 - Effect entries: `hazardous:solar_weakness`, `hazardous:solar_ignite`, `hazardous:radiation_damage`, `hazardous:radiation_geiger`, `hazardous:lava_fire_damage`
 

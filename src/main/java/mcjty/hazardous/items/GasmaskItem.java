@@ -25,7 +25,7 @@ public class GasmaskItem extends ArmorItem {
             .info(
                     TooltipBuilder.header(),
                     TooltipBuilder.general("desc"),
-                    TooltipBuilder.parameter("source", stack -> Config.getGasmaskProtectedSource().map(ResourceLocation::toString).orElse("disabled")),
+                    TooltipBuilder.parameter("source", stack -> Config.getGasmaskProtectedType().map(ResourceLocation::toString).orElse("disabled")),
                     TooltipBuilder.parameter("protection", stack -> String.format(Locale.ROOT, "%.0f%%", Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0) * 100.0)),
                     TooltipBuilder.general("durability")
             );
@@ -47,7 +47,7 @@ public class GasmaskItem extends ArmorItem {
             return input;
         }
 
-        Optional<ResourceLocation> protectedSource = Config.getGasmaskProtectedSource();
+        Optional<ResourceLocation> protectedSource = Config.getGasmaskProtectedType();
         if (protectedSource.isEmpty() || !protectedSource.get().equals(hazardType)) {
             return input;
         }

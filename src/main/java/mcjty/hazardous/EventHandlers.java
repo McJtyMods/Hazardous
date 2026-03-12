@@ -68,6 +68,7 @@ public class EventHandlers {
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
             boolean clientNeedsUpdate = false;
+            Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {
                 ResourceLocation typeId = types.getKey(type);
                 if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
@@ -83,6 +84,7 @@ public class EventHandlers {
 
                 double input = HazardManager.getHazardValue(type, level, event.player);
                 input = GasmaskItem.applyProtectionAndDamage(event.player, typeId, input);
+                effectiveExposureForClient.put(typeId, input);
                 double current = store.getDose(typeId);
                 double value = type.exposure().calculate(input, current);
                 store.setDose(typeId, value);
@@ -107,7 +109,7 @@ public class EventHandlers {
                     if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
                         continue;
                     }
-                    forClient.put(typeId, HazardManager.getLastCachedValue(typeId,  level));
+                    forClient.put(typeId, effectiveExposureForClient.getOrDefault(typeId, HazardManager.getLastCachedValue(typeId, level)));
                     doseForClient.put(typeId, store.getDose(typeId));
                 }
                 Messages.sendToPlayer(new PacketRadiationAtPos(forClient),  event.player);

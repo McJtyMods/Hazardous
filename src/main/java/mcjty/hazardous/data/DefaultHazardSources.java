@@ -23,7 +23,7 @@ public class DefaultHazardSources {
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_zombie"),
             new HazardSource(
-                    new ResourceLocation(Hazardous.MODID, "radioactive_source"),
+                    new ResourceLocation(Hazardous.MODID, "radioactive_type"),
                     new HazardSource.Transmission.Point(
                             1.0,
                             12,

@@ -19,7 +19,7 @@ public class Config {
 
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_TYPES;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_SOURCES;
-    public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_SOURCE;
+    public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_TYPE;
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
@@ -59,9 +59,9 @@ public class Config {
         ENABLED_HAZARD_SOURCES = builder
                 .comment("List of hazard source ids that are enabled. Only these will be used in the game")
                 .defineList("enabledHazardSources", DEFAULT_ENABLED_HAZARD_SOURCES, s -> s instanceof String);
-        GASMASK_PROTECTED_SOURCE = builder
+        GASMASK_PROTECTED_TYPE = builder
                 .comment("Hazard type id the gasmask protects against. Leave empty to disable protection")
-                .define("gasmaskProtectedSource", Hazardous.MODID + ":radioactive_source");
+                .define("gasmaskProtectedType", Hazardous.MODID + ":radioactive_type");
         GASMASK_PROTECTION_LEVEL = builder
                 .comment("Fraction of input exposure blocked by a usable gasmask (0.0 - 1.0)")
                 .defineInRange("gasmaskProtectionLevel", 0.75, 0.0, 1.0);
@@ -79,8 +79,8 @@ public class Config {
         clientBuilder.comment("Client settings").push(CATEGORY_CLIENT);
 
         GEIGER_DISPLAY_HAZARD_TYPE = clientBuilder
-                .comment("Hazard type id from client radiation data to display on the geiger dial (example: hazardous:radioactive_source). Leave empty to disable")
-                .define("geigerDisplayHazardType", Hazardous.MODID + ":radioactive_source");
+                .comment("Hazard type id from client radiation data to display on the geiger dial (example: hazardous:radioactive_type). Leave empty to disable")
+                .define("geigerDisplayHazardType", Hazardous.MODID + ":radioactive_type");
         GEIGER_MAX_RADIATION = clientBuilder
                 .comment("Value treated as 100% dial fill")
                 .defineInRange("geigerMaxRadiation", 100.0, 0.0001, 1_000_000.0);
@@ -109,8 +109,8 @@ public class Config {
                 .comment("Vertical HUD offset from anchor in pixels")
                 .defineInRange("geigerHudOffsetY", 8, -5000, 5000);
         DOSIMETER_DISPLAY_RESOURCE = clientBuilder
-                .comment("Resource location from player dose data to display on the dosimeter (example: hazardous:radioactive_source). Leave empty to display sum of all dose entries")
-                .define("dosimeterDisplayResource", Hazardous.MODID + ":radioactive_source");
+                .comment("Resource location from player dose data to display on the dosimeter (example: hazardous:radioactive_type). Leave empty to display sum of all dose entries")
+                .define("dosimeterDisplayResource", Hazardous.MODID + ":radioactive_type");
         DOSIMETER_MAX_DOSE = clientBuilder
                 .comment("Dose value treated as 100% dosimeter bar fill")
                 .defineInRange("dosimeterMaxDose", 20.0, 0.0001, 1_000_000.0);
@@ -183,8 +183,8 @@ public class Config {
         return Optional.ofNullable(ResourceLocation.tryParse(value));
     }
 
-    public static Optional<ResourceLocation> getGasmaskProtectedSource() {
-        String value = GASMASK_PROTECTED_SOURCE.get();
+    public static Optional<ResourceLocation> getGasmaskProtectedType() {
+        String value = GASMASK_PROTECTED_TYPE.get();
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }

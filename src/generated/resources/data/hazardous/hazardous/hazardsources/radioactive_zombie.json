@@ -4,7 +4,7 @@
     "entityType": "minecraft:zombie",
     "maxDistance": 3.0
   },
-  "hazardType": "hazardous:radioactive_source",
+  "hazardType": "hazardous:radioactive_type",
   "transmission": {
     "type": "point",
     "airAttenuationPerBlock": 0.05,

@@ -30,7 +30,7 @@ public class DefaultHazardTypes {
                             new ResourceLocation(Hazardous.MODID, "solar_darken")
                     )
             ),
-            new ResourceLocation(Hazardous.MODID, "radioactive_source"),
+            new ResourceLocation(Hazardous.MODID, "radioactive_type"),
             new HazardType(
                     new HazardType.Falloff.Exponential(0.18),
                     new HazardType.Blocking.Absorption(
