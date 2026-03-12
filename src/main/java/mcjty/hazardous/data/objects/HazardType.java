@@ -22,7 +22,10 @@ public record HazardType(
         Exposure exposure,
 
         // List of effect entry ids for this hazard type
-        List<ResourceLocation> effects
+        List<ResourceLocation> effects,
+
+        // Optional player attribute used as a 0..1 resistance multiplier for this hazard type
+        ResourceLocation resistanceAttribute
 ) {
 
     public static final Codec<HazardType> CODEC = RecordCodecBuilder.create(instance ->
@@ -30,8 +33,15 @@ public record HazardType(
                     Falloff.CODEC.fieldOf("falloff").forGetter(HazardType::falloff),
                     Blocking.CODEC.fieldOf("blocking").forGetter(HazardType::blocking),
                     Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure),
-                    ResourceLocation.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects)
-            ).apply(instance, HazardType::new));
+                    ResourceLocation.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects),
+                    ResourceLocation.CODEC.optionalFieldOf("resistanceAttribute")
+                            .forGetter(type -> java.util.Optional.ofNullable(type.resistanceAttribute()))
+            ).apply(instance, (falloff, blocking, exposure, effects, resistanceAttribute) ->
+                    new HazardType(falloff, blocking, exposure, effects, resistanceAttribute.orElse(null))));
+
+    public HazardType(Falloff falloff, Blocking blocking, Exposure exposure, List<ResourceLocation> effects) {
+        this(falloff, blocking, exposure, effects, null);
+    }
 
     public sealed interface Falloff permits Falloff.None, Falloff.InverseSquare, Falloff.Linear, Falloff.Exponential {
         Codec<Falloff> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",

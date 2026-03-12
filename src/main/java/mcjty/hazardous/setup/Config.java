@@ -23,6 +23,8 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
+    public static ForgeConfigSpec.ConfigValue<String> RESISTANCE_PILLS_ATTRIBUTE;
+    public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_AMOUNT;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_HAZARD_TYPE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_MEDIUM_THRESSHOLD;
@@ -71,6 +73,12 @@ public class Config {
         PILLS_DOSE_HEAL = builder
                 .comment("Dose removed from all accumulated personal hazard dose entries when using pills")
                 .defineInRange("pillsDoseHeal", 20.0, 0.0, 1_000_000.0);
+        RESISTANCE_PILLS_ATTRIBUTE = builder
+                .comment("Attribute id granted by resistance pills. Leave empty to disable")
+                .define("resistancePillsAttribute", Hazardous.MODID + ":radioactive_type_resistance");
+        RESISTANCE_PILLS_AMOUNT = builder
+                .comment("Amount added to the configured attribute each time resistance pills are eaten")
+                .defineInRange("resistancePillsAmount", 0.1, 0.0, 1.0);
 
         builder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());
@@ -193,6 +201,14 @@ public class Config {
 
     public static Optional<ResourceLocation> getDosimeterDisplayResource() {
         String value = DOSIMETER_DISPLAY_RESOURCE.get();
+        if (value == null || value.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(ResourceLocation.tryParse(value));
+    }
+
+    public static Optional<ResourceLocation> getResistancePillsAttribute() {
+        String value = RESISTANCE_PILLS_ATTRIBUTE.get();
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }

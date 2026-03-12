@@ -13,6 +13,7 @@ public class ModCommands {
                 Commands.literal(Hazardous.MODID)
                         .then(CommandRadiationHere.register(dispatcher))
                         .then(CommandDose.register(dispatcher))
+                        .then(CommandResistances.register(dispatcher))
                         .then(CommandResetDose.register(dispatcher))
         );
 

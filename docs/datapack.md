@@ -8,6 +8,7 @@ Included gameplay items:
 - `hazardous:geiger_counter`
 - `hazardous:dosimeter`
 - `hazardous:pills`
+- `hazardous:resistance_pills`
 
 ## 0) Config Setup First (Required)
 
@@ -70,6 +71,7 @@ Top-level fields:
 - `falloff`: `none`, `inverse_square`, `linear`, or `exponential`
 - `blocking`: `none`, `simple`, or `absorption`
 - `exposure`: timing plus accumulation behavior
+- `resistanceAttribute`: optional attribute id used as natural resistance for this hazard type
 - `effects`: list of effect entry ids (optional, defaults to `[]`)
 
 ### 1.1 Falloff
@@ -143,11 +145,28 @@ These fields are still useful for forward-compatible datapacks.
     "maximum": 200.0,
     "decayPerTick": 0.002
   },
+  "resistanceAttribute": "hazardous:radioactive_type_resistance",
   "effects": [
     "example:radiation_damage"
   ]
 }
 ```
+
+### 1.6 Resistance Attributes
+
+- `resistanceAttribute` is optional.
+- The attribute value is treated as a `0.0..1.0` resistance multiplier.
+- A player with `0.25` resistance for a hazard type only receives `75%` of that hazard's incoming exposure.
+- Hazard resistance is applied after source calculation and gas mask protection, before personal dose is accumulated.
+- Built-in hazard types ship with matching built-in attributes:
+  - `hazardous:solar_burn_resistance`
+  - `hazardous:radioactive_type_resistance`
+  - `hazardous:lostcity_radiation_resistance`
+  - `hazardous:lava_heat_resistance`
+- These built-in resistance attributes are attached to players through Forge's entity attribute modification event.
+- The built-in attributes are normal Forge attributes, so they can be modified by commands, equipment, effects, or other mods.
+- Custom hazard types should set `resistanceAttribute` to a registered attribute id if they want resistance support.
+- If a hazard type points at a missing attribute id, datapack validation fails on reload.
 
 ## 2) HazardSource JSON
 
@@ -539,7 +558,37 @@ Recipe:
 }
 ```
 
-### 4.4 Geiger Counter (`hazardous:geiger_counter`)
+### 4.4 Resistance Pills (`hazardous:resistance_pills`)
+
+Behavior:
+- Edible item with a normal food-use animation.
+- Uses `resistancePillsAttribute` to choose which player attribute to raise.
+- Adds `resistancePillsAmount` to that attribute's base value every time it is eaten.
+- If the configured attribute is a ranged attribute, the new value is clamped to that attribute's min/max range.
+- If the configured attribute id is empty, invalid, or not attached to the player, eating the item has no resistance effect.
+- The built-in item model uses the `hazardous:item/resistance_pills` texture.
+
+Typical usage:
+1. Point `resistancePillsAttribute` at a hazard resistance attribute such as `hazardous:radioactive_type_resistance`
+2. Eat the item one or more times
+3. Use `/haz resistances` to inspect the updated player values
+
+Recipe:
+
+```json
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" q ", "gpg", " g "],
+  "key": {
+    "q": { "item": "minecraft:quartz" },
+    "g": { "item": "minecraft:gold_ingot" },
+    "p": { "item": "hazardous:pills" }
+  },
+  "result": { "item": "hazardous:resistance_pills" }
+}
+```
+
+### 4.5 Geiger Counter (`hazardous:geiger_counter`)
 
 Behavior:
 - Shows HUD dial when:
@@ -576,7 +625,7 @@ Recipe:
 }
 ```
 
-### 4.5 Dosimeter (`hazardous:dosimeter`)
+### 4.6 Dosimeter (`hazardous:dosimeter`)
 
 Behavior:
 - Shows HUD when:
@@ -619,6 +668,8 @@ Server config (`hazardous-server.toml`):
 - `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`)
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
+- `resistancePillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables the bonus)
+- `resistancePillsAmount` (double `0.0..1.0`, default `0.1`; amount added to the configured attribute base value per use)
 
 Client config (`hazardous-client.toml`):
 - `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_type`, empty disables dial target)
@@ -646,6 +697,8 @@ gasmaskProtectedType = "hazardous:radioactive_type"
 gasmaskProtectionLevel = 0.75
 gasmaskFilterRestore = 250
 pillsDoseHeal = 20.0
+resistancePillsAttribute = "hazardous:radioactive_type_resistance"
+resistancePillsAmount = 0.1
 
 # hazardous-client.toml
 geigerDisplayHazardType = "hazardous:radioactive_type"
@@ -671,18 +724,26 @@ dosimeterHudOffsetY = 84
 Useful commands:
 - `/hazardous radiationhere`
 - `/hazardous dose`
+- `/hazardous resistances`
 - `/hazardous resetdose`
 
 Alias:
 - `/haz radiationhere`
 - `/haz dose`
+- `/haz resistances`
 - `/haz resetdose`
+
+Command notes:
+- `/hazardous resistances` lists the executing player's current resistance attributes for all loaded hazard types.
+- Output includes the hazard type id, the resolved attribute id, and the player's current and base values.
 
 Suggested workflow:
 1. Use `/haz radiationhere` where your source should apply.
 2. Use `/haz dose` after waiting a few seconds to confirm accumulation.
-3. Use pills and run `/haz dose` again to confirm dose reduction.
-4. Wear gas mask and compare `/haz dose` growth with and without mask.
+3. Use `/haz resistances` to inspect current resistance attributes.
+4. Eat resistance pills and run `/haz resistances` again to confirm the attribute increase.
+5. Use pills and run `/haz dose` again to confirm dose reduction.
+6. Wear gas mask and compare `/haz dose` growth with and without mask.
 
 ## 7) Built-In Data (Reference)
 

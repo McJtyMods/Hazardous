@@ -4,6 +4,7 @@ import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.HazardSource;
 import mcjty.hazardous.data.objects.HazardType;
+import mcjty.hazardous.setup.HazardAttributes;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -12,6 +13,7 @@ import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DataPackRegistryEvent;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collection;
 import java.util.Map;
@@ -58,6 +60,21 @@ public class CustomRegistries {
         }
     }
 
+    public static void validateHazardTypes(Map<ResourceLocation, HazardType> hazardTypes) {
+        for (Map.Entry<ResourceLocation, HazardType> entry : hazardTypes.entrySet()) {
+            ResourceLocation hazardTypeId = entry.getKey();
+            HazardType hazardType = entry.getValue();
+            ResourceLocation attributeId = hazardType.resistanceAttribute();
+            if (attributeId == null && HazardAttributes.getBuiltInHazardTypesWithResistanceAttributes().contains(hazardTypeId)) {
+                attributeId = HazardAttributes.getDefaultResistanceAttributeId(hazardTypeId);
+            }
+            if (attributeId != null && !ForgeRegistries.ATTRIBUTES.containsKey(attributeId)) {
+                Hazardous.LOGGER.error("HazardType '{}' refers to missing resistance attribute '{}'", hazardTypeId, attributeId);
+                throw new RuntimeException("HazardType '" + hazardTypeId + "' refers to missing resistance attribute '" + attributeId + "'!");
+            }
+        }
+    }
+
     public static void onDatapackSync(OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) {
             return; // Only validate after full registry reloads, not on per-player syncs
@@ -72,6 +89,7 @@ public class CustomRegistries {
                 .collect(Collectors.toMap(entry -> entry.getKey().location(), Map.Entry::getValue));
         Collection<HazardSource> sources = StreamSupport.stream(hazardSources.spliterator(), false).toList();
 
+        validateHazardTypes(hazardTypeMap);
         validateSources(hazardTypeMap, sources);
     }
 

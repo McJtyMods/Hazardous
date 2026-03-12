@@ -1,9 +1,14 @@
 {
+  "attribute.name.hazardous.lava_heat_resistance": "Heat Resistance",
+  "attribute.name.hazardous.lostcity_radiation_resistance": "Lost City Radiation Resistance",
+  "attribute.name.hazardous.radioactive_type_resistance": "Radiation Resistance",
+  "attribute.name.hazardous.solar_burn_resistance": "Solar Resistance",
   "item.hazardous.dosimeter": "Dosimeter",
   "item.hazardous.filter": "Filter",
   "item.hazardous.gasmask": "Gas Mask",
   "item.hazardous.geiger_counter": "Geiger Counter",
   "item.hazardous.pills": "Pills",
+  "item.hazardous.resistance_pills": "Resistance Pills",
   "itemGroup.hazardous": "Hazardous",
   "message.hazardous.filter.crafting": "Can also be combined with a damaged gas mask in a crafting grid",
   "message.hazardous.filter.desc": "Refills a worn gas mask",
@@ -19,5 +24,10 @@
   "message.hazardous.pills.desc": "Reduces your accumulated personal dose",
   "message.hazardous.pills.header": "Anti-Rad Pills",
   "message.hazardous.pills.heal": "Dose restored per use: ",
-  "message.hazardous.pills.usage": "Right-click to consume and reduce dose"
+  "message.hazardous.pills.usage": "Right-click to consume and reduce dose",
+  "message.hazardous.resistance_pills.amount": "Amount per use: ",
+  "message.hazardous.resistance_pills.attribute": "Granted attribute: ",
+  "message.hazardous.resistance_pills.desc": "Adds to a configured resistance attribute when eaten",
+  "message.hazardous.resistance_pills.header": "Resistance Pills",
+  "message.hazardous.resistance_pills.usage": "Eat to permanently raise the configured resistance attribute"
 }

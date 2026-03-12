@@ -28,7 +28,8 @@ public class DefaultHazardTypes {
                             new ResourceLocation(Hazardous.MODID, "solar_weakness"),
                             new ResourceLocation(Hazardous.MODID, "solar_ignite"),
                             new ResourceLocation(Hazardous.MODID, "solar_darken")
-                    )
+                    ),
+                    new ResourceLocation(Hazardous.MODID, "solar_burn_resistance")
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_type"),
             new HazardType(
@@ -53,7 +54,8 @@ public class DefaultHazardTypes {
                             new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
                             new ResourceLocation(Hazardous.MODID, "radiation_shake"),
                             new ResourceLocation(Hazardous.MODID, "radiation_warp")
-                    )
+                    ),
+                    new ResourceLocation(Hazardous.MODID, "radioactive_type_resistance")
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
             new HazardType(
@@ -77,7 +79,8 @@ public class DefaultHazardTypes {
                             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
                             new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
                             new ResourceLocation(Hazardous.MODID, "radiation_warp")
-                    )
+                    ),
+                    new ResourceLocation(Hazardous.MODID, "lostcity_radiation_resistance")
             ),
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
@@ -100,7 +103,8 @@ public class DefaultHazardTypes {
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "lava_fire_damage"),
                             new ResourceLocation(Hazardous.MODID, "lava_blur")
-                    )
+                    ),
+                    new ResourceLocation(Hazardous.MODID, "lava_heat_resistance")
             )
     );
 }

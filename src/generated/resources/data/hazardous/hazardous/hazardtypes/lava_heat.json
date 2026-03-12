@@ -27,5 +27,6 @@
   },
   "falloff": {
     "type": "linear"
-  }
+  },
+  "resistanceAttribute": "hazardous:lava_heat_resistance"
 }

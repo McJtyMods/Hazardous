@@ -7,6 +7,7 @@ import mcjty.hazardous.items.FilterItem;
 import mcjty.hazardous.items.GasmaskItem;
 import mcjty.hazardous.items.GeigerCounterItem;
 import mcjty.hazardous.items.PillsItem;
+import mcjty.hazardous.items.ResistancePillsItem;
 import mcjty.hazardous.recipes.GasmaskFilterRecipe;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.lib.setup.DeferredItems;
@@ -39,6 +40,7 @@ public class Registration {
     public static final DeferredItem<GasmaskItem> GASMASK = ITEMS.register("gasmask", tab(GasmaskItem::new));
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", tab(FilterItem::new));
     public static final DeferredItem<PillsItem> PILLS = ITEMS.register("pills", tab(PillsItem::new));
+    public static final DeferredItem<ResistancePillsItem> RESISTANCE_PILLS = ITEMS.register("resistance_pills", tab(ResistancePillsItem::new));
 
     public static final RegistryObject<SoundEvent> GEIGER_MEDIUMDOSE = SOUND_EVENTS.register("geiger.mediumdose",
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "geiger.mediumdose")));
@@ -50,6 +52,7 @@ public class Registration {
 
     public static void register(IEventBus bus) {
         CustomRegistries.init(bus);
+        HazardAttributes.register(bus);
         ITEMS.register(bus);
         RECIPE_SERIALIZERS.register(bus);
         SOUND_EVENTS.register(bus);

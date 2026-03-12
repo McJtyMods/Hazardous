@@ -30,5 +30,6 @@
   "falloff": {
     "type": "exponential",
     "k": 0.18
-  }
+  },
+  "resistanceAttribute": "hazardous:radioactive_type_resistance"
 }

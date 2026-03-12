@@ -19,5 +19,6 @@
   },
   "falloff": {
     "type": "none"
-  }
+  },
+  "resistanceAttribute": "hazardous:solar_burn_resistance"
 }

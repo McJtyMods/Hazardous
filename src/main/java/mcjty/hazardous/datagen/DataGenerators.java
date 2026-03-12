@@ -45,7 +45,17 @@ public class DataGenerators {
                                 .map(entry -> Pair.of(entry.getKey(), entry.getValue()))
                                 .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))),
                 Dob.builder()
+                        .message("attribute.name.hazardous.solar_burn_resistance", "Solar Resistance"),
+                Dob.builder()
+                        .message("attribute.name.hazardous.radioactive_type_resistance", "Radiation Resistance"),
+                Dob.builder()
+                        .message("attribute.name.hazardous.lostcity_radiation_resistance", "Lost City Radiation Resistance"),
+                Dob.builder()
+                        .message("attribute.name.hazardous.lava_heat_resistance", "Heat Resistance"),
+                Dob.builder()
                         .message("itemGroup." + Hazardous.MODID, "Hazardous"),
+                Dob.builder()
+                        .message("hazardous.datapack.hazardtype.resistance_attribute", "Resistance Attribute"),
                 Dob.itemBuilder(Registration.GEIGER_COUNTER)
                         .name("Geiger Counter")
                         .generatedItem("item/geigercounter")
@@ -125,6 +135,23 @@ public class DataGenerators {
                                 .pattern("cgc")
                                 .pattern("ccc")
                                 .unlockedBy("has_golden_apple", InventoryChangeTrigger.TriggerInstance.hasItems(Items.GOLDEN_APPLE))
+                                .save(consumer)),
+                Dob.itemBuilder(Registration.RESISTANCE_PILLS)
+                        .name("Resistance Pills")
+                        .generatedItem("item/resistance_pills")
+                        .keyedMessage("header", "Resistance Pills")
+                        .keyedMessage("desc", "Adds to a configured resistance attribute when eaten")
+                        .keyedMessage("attribute", "Granted attribute: ")
+                        .keyedMessage("amount", "Amount per use: ")
+                        .keyedMessage("usage", "Eat to permanently raise the configured resistance attribute")
+                        .recipeConsumer(() -> consumer -> ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Registration.RESISTANCE_PILLS.get())
+                                .define('p', Registration.PILLS.get())
+                                .define('q', Items.QUARTZ)
+                                .define('g', Items.GOLD_INGOT)
+                                .pattern(" q ")
+                                .pattern("gpg")
+                                .pattern(" g ")
+                                .unlockedBy("has_pills", InventoryChangeTrigger.TriggerInstance.hasItems(Registration.PILLS.get()))
                                 .save(consumer))
         );
     }

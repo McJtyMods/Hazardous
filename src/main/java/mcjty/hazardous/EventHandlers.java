@@ -11,6 +11,7 @@ import mcjty.hazardous.network.PacketPlayerDose;
 import mcjty.hazardous.network.PacketRadiationAtPos;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
+import mcjty.hazardous.setup.HazardAttributes;
 import mcjty.hazardous.setup.Messages;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.Registry;
@@ -84,6 +85,7 @@ public class EventHandlers {
 
                 double input = HazardManager.getHazardValue(type, level, event.player);
                 input = GasmaskItem.applyProtectionAndDamage(event.player, typeId, input);
+                input = HazardAttributes.applyResistance(event.player, typeId, type, input);
                 effectiveExposureForClient.put(typeId, input);
                 double current = store.getDose(typeId);
                 double value = type.exposure().calculate(input, current);
