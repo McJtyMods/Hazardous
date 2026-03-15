@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -208,7 +209,7 @@ public class HazardManager {
                 if (entityType == null) {
                     continue;
                 }
-                entities.addAll(level.getEntities(entityType, bounds, entity -> entity != player));
+                entities.addAll(level.getEntities(entityType, bounds, entity -> entity != player && matchesEntityAssociation(entity, a)));
             }
             if (entities.isEmpty()) {
                 return 0.0;
@@ -245,6 +246,19 @@ public class HazardManager {
                     return Math.max(0.0, sum);
                 }
             });
+        }
+
+        private boolean matchesEntityAssociation(Entity entity, HazardSource.Association.EntityType association) {
+            if (!(entity instanceof ItemEntity itemEntity) || association.stacks().isEmpty()) {
+                return true;
+            }
+            ItemStack stack = itemEntity.getItem();
+            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
+                if (predicate.matches(stack)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

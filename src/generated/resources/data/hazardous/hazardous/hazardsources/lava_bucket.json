@@ -1,15 +1,19 @@
 {
   "association": {
-    "type": "block",
-    "block": "minecraft:lava",
-    "maxDistance": 32.0
+    "type": "item",
+    "maxDistance": 4.0,
+    "stacks": [
+      {
+        "item": "minecraft:lava_bucket"
+      }
+    ]
   },
   "hazardType": "hazardous:lava_heat",
   "transmission": {
     "type": "point",
     "airAttenuationPerBlock": 0.0,
     "baseIntensity": 0.8,
-    "maxDistance": 32,
+    "maxDistance": 4,
     "requiresLineOfSight": false
   }
 }

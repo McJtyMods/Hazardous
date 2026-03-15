@@ -207,11 +207,13 @@ public record HazardSource(
 
         /**
          * Hazard is attached to all entities of the given types.
+         * For item entities, optional stack predicates can further filter the dropped item.
          */
-        record EntityType(List<ResourceLocation> entityTypes, double maxDistance) implements Association {
+        record EntityType(List<ResourceLocation> entityTypes, List<Item.ItemStackPredicate> stacks, double maxDistance) implements Association {
             public static final Codec<EntityType> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             ResourceLocation.CODEC.listOf().fieldOf("entityTypes").forGetter(EntityType::entityTypes),
+                            Item.ItemStackPredicate.CODEC.listOf().optionalFieldOf("stacks", List.of()).forGetter(EntityType::stacks),
                             Codec.DOUBLE.fieldOf("maxDistance").forGetter(EntityType::maxDistance)
                     ).apply(instance, EntityType::new));
 

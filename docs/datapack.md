@@ -30,7 +30,8 @@ Built-in hazard type ids you can enable:
 Built-in hazard source ids you can enable:
 - `hazardous:overworld_solar`
 - `hazardous:radioactive_zombie`
-- `hazardous:radioactive_lava_bucket`
+- `hazardous:lava_bucket`
+- `hazardous:dropped_lava_bucket`
 - `hazardous:lostcity_buildings`
 - `hazardous:near_lava`
 
@@ -212,6 +213,7 @@ Association variants:
 `entity_type`
 - `type: "entity_type"`
 - `entityTypes`: list of entity ids
+- `stacks` (optional): item stack predicates, only used for matching `minecraft:item` entities
 - `maxDistance`
 
 `locations`
@@ -293,6 +295,33 @@ Configured entity types act as radioactive point sources:
       "minecraft:zombie"
     ],
     "maxDistance": 3.0
+  }
+}
+```
+
+Dropped lava bucket emits heat:
+
+```json
+{
+  "hazardType": "example:lava_heat",
+  "transmission": {
+    "type": "point",
+    "baseIntensity": 0.8,
+    "maxDistance": 4,
+    "requiresLineOfSight": false,
+    "airAttenuationPerBlock": 0.0
+  },
+  "association": {
+    "type": "entity_type",
+    "entityTypes": [
+      "minecraft:item"
+    ],
+    "stacks": [
+      {
+        "item": "minecraft:lava_bucket"
+      }
+    ],
+    "maxDistance": 4.0
   }
 }
 ```
@@ -789,7 +818,7 @@ Suggested workflow:
 
 Built-in ids:
 - Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_type`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
-- Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:radioactive_lava_bucket`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
+- Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:lava_bucket`, `hazardous:dropped_lava_bucket`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
 - Effect entries: `hazardous:solar_weakness`, `hazardous:solar_ignite`, `hazardous:radiation_damage`, `hazardous:radiation_geiger`, `hazardous:lava_fire_damage`
 
 Use these as working templates when creating your own pack.

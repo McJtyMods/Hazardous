@@ -1,12 +1,15 @@
 {
   "association": {
-    "type": "item",
+    "type": "entity_type",
+    "entityTypes": [
+      "minecraft:item"
+    ],
+    "maxDistance": 4.0,
     "stacks": [
       {
         "item": "minecraft:lava_bucket"
       }
-    ],
-    "maxDistance": 4.0
+    ]
   },
   "hazardType": "hazardous:lava_heat",
   "transmission": {

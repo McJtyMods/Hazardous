@@ -3,6 +3,7 @@
   "attribute.name.hazardous.lostcity_radiation_resistance": "Lost City Radiation Resistance",
   "attribute.name.hazardous.radioactive_type_resistance": "Radiation Resistance",
   "attribute.name.hazardous.solar_burn_resistance": "Solar Resistance",
+  "hazardous.datapack.hazardtype.resistance_attribute": "Resistance Attribute",
   "item.hazardous.dosimeter": "Dosimeter",
   "item.hazardous.filter": "Filter",
   "item.hazardous.gasmask": "Gas Mask",
