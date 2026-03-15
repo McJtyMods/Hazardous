@@ -30,6 +30,7 @@ Built-in hazard type ids you can enable:
 Built-in hazard source ids you can enable:
 - `hazardous:overworld_solar`
 - `hazardous:radioactive_zombie`
+- `hazardous:radioactive_lava_bucket`
 - `hazardous:lostcity_buildings`
 - `hazardous:near_lava`
 
@@ -195,12 +196,12 @@ Transmission variants:
 - `maxDistance` (int)
 - `requiresLineOfSight` (boolean)
 - `airAttenuationPerBlock` (double)
-- valid with associations: `locations`, `entity_type`, `block`
+- valid with associations: `locations`, `entity_type`, `block`, `item`
 
 `contact`
 - `type: "contact"`
 - `baseIntensity` (double)
-- valid with associations: `entity_type`, `block`
+- valid with associations: `entity_type`, `block`, `item`
 
 Association variants:
 
@@ -235,6 +236,17 @@ Association variants:
 - `type: "block"`
 - exactly one of `block` or `tag`
 - `maxDistance`
+
+`item`
+- `type: "item"`
+- `stacks`: list of item stack predicates
+- `maxDistance`
+- each stack predicate matches any carried stack in main inventory, hotbar, offhand, or armor
+- if any predicate matches, that player becomes the hazard source
+- stack predicate fields:
+  - exactly one of `item` or `tag`
+  - `count` (optional int, default `1`): minimum stack size
+  - `nbt` (optional string): SNBT that must match the stack NBT
 
 Validation note:
 - Reload validates association and transmission compatibility.
@@ -304,6 +316,32 @@ Near-lava heat hazard:
   }
 }
 ```
+
+Lava bucket carrier emits radiation:
+
+```json
+{
+  "hazardType": "example:radioactive_type",
+  "transmission": {
+    "type": "point",
+    "baseIntensity": 0.8,
+    "maxDistance": 4,
+    "requiresLineOfSight": false,
+    "airAttenuationPerBlock": 0.0
+  },
+  "association": {
+    "type": "item",
+    "stacks": [
+      {
+        "item": "minecraft:lava_bucket"
+      }
+    ],
+    "maxDistance": 4.0
+  }
+}
+```
+
+This makes any player carrying a lava bucket act as a nearby radiation source, including for themselves.
 
 Biome-based sky hazard with biome matcher:
 
@@ -751,7 +789,7 @@ Suggested workflow:
 
 Built-in ids:
 - Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_type`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
-- Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
+- Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:radioactive_lava_bucket`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
 - Effect entries: `hazardous:solar_weakness`, `hazardous:solar_ignite`, `hazardous:radiation_damage`, `hazardous:radiation_geiger`, `hazardous:lava_fire_damage`
 
 Use these as working templates when creating your own pack.

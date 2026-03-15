@@ -1,11 +1,17 @@
 package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.util.BiomeMatcher;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Optional;
@@ -110,7 +116,8 @@ public record HazardSource(
                 return Set.of(
                         Association.AssociationKind.LOCATIONS,
                         Association.AssociationKind.ENTITY_TYPE,
-                        Association.AssociationKind.BLOCK
+                        Association.AssociationKind.BLOCK,
+                        Association.AssociationKind.ITEM
                 );
             }
 
@@ -136,7 +143,8 @@ public record HazardSource(
             public Set<Association.AssociationKind> supportedAssociations() {
                 return Set.of(
                         Association.AssociationKind.ENTITY_TYPE,
-                        Association.AssociationKind.BLOCK
+                        Association.AssociationKind.BLOCK,
+                        Association.AssociationKind.ITEM
                 );
             }
 
@@ -147,10 +155,10 @@ public record HazardSource(
         }
     }
 
-    public sealed interface Association permits Association.Level, Association.EntityType, Association.Locations, Association.Biome, Association.City, Association.Block {
+    public sealed interface Association permits Association.Level, Association.EntityType, Association.Locations, Association.Biome, Association.City, Association.Block, Association.Item {
 
         enum AssociationKind {
-            LEVEL, ENTITY_TYPE, LOCATIONS, BIOME, CITY, BLOCK
+            LEVEL, ENTITY_TYPE, LOCATIONS, BIOME, CITY, BLOCK, ITEM
         }
 
         <R> R accept(HazardType type, Visitor<R> visitor);
@@ -169,6 +177,8 @@ public record HazardSource(
             R city(HazardType type, Association.City a);
 
             R block(HazardType type, Association.Block a);
+
+            R item(HazardType type, Association.Item a);
         }
 
         Codec<Association> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
@@ -301,6 +311,73 @@ public record HazardSource(
                 return AssociationKind.BLOCK;
             }
         }
+
+        /**
+         * Hazard is attached to players carrying matching item stacks.
+         */
+        record Item(List<ItemStackPredicate> stacks, double maxDistance) implements Association {
+            public static final Codec<Item> CODEC = RecordCodecBuilder.create(instance ->
+                    instance.group(
+                            ItemStackPredicate.CODEC.listOf().fieldOf("stacks").forGetter(Item::stacks),
+                            Codec.DOUBLE.fieldOf("maxDistance").forGetter(Item::maxDistance)
+                    ).apply(instance, Item::new));
+
+            @Override
+            public <R> R accept(HazardType type, Visitor<R> visitor) {
+                return visitor.item(type, this);
+            }
+
+            @Override
+            public AssociationKind kind() {
+                return AssociationKind.ITEM;
+            }
+
+            /**
+             * Matches a carried stack by item id or item tag, with optional minimum count and NBT.
+             */
+            public record ItemStackPredicate(ResourceLocation itemOrTag, boolean isTag, int count, Optional<CompoundTag> nbt) {
+                private static final Codec<CompoundTag> SNBT_CODEC = Codec.STRING.comapFlatMap(
+                        s -> {
+                            try {
+                                return DataResult.success(TagParser.parseTag(s));
+                            } catch (Exception e) {
+                                return DataResult.error(() -> "Invalid SNBT in item association: " + e.getMessage());
+                            }
+                        },
+                        CompoundTag::toString
+                );
+
+                public static final Codec<ItemStackPredicate> CODEC = RecordCodecBuilder.create(instance ->
+                        instance.group(
+                                ResourceLocation.CODEC.optionalFieldOf("item").forGetter(a -> a.isTag() ? Optional.empty() : Optional.of(a.itemOrTag())),
+                                ResourceLocation.CODEC.optionalFieldOf("tag").forGetter(a -> a.isTag() ? Optional.of(a.itemOrTag()) : Optional.empty()),
+                                Codec.INT.optionalFieldOf("count", 1).forGetter(ItemStackPredicate::count),
+                                SNBT_CODEC.optionalFieldOf("nbt").forGetter(ItemStackPredicate::nbt)
+                        ).apply(instance, (item, tag, count, nbt) -> {
+                            if (item.isPresent() == tag.isPresent()) {
+                                throw new IllegalStateException("Item association predicate must have either 'item' or 'tag'");
+                            }
+                            if (count <= 0) {
+                                throw new IllegalStateException("Item association predicate count must be > 0");
+                            }
+                            return new ItemStackPredicate(item.orElseGet(tag::get), tag.isPresent(), count, nbt);
+                        }));
+
+                public boolean matches(ItemStack stack) {
+                    if (stack.isEmpty() || stack.getCount() < count) {
+                        return false;
+                    }
+                    if (isTag) {
+                        if (!stack.is(TagKey.create(Registries.ITEM, itemOrTag))) {
+                            return false;
+                        }
+                    } else if (!itemOrTag.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()))) {
+                        return false;
+                    }
+                    return nbt.isEmpty() || stack.getTag() != null && net.minecraft.nbt.NbtUtils.compareNbt(nbt.get(), stack.getTag(), true);
+                }
+            }
+        }
     }
 
     private static Codec<? extends Transmission> getTransmissionCodec(String type) {
@@ -331,6 +408,7 @@ public record HazardSource(
             case "biome" -> Association.Biome.CODEC;
             case "city" -> Association.City.CODEC;
             case "block" -> Association.Block.CODEC;
+            case "item" -> Association.Item.CODEC;
             default -> throw new IllegalStateException("Unknown association type '" + type + "'");
         };
     }
@@ -348,6 +426,8 @@ public record HazardSource(
             return "city";
         } else if (association instanceof Association.Block) {
             return "block";
+        } else if (association instanceof Association.Item) {
+            return "item";
         }
         throw new IllegalStateException("Unknown association: " + association);
     }

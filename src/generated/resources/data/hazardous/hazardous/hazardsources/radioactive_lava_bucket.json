@@ -1,0 +1,19 @@
+{
+  "association": {
+    "type": "item",
+    "stacks": [
+      {
+        "item": "minecraft:lava_bucket"
+      }
+    ],
+    "maxDistance": 4.0
+  },
+  "hazardType": "hazardous:radioactive_type",
+  "transmission": {
+    "type": "point",
+    "airAttenuationPerBlock": 0.0,
+    "baseIntensity": 0.8,
+    "maxDistance": 4,
+    "requiresLineOfSight": false
+  }
+}

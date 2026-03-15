@@ -16,6 +16,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -282,6 +283,91 @@ public class HazardManager {
                     return 0.0;
                 }
             });
+        }
+
+        @Override
+        public Double item(HazardType type, HazardSource.Association.Item a) {
+            double maxDistance = a.maxDistance();
+            if (maxDistance <= 0 || a.stacks().isEmpty()) {
+                return 0.0;
+            }
+            Level level = player.level();
+            AABB bounds = player.getBoundingBox().inflate(maxDistance);
+            List<Player> sourcePlayers = new ArrayList<>();
+            for (Player candidate : level.players()) {
+                if (candidate.isRemoved()) {
+                    continue;
+                }
+                if (!candidate.getBoundingBox().intersects(bounds)) {
+                    continue;
+                }
+                if (player.distanceTo(candidate) > maxDistance) {
+                    continue;
+                }
+                if (matchesItemAssociation(candidate, a)) {
+                    sourcePlayers.add(candidate);
+                }
+            }
+            if (sourcePlayers.isEmpty()) {
+                return 0.0;
+            }
+            return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
+                @Override
+                public Double point(HazardType type, HazardSource.Transmission.Point t) {
+                    double sum = 0.0;
+                    for (Player sourcePlayer : sourcePlayers) {
+                        double d = player.distanceTo(sourcePlayer);
+                        double raw = computePointRaw(type, t, d);
+                        if (raw <= 0.0) {
+                            continue;
+                        }
+                        double contributed = applyPointBlocking(type, level, sourcePlayer.getX(), sourcePlayer.getY(0.5), sourcePlayer.getZ(), raw);
+                        if (contributed > MIN_EFFECTIVE_RADIATION) {
+                            sum += contributed;
+                        }
+                    }
+                    return sum;
+                }
+
+                @Override
+                public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
+                    double sum = 0.0;
+                    for (Player sourcePlayer : sourcePlayers) {
+                        if (player.getBoundingBox().intersects(sourcePlayer.getBoundingBox())) {
+                            sum += t.baseIntensity();
+                        }
+                    }
+                    return Math.max(0.0, sum);
+                }
+            });
+        }
+
+        private boolean matchesItemAssociation(Player candidate, HazardSource.Association.Item association) {
+            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
+                if (matchesAnyCarriedStack(candidate, predicate)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean matchesAnyCarriedStack(Player candidate, HazardSource.Association.Item.ItemStackPredicate predicate) {
+            for (ItemStack stack : candidate.getInventory().items) {
+                if (predicate.matches(stack)) {
+                    return true;
+                }
+            }
+            for (ItemStack stack : candidate.getInventory().offhand) {
+                if (predicate.matches(stack)) {
+                    return true;
+                }
+            }
+            for (ItemStack stack : candidate.getInventory().armor) {
+                if (predicate.matches(stack)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

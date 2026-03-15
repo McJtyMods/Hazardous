@@ -43,6 +43,18 @@ public class DefaultHazardSources {
                             1.0),
                     HazardSource.Association.City.INSTANCE
             ),
+            new ResourceLocation(Hazardous.MODID, "radioactive_lava_bucket"),
+            new HazardSource(
+                    new ResourceLocation(Hazardous.MODID, "radioactive_type"),
+                    new HazardSource.Transmission.Point(
+                            0.8,
+                            4,
+                            false,
+                            0.0),
+                    new HazardSource.Association.Item(
+                            java.util.List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, java.util.Optional.empty())),
+                            4.0)
+            ),
             new ResourceLocation(Hazardous.MODID, "near_lava"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),
