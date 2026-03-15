@@ -35,6 +35,8 @@ public class Hazardous {
         instance = this;
 
         Config.register();
+        bus.addListener(Config::onConfigLoading);
+        bus.addListener(Config::onConfigReloading);
         Registration.register(bus);
         bus.addListener(setup::init);
         bus.addListener(this::onDataGen);

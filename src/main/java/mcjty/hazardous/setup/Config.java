@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -47,8 +48,8 @@ public class Config {
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
     private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
 
-    private static Set<ResourceLocation> enabledHazardTypes = null;
-    private static Set<ResourceLocation> enabledHazardSources = null;
+    private static volatile Set<ResourceLocation> enabledHazardTypes = null;
+    private static volatile Set<ResourceLocation> enabledHazardSources = null;
 
     public static void register() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -145,6 +146,14 @@ public class Config {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientBuilder.build());
     }
 
+    public static void onConfigLoading(ModConfigEvent.Loading event) {
+        invalidateCaches(event.getConfig());
+    }
+
+    public static void onConfigReloading(ModConfigEvent.Reloading event) {
+        invalidateCaches(event.getConfig());
+    }
+
     public static boolean isHazardTypeEnabled(ResourceLocation id) {
         return getEnabledHazardTypes().contains(id);
     }
@@ -154,33 +163,47 @@ public class Config {
     }
 
     private static Set<ResourceLocation> getEnabledHazardTypes() {
-        if (enabledHazardTypes == null) {
-            enabledHazardTypes = new HashSet<>();
+        Set<ResourceLocation> cached = enabledHazardTypes;
+        if (cached == null) {
+            Set<ResourceLocation> parsed = new HashSet<>();
             for (String s : ENABLED_HAZARD_TYPES.get()) {
                 ResourceLocation rl = ResourceLocation.tryParse(s);
                 if (rl == null) {
                     Hazardous.LOGGER.warn("Invalid hazard type id '{}' in config 'enabledHazardTypes'", s);
                     continue;
                 }
-                enabledHazardTypes.add(rl);
+                parsed.add(rl);
             }
+            enabledHazardTypes = parsed;
+            return parsed;
         }
-        return enabledHazardTypes;
+        return cached;
     }
 
     private static Set<ResourceLocation> getEnabledHazardSources() {
-        if (enabledHazardSources == null) {
-            enabledHazardSources = new HashSet<>();
+        Set<ResourceLocation> cached = enabledHazardSources;
+        if (cached == null) {
+            Set<ResourceLocation> parsed = new HashSet<>();
             for (String s : ENABLED_HAZARD_SOURCES.get()) {
                 ResourceLocation rl = ResourceLocation.tryParse(s);
                 if (rl == null) {
                     Hazardous.LOGGER.warn("Invalid hazard source id '{}' in config 'enabledHazardSources'", s);
                     continue;
                 }
-                enabledHazardSources.add(rl);
+                parsed.add(rl);
             }
+            enabledHazardSources = parsed;
+            return parsed;
         }
-        return enabledHazardSources;
+        return cached;
+    }
+
+    private static void invalidateCaches(ModConfig config) {
+        if (!Hazardous.MODID.equals(config.getModId())) {
+            return;
+        }
+        enabledHazardTypes = null;
+        enabledHazardSources = null;
     }
 
     public static Optional<ResourceLocation> getGeigerDisplayHazardType() {
