@@ -8,7 +8,7 @@
     ],
     "maxDistance": 4.0
   },
-  "hazardType": "hazardous:radioactive_type",
+  "hazardType": "hazardous:lava_heat",
   "transmission": {
     "type": "point",
     "airAttenuationPerBlock": 0.0,

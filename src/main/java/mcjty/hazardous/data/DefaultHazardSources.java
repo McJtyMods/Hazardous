@@ -45,7 +45,7 @@ public class DefaultHazardSources {
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_lava_bucket"),
             new HazardSource(
-                    new ResourceLocation(Hazardous.MODID, "radioactive_type"),
+                    new ResourceLocation(Hazardous.MODID, "lava_heat"),
                     new HazardSource.Transmission.Point(
                             0.8,
                             4,

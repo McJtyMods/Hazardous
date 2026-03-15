@@ -317,11 +317,11 @@ Near-lava heat hazard:
 }
 ```
 
-Lava bucket carrier emits radiation:
+Lava bucket carrier emits heat:
 
 ```json
 {
-  "hazardType": "example:radioactive_type",
+  "hazardType": "example:lava_heat",
   "transmission": {
     "type": "point",
     "baseIntensity": 0.8,
@@ -341,7 +341,7 @@ Lava bucket carrier emits radiation:
 }
 ```
 
-This makes any player carrying a lava bucket act as a nearby radiation source, including for themselves.
+This makes any player carrying a lava bucket act as a nearby heat source, including for themselves.
 
 Biome-based sky hazard with biome matcher:
 
