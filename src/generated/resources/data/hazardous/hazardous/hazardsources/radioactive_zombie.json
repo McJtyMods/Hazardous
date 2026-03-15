@@ -1,7 +1,9 @@
 {
   "association": {
     "type": "entity_type",
-    "entityType": "minecraft:zombie",
+    "entityTypes": [
+      "minecraft:zombie"
+    ],
     "maxDistance": 3.0
   },
   "hazardType": "hazardous:radioactive_type",

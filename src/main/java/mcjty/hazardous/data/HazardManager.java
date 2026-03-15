@@ -196,13 +196,19 @@ public class HazardManager {
             if (maxDistance <= 0) {
                 return 0.0;
             }
-            var entityType = BuiltInRegistries.ENTITY_TYPE.get(a.entityType());
-            if (entityType == null) {
+            if (a.entityTypes().isEmpty()) {
                 return 0.0;
             }
             Level level = player.level();
             AABB bounds = player.getBoundingBox().inflate(maxDistance);
-            var entities = level.getEntities(entityType, bounds, entity -> entity != player);
+            List<Entity> entities = new ArrayList<>();
+            for (ResourceLocation id : a.entityTypes()) {
+                var entityType = BuiltInRegistries.ENTITY_TYPE.get(id);
+                if (entityType == null) {
+                    continue;
+                }
+                entities.addAll(level.getEntities(entityType, bounds, entity -> entity != player));
+            }
             if (entities.isEmpty()) {
                 return 0.0;
             }

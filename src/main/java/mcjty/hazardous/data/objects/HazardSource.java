@@ -196,12 +196,12 @@ public record HazardSource(
         }
 
         /**
-         * Hazard is attached to all entities of the given type.
+         * Hazard is attached to all entities of the given types.
          */
-        record EntityType(ResourceLocation entityType, double maxDistance) implements Association {
+        record EntityType(List<ResourceLocation> entityTypes, double maxDistance) implements Association {
             public static final Codec<EntityType> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
-                            ResourceLocation.CODEC.fieldOf("entityType").forGetter(EntityType::entityType),
+                            ResourceLocation.CODEC.listOf().fieldOf("entityTypes").forGetter(EntityType::entityTypes),
                             Codec.DOUBLE.fieldOf("maxDistance").forGetter(EntityType::maxDistance)
                     ).apply(instance, EntityType::new));
 

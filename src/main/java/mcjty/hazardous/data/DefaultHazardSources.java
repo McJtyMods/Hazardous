@@ -29,7 +29,7 @@ public class DefaultHazardSources {
                             12,
                             true,
                             0.05),
-                    new HazardSource.Association.EntityType(new ResourceLocation("minecraft", "zombie"), 3.0)
+                    new HazardSource.Association.EntityType(java.util.List.of(new ResourceLocation("minecraft", "zombie")), 3.0)
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_buildings"),
             new HazardSource(

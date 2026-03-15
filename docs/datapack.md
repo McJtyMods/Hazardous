@@ -210,7 +210,7 @@ Association variants:
 
 `entity_type`
 - `type: "entity_type"`
-- `entityType`
+- `entityTypes`: list of entity ids
 - `maxDistance`
 
 `locations`
@@ -263,7 +263,7 @@ Entire overworld gets solar hazard:
 }
 ```
 
-All zombies act as radioactive point sources:
+Configured entity types act as radioactive point sources:
 
 ```json
 {
@@ -277,7 +277,9 @@ All zombies act as radioactive point sources:
   },
   "association": {
     "type": "entity_type",
-    "entityType": "minecraft:zombie",
+    "entityTypes": [
+      "minecraft:zombie"
+    ],
     "maxDistance": 3.0
   }
 }
