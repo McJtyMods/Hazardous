@@ -80,7 +80,7 @@ public class GeigerSoundController {
             super(soundEvent, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
             this.looping = true;
             this.delay = 0;
-            this.volume = 0.8f;
+            this.volume = getConfiguredVolume();
             this.pitch = 1.0f;
             this.relative = true;
             this.attenuation = Attenuation.NONE;
@@ -91,10 +91,15 @@ public class GeigerSoundController {
 
         @Override
         public void tick() {
+            this.volume = getConfiguredVolume();
         }
 
         private void stopLoop() {
             stop();
+        }
+
+        private float getConfiguredVolume() {
+            return (float) Math.max(0.0, Math.min(1.0, Config.GEIGER_SOUND_VOLUME.get()));
         }
     }
 }

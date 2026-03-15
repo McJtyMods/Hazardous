@@ -32,6 +32,7 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue GEIGER_HIGH_TRESSHOLD;
     public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_MEDIUM_MIN_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_HIGH_MIN_RADIATION;
+    public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_VOLUME;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
@@ -105,6 +106,9 @@ public class Config {
         GEIGER_SOUND_HIGH_MIN_RADIATION = clientBuilder
                 .comment("Minimum displayed radiation required to switch from medium to high geiger loop")
                 .defineInRange("geigerSoundHighMinRadiation", 25.0, 0.0, 1_000_000.0);
+        GEIGER_SOUND_VOLUME = clientBuilder
+                .comment("Volume multiplier for geiger loops")
+                .defineInRange("geigerSoundVolume", 0.8, 0.0, 1.0);
         GEIGER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("geigerHudAnchor", "top_right");
