@@ -672,6 +672,7 @@ Behavior:
 2. `hazardous:geiger.mediumdose` loop at/above `geigerSoundMediumMinRadiation`
 3. `hazardous:geiger.highdose` loop at/above `geigerSoundHighMinRadiation`
 - Loop loudness is scaled by `geigerSoundVolume`.
+- The needle can add a small animated jitter while radiation is present, controlled by `geigerNeedleJitterAngle` and `geigerNeedleJitterSpeed`.
 - Sound loops stop immediately when the Geiger HUD is no longer visible (not selected / unequipped).
 
 Important:
@@ -747,6 +748,8 @@ Client config (`hazardous-client.toml`):
 - `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
 - `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
 - `geigerSoundVolume` (double `0.0..1.0`, default `0.8`; volume multiplier for geiger loops)
+- `geigerNeedleJitterAngle` (double `0.0..10.0`, default `1.8`; maximum jitter angle in degrees for the geiger needle)
+- `geigerNeedleJitterSpeed` (double `0.1..10.0`, default `1.1`; speed multiplier for geiger needle jitter animation)
 - `geigerHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
 - `geigerHudScale` (double `0.1..10.0`, default `1.0`)
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
@@ -777,6 +780,8 @@ geigerMaxRadiation = 100.0
 geigerSoundMediumMinRadiation = 1.0
 geigerSoundHighMinRadiation = 25.0
 geigerSoundVolume = 0.8
+geigerNeedleJitterAngle = 1.8
+geigerNeedleJitterSpeed = 1.1
 geigerHudAnchor = "top_right"
 geigerHudScale = 1.0
 geigerHudOffsetX = 8

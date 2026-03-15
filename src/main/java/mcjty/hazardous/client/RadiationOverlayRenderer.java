@@ -49,6 +49,7 @@ public class RadiationOverlayRenderer {
     private static final float ZERO_RADIATION_DEG = 225.0f; // South-west
     // Use equivalent south-east angle +360 so lerp sweeps over the top arc instead of the bottom.
     private static final float MAX_RADIATION_DEG = 495.0f; // South-east
+    private static final float POINTER_TWITCH_MIN_RATIO = 0.27f;
 
     private static final float DIAL_CENTER_X_RATIO = 199.0f / 400.0f;
     private static final float DIAL_CENTER_Y_RATIO = 117.0f / 576.0f;
@@ -83,7 +84,7 @@ public class RadiationOverlayRenderer {
                 return;
             }
             double radiation = radiationValue.getAsDouble();
-            float pointerAngle = calculatePointerAngle(radiation);
+            float pointerAngle = calculatePointerAngle(radiation) + calculatePointerTwitch(minecraft, radiation);
             float uiScale = Config.GEIGER_HUD_SCALE.get().floatValue();
 
             int scaledWidth = Mth.floor(GEIGER_UI_TEX_W * uiScale);
@@ -220,6 +221,29 @@ public class RadiationOverlayRenderer {
             ratio = (2.0f / 3.0f) + (local / 3.0f);
         }
         return Mth.lerp(ratio, ZERO_RADIATION_DEG, MAX_RADIATION_DEG);
+    }
+
+    private static float calculatePointerTwitch(Minecraft minecraft, double radiation) {
+        if (radiation <= 0.0 || minecraft.player == null) {
+            return 0.0f;
+        }
+
+        double maxRadiation = Math.max(Config.GEIGER_MAX_RADIATION.get(), 0.0001);
+        float intensity = (float) Mth.clamp(radiation / maxRadiation, 0.0, 1.0);
+        float maxAmplitude = (float) Math.max(0.0, Config.GEIGER_NEEDLE_JITTER_ANGLE.get());
+        if (maxAmplitude <= 0.0f) {
+            return 0.0f;
+        }
+
+        float minAmplitude = maxAmplitude * POINTER_TWITCH_MIN_RATIO;
+        float amplitude = Mth.lerp((float) Math.sqrt(intensity), minAmplitude, maxAmplitude);
+        float speed = (float) Math.max(0.1, Config.GEIGER_NEEDLE_JITTER_SPEED.get());
+        float time = (minecraft.player.tickCount + minecraft.getFrameTime()) * speed;
+
+        // Blend two waves so the motion reads as a subtle Geiger flutter instead of a smooth pendulum.
+        float waveA = Mth.sin(time * 0.95f);
+        float waveB = Mth.sin(time * 3.1f + 0.8f) * 0.45f;
+        return (waveA + waveB) * amplitude;
     }
 
     private static float calculateDosimeterFillRatio(double dose) {

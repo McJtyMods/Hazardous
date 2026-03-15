@@ -33,6 +33,8 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_MEDIUM_MIN_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_HIGH_MIN_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_SOUND_VOLUME;
+    public static ForgeConfigSpec.DoubleValue GEIGER_NEEDLE_JITTER_ANGLE;
+    public static ForgeConfigSpec.DoubleValue GEIGER_NEEDLE_JITTER_SPEED;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue GEIGER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue GEIGER_HUD_OFFSET_X;
@@ -109,6 +111,12 @@ public class Config {
         GEIGER_SOUND_VOLUME = clientBuilder
                 .comment("Volume multiplier for geiger loops")
                 .defineInRange("geigerSoundVolume", 0.8, 0.0, 1.0);
+        GEIGER_NEEDLE_JITTER_ANGLE = clientBuilder
+                .comment("Maximum angle in degrees for geiger needle jitter when radiation is present")
+                .defineInRange("geigerNeedleJitterAngle", 1.8, 0.0, 10.0);
+        GEIGER_NEEDLE_JITTER_SPEED = clientBuilder
+                .comment("Speed multiplier for geiger needle jitter animation")
+                .defineInRange("geigerNeedleJitterSpeed", 1.1, 0.1, 10.0);
         GEIGER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("geigerHudAnchor", "top_right");
