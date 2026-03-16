@@ -627,7 +627,7 @@ Recipe:
 }
 ```
 
-### 4.4 Resistance Pills (`hazardous:resistance_pills`)
+### 4.4 Anti-rad Pills (`hazardous:resistance_pills`)
 
 Behavior:
 - Edible item with a normal food-use animation.
@@ -818,7 +818,7 @@ Suggested workflow:
 1. Use `/haz radiationhere` where your source should apply.
 2. Use `/haz dose` after waiting a few seconds to confirm accumulation.
 3. Use `/haz resistances` to inspect current resistance attributes.
-4. Eat resistance pills and run `/haz resistances` again to confirm the attribute increase.
+4. Eat anti-rad pills and run `/haz resistances` again to confirm the attribute increase.
 5. Use pills and run `/haz dose` again to confirm dose reduction.
 6. Wear gas mask and compare `/haz dose` growth with and without mask.
 

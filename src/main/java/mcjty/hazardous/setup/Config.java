@@ -78,10 +78,10 @@ public class Config {
                 .comment("Dose removed from all accumulated personal hazard dose entries when using pills")
                 .defineInRange("pillsDoseHeal", 20.0, 0.0, 1_000_000.0);
         RESISTANCE_PILLS_ATTRIBUTE = builder
-                .comment("Attribute id granted by resistance pills. Leave empty to disable")
+                .comment("Attribute id granted by anti-rad pills. Leave empty to disable")
                 .define("resistancePillsAttribute", Hazardous.MODID + ":radioactive_type_resistance");
         RESISTANCE_PILLS_AMOUNT = builder
-                .comment("Amount added to the configured attribute each time resistance pills are eaten")
+                .comment("Amount added to the configured attribute each time anti-rad pills are eaten")
                 .defineInRange("resistancePillsAmount", 0.1, 0.0, 1.0);
 
         builder.pop();

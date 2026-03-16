@@ -137,9 +137,9 @@ public class DataGenerators {
                                 .unlockedBy("has_golden_apple", InventoryChangeTrigger.TriggerInstance.hasItems(Items.GOLDEN_APPLE))
                                 .save(consumer)),
                 Dob.itemBuilder(Registration.RESISTANCE_PILLS)
-                        .name("Resistance Pills")
+                        .name("Anti-rad Pills")
                         .generatedItem("item/resistance_pills")
-                        .keyedMessage("header", "Resistance Pills")
+                        .keyedMessage("header", "Anti-rad Pills")
                         .keyedMessage("desc", "Adds to a configured resistance attribute when eaten")
                         .keyedMessage("attribute", "Granted attribute: ")
                         .keyedMessage("amount", "Amount per use: ")
