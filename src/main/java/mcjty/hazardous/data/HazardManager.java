@@ -23,9 +23,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +37,9 @@ public class HazardManager {
     private static final double MIN_EFFECTIVE_RADIATION = 1.0e-6;
     private static final Map<Pair<ResourceKey<Level>, ResourceLocation>, Double> lastCachedValue = new HashMap<>();
     private static final Map<HazardType.Blocking.Absorption, AbsorptionModel> ABSORPTION_MODELS = new HashMap<>();
+
+    public record TooltipEmission(ResourceLocation hazardTypeId, double intensity) {
+    }
 
     public static double getHazardValue(HazardType type, Level level, Player player) {
         Registry<HazardSource> sources = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_SOURCE_REGISTRY_KEY);
@@ -63,6 +69,62 @@ public class HazardManager {
 
     public static double getLastCachedValue(ResourceLocation typeId, Level level) {
         return lastCachedValue.getOrDefault(Pair.of(level.dimension(), typeId), 0.0);
+    }
+
+    public static List<TooltipEmission> getItemEmissions(ItemStack stack, @Nullable Player player) {
+        if (player == null || stack.isEmpty()) {
+            return List.of();
+        }
+
+        Level level = player.level();
+        Registry<HazardSource> sources = Tools.getRegistryAccess(level).registry(CustomRegistries.HAZARD_SOURCE_REGISTRY_KEY).orElse(null);
+        if (sources == null) {
+            return List.of();
+        }
+        Map<ResourceLocation, Double> intensities = new LinkedHashMap<>();
+        for (HazardSource source : sources) {
+            ResourceLocation sourceId = sources.getKey(source);
+            if (sourceId == null || !Config.isHazardSourceEnabled(sourceId)) {
+                continue;
+            }
+            if (!(source.association() instanceof HazardSource.Association.Item association)) {
+                continue;
+            }
+            if (association.stacks().isEmpty()) {
+                continue;
+            }
+            boolean matches = false;
+            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
+                if (predicate.matches(stack)) {
+                    matches = true;
+                    break;
+                }
+            }
+            if (!matches) {
+                continue;
+            }
+
+            double intensity = getBaseIntensity(source.transmission());
+            if (intensity <= 0.0) {
+                continue;
+            }
+            intensities.merge(source.hazardType(), intensity, Double::sum);
+        }
+
+        return intensities.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(Comparator.comparing(ResourceLocation::toString)))
+                .map(entry -> new TooltipEmission(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    private static double getBaseIntensity(HazardSource.Transmission transmission) {
+        if (transmission instanceof HazardSource.Transmission.Point point) {
+            return Math.max(0.0, point.baseIntensity());
+        }
+        if (transmission instanceof HazardSource.Transmission.Contact contact) {
+            return Math.max(0.0, contact.baseIntensity());
+        }
+        return 0.0;
     }
 
     private static AbsorptionModel getAbsorptionModel(HazardType.Blocking.Absorption absorption) {
