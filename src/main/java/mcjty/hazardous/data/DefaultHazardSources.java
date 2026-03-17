@@ -4,7 +4,9 @@ import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.objects.HazardSource;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class DefaultHazardSources {
 
@@ -29,7 +31,7 @@ public class DefaultHazardSources {
                             12,
                             true,
                             0.05),
-                    new HazardSource.Association.EntityType(java.util.List.of(new ResourceLocation("minecraft", "zombie")), java.util.List.of(), 3.0)
+                    new HazardSource.Association.EntityType(List.of(new ResourceLocation("minecraft", "zombie")), List.of(), 3.0)
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_buildings"),
             new HazardSource(
@@ -52,7 +54,7 @@ public class DefaultHazardSources {
                             false,
                             0.0),
                     new HazardSource.Association.Item(
-                            java.util.List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, java.util.Optional.empty())),
+                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())),
                             4.0)
             ),
             new ResourceLocation(Hazardous.MODID, "dropped_lava_bucket"),
@@ -64,8 +66,8 @@ public class DefaultHazardSources {
                             false,
                             0.0),
                     new HazardSource.Association.EntityType(
-                            java.util.List.of(new ResourceLocation("minecraft", "item")),
-                            java.util.List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, java.util.Optional.empty())),
+                            List.of(new ResourceLocation("minecraft", "item")),
+                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())),
                             4.0)
             ),
             new ResourceLocation(Hazardous.MODID, "near_lava"),

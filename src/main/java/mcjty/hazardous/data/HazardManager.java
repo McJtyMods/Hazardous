@@ -93,18 +93,12 @@ public class HazardManager {
             if (association.stacks().isEmpty()) {
                 continue;
             }
-            boolean matches = false;
-            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
-                if (predicate.matches(stack)) {
-                    matches = true;
-                    break;
-                }
-            }
-            if (!matches) {
+            double stackMultiplier = getMatchingStackMultiplier(stack, association.stacks());
+            if (stackMultiplier <= 0.0) {
                 continue;
             }
 
-            double intensity = getBaseIntensity(source.transmission());
+            double intensity = getBaseIntensity(source.transmission()) * stackMultiplier;
             if (intensity <= 0.0) {
                 continue;
             }
@@ -265,13 +259,18 @@ public class HazardManager {
             }
             Level level = player.level();
             AABB bounds = player.getBoundingBox().inflate(maxDistance);
-            List<Entity> entities = new ArrayList<>();
+            Map<Entity, Double> entities = new HashMap<>();
             for (ResourceLocation id : a.entityTypes()) {
                 var entityType = BuiltInRegistries.ENTITY_TYPE.get(id);
                 if (entityType == null) {
                     continue;
                 }
-                entities.addAll(level.getEntities(entityType, bounds, entity -> entity != player && matchesEntityAssociation(entity, a)));
+                for (Entity entity : level.getEntities(entityType, bounds, entity -> entity != player)) {
+                    double stackMultiplier = getEntityAssociationStackMultiplier(entity, a);
+                    if (stackMultiplier > 0.0) {
+                        entities.put(entity, stackMultiplier);
+                    }
+                }
             }
             if (entities.isEmpty()) {
                 return 0.0;
@@ -280,12 +279,13 @@ public class HazardManager {
                 @Override
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
-                    for (Entity entity : entities) {
+                    for (Map.Entry<Entity, Double> entry : entities.entrySet()) {
+                        Entity entity = entry.getKey();
                         double d = player.distanceTo(entity);
                         if (d > maxDistance) {
                             continue;
                         }
-                        double raw = computePointRaw(type, t, d);
+                        double raw = computePointRaw(type, t, d) * entry.getValue();
                         if (raw <= 0.0) {
                             continue;
                         }
@@ -300,9 +300,10 @@ public class HazardManager {
                 @Override
                 public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
                     double sum = 0.0;
-                    for (Entity entity : entities) {
+                    for (Map.Entry<Entity, Double> entry : entities.entrySet()) {
+                        Entity entity = entry.getKey();
                         if (player.getBoundingBox().intersects(entity.getBoundingBox())) {
-                            sum += t.baseIntensity();
+                            sum += t.baseIntensity() * entry.getValue();
                         }
                     }
                     return Math.max(0.0, sum);
@@ -310,17 +311,11 @@ public class HazardManager {
             });
         }
 
-        private boolean matchesEntityAssociation(Entity entity, HazardSource.Association.EntityType association) {
+        private double getEntityAssociationStackMultiplier(Entity entity, HazardSource.Association.EntityType association) {
             if (!(entity instanceof ItemEntity itemEntity) || association.stacks().isEmpty()) {
-                return true;
+                return 1.0;
             }
-            ItemStack stack = itemEntity.getItem();
-            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
-                if (predicate.matches(stack)) {
-                    return true;
-                }
-            }
-            return false;
+            return getMatchingStackMultiplier(itemEntity.getItem(), association.stacks());
         }
 
         @Override
@@ -369,7 +364,7 @@ public class HazardManager {
             }
             Level level = player.level();
             AABB bounds = player.getBoundingBox().inflate(maxDistance);
-            List<Player> sourcePlayers = new ArrayList<>();
+            Map<Player, Double> sourcePlayers = new HashMap<>();
             for (Player candidate : level.players()) {
                 if (candidate.isRemoved()) {
                     continue;
@@ -380,8 +375,9 @@ public class HazardManager {
                 if (player.distanceTo(candidate) > maxDistance) {
                     continue;
                 }
-                if (matchesItemAssociation(candidate, a)) {
-                    sourcePlayers.add(candidate);
+                double stackMultiplier = getItemAssociationStackMultiplier(candidate, a);
+                if (stackMultiplier > 0.0) {
+                    sourcePlayers.put(candidate, stackMultiplier);
                 }
             }
             if (sourcePlayers.isEmpty()) {
@@ -391,9 +387,10 @@ public class HazardManager {
                 @Override
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
-                    for (Player sourcePlayer : sourcePlayers) {
+                    for (Map.Entry<Player, Double> entry : sourcePlayers.entrySet()) {
+                        Player sourcePlayer = entry.getKey();
                         double d = player.distanceTo(sourcePlayer);
-                        double raw = computePointRaw(type, t, d);
+                        double raw = computePointRaw(type, t, d) * entry.getValue();
                         if (raw <= 0.0) {
                             continue;
                         }
@@ -408,9 +405,10 @@ public class HazardManager {
                 @Override
                 public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
                     double sum = 0.0;
-                    for (Player sourcePlayer : sourcePlayers) {
+                    for (Map.Entry<Player, Double> entry : sourcePlayers.entrySet()) {
+                        Player sourcePlayer = entry.getKey();
                         if (player.getBoundingBox().intersects(sourcePlayer.getBoundingBox())) {
-                            sum += t.baseIntensity();
+                            sum += t.baseIntensity() * entry.getValue();
                         }
                     }
                     return Math.max(0.0, sum);
@@ -418,32 +416,18 @@ public class HazardManager {
             });
         }
 
-        private boolean matchesItemAssociation(Player candidate, HazardSource.Association.Item association) {
-            for (HazardSource.Association.Item.ItemStackPredicate predicate : association.stacks()) {
-                if (matchesAnyCarriedStack(candidate, predicate)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private boolean matchesAnyCarriedStack(Player candidate, HazardSource.Association.Item.ItemStackPredicate predicate) {
+        private double getItemAssociationStackMultiplier(Player candidate, HazardSource.Association.Item association) {
+            double multiplier = 0.0;
             for (ItemStack stack : candidate.getInventory().items) {
-                if (predicate.matches(stack)) {
-                    return true;
-                }
+                multiplier += getMatchingStackMultiplier(stack, association.stacks());
             }
             for (ItemStack stack : candidate.getInventory().offhand) {
-                if (predicate.matches(stack)) {
-                    return true;
-                }
+                multiplier += getMatchingStackMultiplier(stack, association.stacks());
             }
             for (ItemStack stack : candidate.getInventory().armor) {
-                if (predicate.matches(stack)) {
-                    return true;
-                }
+                multiplier += getMatchingStackMultiplier(stack, association.stacks());
             }
-            return false;
+            return multiplier;
         }
 
         @Override
@@ -560,6 +544,21 @@ public class HazardManager {
                 }
             });
         }
+    }
+
+    private static double getMatchingStackMultiplier(ItemStack stack, List<HazardSource.Association.Item.ItemStackPredicate> predicates) {
+        double multiplier = 0.0;
+        for (HazardSource.Association.Item.ItemStackPredicate predicate : predicates) {
+            multiplier = Math.max(multiplier, getMatchingStackMultiplier(stack, predicate));
+        }
+        return multiplier;
+    }
+
+    private static double getMatchingStackMultiplier(ItemStack stack, HazardSource.Association.Item.ItemStackPredicate predicate) {
+        if (!predicate.matches(stack)) {
+            return 0.0;
+        }
+        return (double) stack.getCount() / predicate.count();
     }
 
     private static class AbsorptionModel {

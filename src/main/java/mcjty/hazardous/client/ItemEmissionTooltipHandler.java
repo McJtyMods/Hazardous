@@ -1,8 +1,11 @@
 package mcjty.hazardous.client;
 
 import mcjty.hazardous.data.HazardManager;
+import mcjty.hazardous.network.PacketRequestItemEmissions;
+import mcjty.hazardous.setup.Messages;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.List;
@@ -11,7 +14,22 @@ import java.util.Locale;
 public class ItemEmissionTooltipHandler {
 
     public static void onItemTooltip(ItemTooltipEvent event) {
-        List<HazardManager.TooltipEmission> emissions = HazardManager.getItemEmissions(event.getItemStack(), event.getEntity());
+        ItemStack stack = event.getItemStack();
+        if (event.getEntity() == null || stack.isEmpty()) {
+            return;
+        }
+
+        List<HazardManager.TooltipEmission> emissions = ClientItemEmissionData.getEmissions(stack);
+        if (emissions == null) {
+            if (ClientItemEmissionData.markPending(stack)) {
+                Messages.sendToServer(new PacketRequestItemEmissions(stack));
+            }
+            if (ClientItemEmissionData.isPending(stack)) {
+                event.getToolTip().add(Component.literal("Checking carried emissions...")
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
+            return;
+        }
         if (emissions.isEmpty()) {
             return;
         }
