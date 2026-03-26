@@ -1,4 +1,5 @@
 {
   "geiger.mediumdose" : {"category": "misc", "sounds": ["hazardous:mediumdose"]},
-  "geiger.highdose" : {"category": "misc", "sounds": ["hazardous:highdose"]}
+  "geiger.highdose" : {"category": "misc", "sounds": ["hazardous:highdose"]},
+  "dosimeter.mediumbeep" : {"category": "misc", "sounds": ["hazardous:mediumbeep"]}
 }

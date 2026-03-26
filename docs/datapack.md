@@ -711,6 +711,7 @@ Behavior:
 1. Green below `dosimeterMediumDose`
 2. Yellow/orange at/above `dosimeterMediumDose`
 3. Red at/above `dosimeterHighDose` (internally clamped to be at least `dosimeterMediumDose`)
+- Radiation icon shake starts at `dosimeterMediumDose`, using `dosimeterIconShakeMediumDistance`, and ramps up to `dosimeterIconShakeMaxDistance` by `dosimeterMaxDose`. Animation speed uses `dosimeterIconShakeSpeed`.
 - Position controlled by `dosimeterHudAnchor`, `dosimeterHudScale`, `dosimeterHudOffsetX`, `dosimeterHudOffsetY`.
 
 Recipe:
@@ -755,9 +756,12 @@ Client config (`hazardous-client.toml`):
 - `geigerHudOffsetX` (int `-5000..5000`, default `8`)
 - `geigerHudOffsetY` (int `-5000..5000`, default `8`)
 - `dosimeterDisplayResource` (string resource location from player dose data, default `hazardous:radioactive_type`; empty = sum of all dose entries)
-- `dosimeterMaxDose` (double `0.0001..1000000.0`, default `200.0`; value treated as full bar)
-- `dosimeterMediumDose` (double `0.0..1000000.0`, default `50.0`; yellow/orange threshold)
-- `dosimeterHighDose` (double `0.0..1000000.0`, default `120.0`; red threshold, clamped to at least medium threshold)
+- `dosimeterMaxDose` (double `0.0001..1000000.0`, default `20.0`; value treated as full bar)
+- `dosimeterMediumDose` (double `0.0..1000000.0`, default `3.0`; yellow/orange threshold)
+- `dosimeterHighDose` (double `0.0..1000000.0`, default `6.0`; red threshold, clamped to at least medium threshold)
+- `dosimeterIconShakeMediumDistance` (double `0.0..10.0`, default `0.35`; icon shake offset once medium dose is reached)
+- `dosimeterIconShakeMaxDistance` (double `0.0..10.0`, default `1.1`; icon shake offset once max dose is reached)
+- `dosimeterIconShakeSpeed` (double `0.1..10.0`, default `0.9`; speed multiplier for icon shake animation)
 - `dosimeterHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
 - `dosimeterHudScale` (double `0.1..10.0`, default `1.0`)
 - `dosimeterHudOffsetX` (int `-5000..5000`, default `8`)
@@ -787,9 +791,12 @@ geigerHudScale = 1.0
 geigerHudOffsetX = 8
 geigerHudOffsetY = 8
 dosimeterDisplayResource = "hazardous:radioactive_type"
-dosimeterMaxDose = 200.0
-dosimeterMediumDose = 50.0
-dosimeterHighDose = 120.0
+dosimeterMaxDose = 20.0
+dosimeterMediumDose = 3.0
+dosimeterHighDose = 6.0
+dosimeterIconShakeMediumDistance = 0.35
+dosimeterIconShakeMaxDistance = 1.1
+dosimeterIconShakeSpeed = 0.9
 dosimeterHudAnchor = "top_right"
 dosimeterHudScale = 1.0
 dosimeterHudOffsetX = 8

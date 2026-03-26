@@ -24,6 +24,7 @@ public class RadiationOverlayRenderer {
     private static final ResourceLocation GEIGER_UI = new ResourceLocation(Hazardous.MODID, "textures/gui/geiger_ui.png");
     private static final ResourceLocation GEIGER_UI_POINTER = new ResourceLocation(Hazardous.MODID, "textures/gui/geiger_ui_pointer.png");
     private static final ResourceLocation DOSIMETER_UI = new ResourceLocation(Hazardous.MODID, "textures/gui/dosimeter_ui.png");
+    private static final ResourceLocation DOSIMETER_UI_ICON = new ResourceLocation(Hazardous.MODID, "textures/gui/dosimeter_ui_icon.png");
 
     private static final int GEIGER_UI_TEX_W = 46;
     private static final int GEIGER_UI_TEX_H = 72;
@@ -34,6 +35,10 @@ public class RadiationOverlayRenderer {
 
     private static final int DOSIMETER_UI_TEX_W = 40;
     private static final int DOSIMETER_UI_TEX_H = 40;
+    private static final int DOSIMETER_ICON_X = 11;
+    private static final int DOSIMETER_ICON_Y = 7;
+    private static final int DOSIMETER_ICON_TEX_W = 9;
+    private static final int DOSIMETER_ICON_TEX_H = 9;
     private static final int DOSIMETER_BAR_X = 26;
     private static final int DOSIMETER_BAR_Y = 7;
     private static final int DOSIMETER_BAR_W = 5;
@@ -50,6 +55,7 @@ public class RadiationOverlayRenderer {
     // Use equivalent south-east angle +360 so lerp sweeps over the top arc instead of the bottom.
     private static final float MAX_RADIATION_DEG = 495.0f; // South-east
     private static final float POINTER_TWITCH_MIN_RATIO = 0.27f;
+    private static final HudShakeOffset NO_SHAKE = new HudShakeOffset(0.0f, 0.0f);
 
     private static final float DIAL_CENTER_X_RATIO = 199.0f / 400.0f;
     private static final float DIAL_CENTER_Y_RATIO = 117.0f / 576.0f;
@@ -160,6 +166,7 @@ public class RadiationOverlayRenderer {
         event.getGuiGraphics().pose().scale(uiScale, uiScale, 1.0f);
 
         event.getGuiGraphics().blit(DOSIMETER_UI, 0, 0, 0, 0, DOSIMETER_UI_TEX_W, DOSIMETER_UI_TEX_H, DOSIMETER_UI_TEX_W, DOSIMETER_UI_TEX_H);
+        renderDosimeterRadiationIcon(event, minecraft, dose);
 
         int barColor = getDosimeterBarColor(dose);
         int fillHeight = Mth.floor(DOSIMETER_BAR_H * ratio);
@@ -172,6 +179,15 @@ public class RadiationOverlayRenderer {
 
         renderDosimeterDoseText(event, minecraft, dose);
 
+        event.getGuiGraphics().pose().popPose();
+    }
+
+    private static void renderDosimeterRadiationIcon(RenderGuiOverlayEvent.Post event, Minecraft minecraft, double dose) {
+        HudShakeOffset shake = calculateDosimeterIconShake(minecraft, dose);
+
+        event.getGuiGraphics().pose().pushPose();
+        event.getGuiGraphics().pose().translate(DOSIMETER_ICON_X + shake.x(), DOSIMETER_ICON_Y + shake.y(), 0.0f);
+        event.getGuiGraphics().blit(DOSIMETER_UI_ICON, 0, 0, 0, 0, DOSIMETER_ICON_TEX_W, DOSIMETER_ICON_TEX_H, DOSIMETER_ICON_TEX_W, DOSIMETER_ICON_TEX_H);
         event.getGuiGraphics().pose().popPose();
     }
 
@@ -270,6 +286,46 @@ public class RadiationOverlayRenderer {
         return DOSIMETER_LOW_COLOR;
     }
 
+    private static HudShakeOffset calculateDosimeterIconShake(Minecraft minecraft, double dose) {
+        if (minecraft.player == null) {
+            return NO_SHAKE;
+        }
+
+        float amplitude = calculateDosimeterIconShakeAmplitude(dose);
+        if (amplitude <= 0.0f) {
+            return NO_SHAKE;
+        }
+
+        float speed = (float) Math.max(0.1, Config.DOSIMETER_ICON_SHAKE_SPEED.get());
+        float time = (minecraft.player.tickCount + minecraft.getFrameTime()) * speed;
+
+        // Blend a couple of frequencies so the icon vibrates gently instead of orbiting in a perfect loop.
+        float waveX = (Mth.sin(time * 0.93f) * 0.7f) + (Mth.sin(time * 2.41f + 0.6f) * 0.3f);
+        float waveY = (Mth.cos(time * 1.11f + 0.4f) * 0.65f) + (Mth.sin(time * 3.17f + 1.2f) * 0.35f);
+        return new HudShakeOffset(waveX * amplitude, waveY * amplitude * 0.85f);
+    }
+
+    private static float calculateDosimeterIconShakeAmplitude(double dose) {
+        double medium = Math.max(0.0, Config.DOSIMETER_MEDIUM_DOSE.get());
+        if (dose < medium) {
+            return 0.0f;
+        }
+
+        float mediumAmplitude = (float) Math.max(0.0, Config.DOSIMETER_ICON_SHAKE_MEDIUM_DISTANCE.get());
+        float maxAmplitude = (float) Math.max(mediumAmplitude, Config.DOSIMETER_ICON_SHAKE_MAX_DISTANCE.get());
+        if (maxAmplitude <= 0.0f) {
+            return 0.0f;
+        }
+
+        double maxDose = Math.max(Config.DOSIMETER_MAX_DOSE.get(), medium);
+        if (maxDose <= medium) {
+            return maxAmplitude;
+        }
+
+        float progress = (float) Mth.clamp((dose - medium) / (maxDose - medium), 0.0, 1.0);
+        return Mth.lerp(progress, mediumAmplitude, maxAmplitude);
+    }
+
     private static double resolveDoseToDisplay(Map<ResourceLocation, Double> values) {
         Optional<ResourceLocation> resource = Config.getDosimeterDisplayResource();
         if (resource.isPresent()) {
@@ -319,5 +375,8 @@ public class RadiationOverlayRenderer {
             return true;
         }
         return ModList.get().isLoaded("curios") && CuriosCompat.hasActiveGeigerCounter(player);
+    }
+
+    private record HudShakeOffset(float x, float y) {
     }
 }

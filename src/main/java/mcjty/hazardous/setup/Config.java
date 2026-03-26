@@ -43,6 +43,9 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue DOSIMETER_MAX_DOSE;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_MEDIUM_DOSE;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_HIGH_DOSE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_MEDIUM_DISTANCE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_MAX_DISTANCE;
+    public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_SPEED;
     public static ForgeConfigSpec.ConfigValue<String> DOSIMETER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_X;
@@ -141,6 +144,15 @@ public class Config {
         DOSIMETER_HIGH_DOSE = clientBuilder
                 .comment("Dose threshold where dosimeter bar changes from yellow/orange to red")
                 .defineInRange("dosimeterHighDose", 6.0, 0.0, 1_000_000.0);
+        DOSIMETER_ICON_SHAKE_MEDIUM_DISTANCE = clientBuilder
+                .comment("Maximum dosimeter radiation icon shake offset in texture pixels once the medium dose threshold is reached")
+                .defineInRange("dosimeterIconShakeMediumDistance", 0.35, 0.0, 10.0);
+        DOSIMETER_ICON_SHAKE_MAX_DISTANCE = clientBuilder
+                .comment("Maximum dosimeter radiation icon shake offset in texture pixels once the max dose threshold is reached")
+                .defineInRange("dosimeterIconShakeMaxDistance", 1.1, 0.0, 10.0);
+        DOSIMETER_ICON_SHAKE_SPEED = clientBuilder
+                .comment("Speed multiplier for dosimeter radiation icon shake animation")
+                .defineInRange("dosimeterIconShakeSpeed", 0.9, 0.1, 10.0);
         DOSIMETER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("dosimeterHudAnchor", "top_right");
