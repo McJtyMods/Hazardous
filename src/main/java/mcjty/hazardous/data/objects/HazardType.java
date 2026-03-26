@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Mth;
 
 import java.util.List;
 
@@ -197,7 +198,7 @@ public record HazardType(
                 if (input >= 0) {
                     if (exponential && capped) {
                         double factor = 1.0 - (cur / max);
-                        factor = net.minecraft.util.Mth.clamp(factor, 0.0, 1.0);
+                        factor = Mth.clamp(factor, 0.0, 1.0);
                         next = cur + (input * factor);
                     } else {
                         next = cur + input;
@@ -208,7 +209,7 @@ public record HazardType(
             }
 
             if (capped) {
-                next = net.minecraft.util.Mth.clamp(next, 0.0, max);
+                next = Mth.clamp(next, 0.0, max);
             } else {
                 next = Math.max(0.0, next);
             }

@@ -73,7 +73,7 @@ public class PlayerDoseData {
         DataResult<Tag> result = CODEC.encodeStart(NbtOps.INSTANCE, doses);
         return result.result().orElseGet(() -> {
             Hazardous.LOGGER.error("Failed to encode PlayerDoseData NBT");
-            return Tag.TAG_END == 0 ? null : null;
+            return null;
         });
     }
 

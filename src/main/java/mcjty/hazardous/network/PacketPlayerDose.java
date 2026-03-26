@@ -1,7 +1,7 @@
 package mcjty.hazardous.network;
 
 import mcjty.hazardous.Hazardous;
-import mcjty.hazardous.client.ClientDoseData;
+import mcjty.hazardous.client.ClientData;
 import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.PlayPayloadContext;
 import net.minecraft.network.FriendlyByteBuf;
@@ -38,6 +38,6 @@ public record PacketPlayerDose(Map<ResourceLocation, Double> values) implements 
     }
 
     public void handle(PlayPayloadContext ctx) {
-        ctx.workHandler().submitAsync(() -> ctx.player().ifPresent(player -> ClientDoseData.setValues(values)));
+        ctx.workHandler().submitAsync(() -> ctx.player().ifPresent(player -> ClientData.setDoseValues(values)));
     }
 }

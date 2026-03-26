@@ -1,0 +1,27 @@
+package mcjty.hazardous.client;
+
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ClientData {
+    private static Map<ResourceLocation, Double> doseValues = new HashMap<>();
+    static Map<ResourceLocation, Double> radiationValues = new HashMap<>();
+
+    public static void setDoseValues(Map<ResourceLocation, Double> doseValues) {
+        ClientData.doseValues = doseValues;
+    }
+
+    public static Map<ResourceLocation, Double> getDoseValues() {
+        return doseValues;
+    }
+
+    public static void setRadiationValues(Map<ResourceLocation, Double> radiationValues) {
+        ClientData.radiationValues = radiationValues;
+    }
+
+    public static Map<ResourceLocation, Double> getRadiationValues() {
+        return radiationValues;
+    }
+}

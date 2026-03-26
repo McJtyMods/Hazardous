@@ -1,11 +1,13 @@
 package mcjty.hazardous.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.compat.CuriosCompat;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -112,28 +114,31 @@ public class RadiationOverlayRenderer {
                 case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
             };
 
-            event.getGuiGraphics().pose().pushPose();
-            event.getGuiGraphics().pose().translate(x, y, 0.0f);
-            event.getGuiGraphics().pose().scale(uiScale, uiScale, 1.0f);
+            GuiGraphics graphics = event.getGuiGraphics();
+            PoseStack pose = graphics.pose();
 
-            event.getGuiGraphics().blit(GEIGER_UI, 0, 0, 0, 0, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H);
+            pose.pushPose();
+            pose.translate(x, y, 0.0f);
+            pose.scale(uiScale, uiScale, 1.0f);
+
+            graphics.blit(GEIGER_UI, 0, 0, 0, 0, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H, GEIGER_UI_TEX_W, GEIGER_UI_TEX_H);
 
             int dialCenterX = Mth.floor(GEIGER_UI_TEX_W * DIAL_CENTER_X_RATIO);
             int dialCenterY = Mth.floor(GEIGER_UI_TEX_H * DIAL_CENTER_Y_RATIO);
 
-            event.getGuiGraphics().pose().pushPose();
-            event.getGuiGraphics().pose().translate(dialCenterX, dialCenterY, 0.0f);
-            event.getGuiGraphics().pose().mulPose(Axis.ZP.rotationDegrees(pointerAngle));
-            event.getGuiGraphics().pose().translate(-POINTER_PIVOT_X, -POINTER_PIVOT_Y, 0.0f);
-            event.getGuiGraphics().blit(GEIGER_UI_POINTER, 0, 0, 0, 0, POINTER_TEX_W, POINTER_TEX_H, POINTER_TEX_W, POINTER_TEX_H);
-            event.getGuiGraphics().pose().popPose();
+            pose.pushPose();
+            pose.translate(dialCenterX, dialCenterY, 0.0f);
+            pose.mulPose(Axis.ZP.rotationDegrees(pointerAngle));
+            pose.translate(-POINTER_PIVOT_X, -POINTER_PIVOT_Y, 0.0f);
+            graphics.blit(GEIGER_UI_POINTER, 0, 0, 0, 0, POINTER_TEX_W, POINTER_TEX_H, POINTER_TEX_W, POINTER_TEX_H);
+            pose.popPose();
 
-            event.getGuiGraphics().pose().popPose();
+            pose.popPose();
         }
     }
 
     private static void renderDosimeter(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
-        Map<ResourceLocation, Double> values = ClientDoseData.getValues();
+        Map<ResourceLocation, Double> values = ClientData.getDoseValues();
         if (values == null || values.isEmpty()) {
             return;
         }
@@ -349,7 +354,7 @@ public class RadiationOverlayRenderer {
         if (displayResource.isEmpty()) {
             return OptionalDouble.empty();
         }
-        Map<ResourceLocation, Double> values = ClientRadiationData.getValues();
+        Map<ResourceLocation, Double> values = ClientData.getRadiationValues();
         if (values == null) {
             return OptionalDouble.empty();
         }

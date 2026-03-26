@@ -22,15 +22,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HazardManager {
 
@@ -261,7 +257,7 @@ public class HazardManager {
             AABB bounds = player.getBoundingBox().inflate(maxDistance);
             Map<Entity, Double> entities = new HashMap<>();
             for (ResourceLocation id : a.entityTypes()) {
-                var entityType = BuiltInRegistries.ENTITY_TYPE.get(id);
+                var entityType = ForgeRegistries.ENTITY_TYPES.getValue(id);
                 if (entityType == null) {
                     continue;
                 }

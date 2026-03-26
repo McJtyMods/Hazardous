@@ -1,7 +1,7 @@
 package mcjty.hazardous.network;
 
 import mcjty.hazardous.Hazardous;
-import mcjty.hazardous.client.ClientRadiationData;
+import mcjty.hazardous.client.ClientData;
 import mcjty.lib.network.CustomPacketPayload;
 import mcjty.lib.network.PlayPayloadContext;
 import net.minecraft.network.FriendlyByteBuf;
@@ -39,7 +39,7 @@ public record PacketRadiationAtPos(Map<ResourceLocation, Double> values) impleme
 
     public void handle(PlayPayloadContext ctx) {
         ctx.workHandler().submitAsync(() -> ctx.player().ifPresent(player -> {
-            ClientRadiationData.setValues(values);
+            ClientData.setRadiationValues(values);
         }));
     }
 }

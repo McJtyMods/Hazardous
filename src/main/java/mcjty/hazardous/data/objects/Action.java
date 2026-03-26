@@ -4,18 +4,18 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.network.PacketClientFx;
 import mcjty.hazardous.setup.Messages;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.UUID;
 
-/** What happens when the trigger fires. */
+/** What happens when the trigger fires */
 public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire, Action.Attribute, Action.ClientFx, Action.Command {
     private static Codec<? extends Action> actionCodec(String type) {
         return switch (type) {
@@ -36,10 +36,10 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
     ));
     String actionType();
 
-    /** Apply this action on the given player with provided dose value and scaling factor. */
+    /** Apply this action on the given player with provided dose value and scaling factor */
     void apply(Player player, double value, double factor);
 
-    /** Apply a MobEffectInstance (vanilla potion effect). */
+    /** Apply a MobEffectInstance (vanilla potion effect) */
     record Potion(
             ResourceLocation effect, // mob effect id
             int durationTicks,
@@ -67,7 +67,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         @Override
         public void apply(Player player, double value, double factor) {
             if (factor <= 0) return;
-            MobEffect effect = BuiltInRegistries.MOB_EFFECT.get(effect());
+            MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effect());
             if (effect != null) {
                 int duration = Math.max(1, durationTicks());
                 double scaled = intensityToAmplifier().eval(value) * factor;
@@ -102,16 +102,12 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             float amt = (float) Math.max(0.0, scaled);
             if (amt <= 0f) return;
             String path = damageType().getPath();
-            if ("magic".equals(path)) {
-                player.hurt(player.damageSources().magic(), amt);
-            } else if ("on_fire".equals(path)) {
-                player.hurt(player.damageSources().onFire(), amt);
-            } else if ("in_fire".equals(path)) {
-                player.hurt(player.damageSources().inFire(), amt);
-            } else if ("wither".equals(path)) {
-                player.hurt(player.damageSources().wither(), amt);
-            } else {
-                player.hurt(player.damageSources().generic(), amt);
+            switch (path) {
+                case "magic" -> player.hurt(player.damageSources().magic(), amt);
+                case "on_fire" -> player.hurt(player.damageSources().onFire(), amt);
+                case "in_fire" -> player.hurt(player.damageSources().inFire(), amt);
+                case "wither" -> player.hurt(player.damageSources().wither(), amt);
+                default -> player.hurt(player.damageSources().generic(), amt);
             }
         }
     }

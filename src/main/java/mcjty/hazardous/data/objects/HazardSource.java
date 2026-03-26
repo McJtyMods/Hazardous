@@ -167,17 +167,11 @@ public record HazardSource(
 
         interface Visitor<R> {
             R level(HazardType type, Association.Level a);
-
             R entityType(HazardType type, Association.EntityType a);
-
             R locations(HazardType type, Association.Locations a);
-
             R biome(HazardType type, Association.Biome a);
-
             R city(HazardType type, Association.City a);
-
             R block(HazardType type, Association.Block a);
-
             R item(HazardType type, Association.Item a);
         }
 
