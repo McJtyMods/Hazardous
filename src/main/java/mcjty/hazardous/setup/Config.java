@@ -26,6 +26,7 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
     public static ForgeConfigSpec.ConfigValue<String> RESISTANCE_PILLS_ATTRIBUTE;
     public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_AMOUNT;
+    public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_DURATION_TICKS;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_HAZARD_TYPE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_MEDIUM_THRESSHOLD;
@@ -86,6 +87,9 @@ public class Config {
         RESISTANCE_PILLS_AMOUNT = builder
                 .comment("Amount added to the configured attribute each time anti-rad pills are eaten")
                 .defineInRange("resistancePillsAmount", 0.1, 0.0, 1.0);
+        RESISTANCE_PILLS_DURATION_TICKS = builder
+                .comment("Duration in ticks for the temporary anti-rad pill resistance bonus (20 ticks = 1 second)")
+                .defineInRange("resistancePillsDurationTicks", 12000, 0, 1_000_000);
 
         builder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());

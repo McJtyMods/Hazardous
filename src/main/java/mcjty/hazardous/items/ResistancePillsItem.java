@@ -1,6 +1,8 @@
 package mcjty.hazardous.items;
 
+import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Config;
+import mcjty.hazardous.setup.ResistancePillEffects;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
 import net.minecraft.network.chat.Component;
@@ -10,7 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +32,7 @@ public class ResistancePillsItem extends BaseItem {
                     TooltipBuilder.general("desc"),
                     TooltipBuilder.parameter("attribute", stack -> Config.getResistancePillsAttribute().map(ResourceLocation::toString).orElse("disabled")),
                     TooltipBuilder.parameter("amount", stack -> String.format(Locale.ROOT, "%.2f", Mth.clamp(Config.RESISTANCE_PILLS_AMOUNT.get(), 0.0, 1.0))),
+                    TooltipBuilder.parameter("duration", stack -> formatDuration(Config.RESISTANCE_PILLS_DURATION_TICKS.get())),
                     TooltipBuilder.general("usage")
             );
 
@@ -53,11 +55,13 @@ public class ResistancePillsItem extends BaseItem {
 
         Optional<ResourceLocation> attributeId = Config.getResistancePillsAttribute();
         double amount = Mth.clamp(Config.RESISTANCE_PILLS_AMOUNT.get(), 0.0, 1.0);
-        if (attributeId.isEmpty() || amount <= 0.0) {
+        int durationTicks = Math.max(Config.RESISTANCE_PILLS_DURATION_TICKS.get(), 0);
+        if (attributeId.isEmpty() || amount <= 0.0 || durationTicks <= 0) {
             return result;
         }
 
-        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId.get());
+        ResourceLocation resolvedAttributeId = attributeId.get();
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(resolvedAttributeId);
         if (attribute == null) {
             return result;
         }
@@ -67,12 +71,12 @@ public class ResistancePillsItem extends BaseItem {
             return result;
         }
 
-        double newValue = instance.getBaseValue() + amount;
-        if (attribute instanceof RangedAttribute rangedAttribute) {
-            newValue = Mth.clamp(newValue, rangedAttribute.getMinValue(), rangedAttribute.getMaxValue());
-        }
-        instance.setBaseValue(newValue);
-        player.playSound(SoundEvents.GENERIC_DRINK, 0.6f, 1.1f);
+        long gameTime = level.getGameTime();
+        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+            store.addResistancePillEffect(resolvedAttributeId, amount, gameTime + durationTicks);
+            ResistancePillEffects.syncPlayer(player, store, gameTime);
+            player.playSound(SoundEvents.GENERIC_DRINK, 0.6f, 1.1f);
+        });
         return result;
     }
 
@@ -82,5 +86,24 @@ public class ResistancePillsItem extends BaseItem {
         if (id != null && TOOLTIP.isActive()) {
             TOOLTIP.makeTooltip(id, stack, tooltip, flag);
         }
+    }
+
+    private static String formatDuration(int ticks) {
+        if (ticks <= 0) {
+            return "disabled";
+        }
+        if (ticks % 20 != 0) {
+            return String.format(Locale.ROOT, "%.1f s", ticks / 20.0);
+        }
+        int totalSeconds = ticks / 20;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        if (minutes > 0 && seconds > 0) {
+            return minutes + " min " + seconds + " s";
+        }
+        if (minutes > 0) {
+            return minutes + " min";
+        }
+        return totalSeconds + " s";
     }
 }

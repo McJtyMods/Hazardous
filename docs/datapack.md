@@ -632,15 +632,15 @@ Recipe:
 Behavior:
 - Edible item with a normal food-use animation.
 - Uses `resistancePillsAttribute` to choose which player attribute to raise.
-- Adds `resistancePillsAmount` to that attribute's base value every time it is eaten.
-- If the configured attribute is a ranged attribute, the new value is clamped to that attribute's min/max range.
+- Each use adds a temporary resistance bonus of `resistancePillsAmount` for `resistancePillsDurationTicks`.
+- Multiple uses stack by amount, and each consumed pill expires independently.
 - If the configured attribute id is empty, invalid, or not attached to the player, eating the item has no resistance effect.
 - The built-in item model uses the `hazardous:item/resistance_pills` texture.
 
 Typical usage:
 1. Point `resistancePillsAttribute` at a hazard resistance attribute such as `hazardous:radioactive_type_resistance`
 2. Eat the item one or more times
-3. Use `/haz resistances` to inspect the updated player values
+3. Use `/haz resistances` to inspect the updated player values while the timer is active
 
 Recipe:
 
@@ -741,7 +741,8 @@ Server config (`hazardous-server.toml`):
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
 - `resistancePillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables the bonus)
-- `resistancePillsAmount` (double `0.0..1.0`, default `0.1`; amount added to the configured attribute base value per use)
+- `resistancePillsAmount` (double `0.0..1.0`, default `0.1`; temporary amount granted per use)
+- `resistancePillsDurationTicks` (int `0..1000000`, default `12000`; duration of each temporary pill bonus in ticks)
 
 Client config (`hazardous-client.toml`):
 - `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_type`, empty disables dial target)
@@ -777,6 +778,7 @@ gasmaskFilterRestore = 250
 pillsDoseHeal = 20.0
 resistancePillsAttribute = "hazardous:radioactive_type_resistance"
 resistancePillsAmount = 0.1
+resistancePillsDurationTicks = 12000
 
 # hazardous-client.toml
 geigerDisplayHazardType = "hazardous:radioactive_type"
@@ -825,7 +827,7 @@ Suggested workflow:
 1. Use `/haz radiationhere` where your source should apply.
 2. Use `/haz dose` after waiting a few seconds to confirm accumulation.
 3. Use `/haz resistances` to inspect current resistance attributes.
-4. Eat anti-rad pills and run `/haz resistances` again to confirm the attribute increase.
+4. Eat anti-rad pills and run `/haz resistances` again to confirm the temporary attribute increase.
 5. Use pills and run `/haz dose` again to confirm dose reduction.
 6. Wear gas mask and compare `/haz dose` growth with and without mask.
 

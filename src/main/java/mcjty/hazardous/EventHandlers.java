@@ -13,6 +13,7 @@ import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
 import mcjty.hazardous.setup.HazardAttributes;
 import mcjty.hazardous.setup.Messages;
+import mcjty.hazardous.setup.ResistancePillEffects;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -68,6 +69,7 @@ public class EventHandlers {
 
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
+            ResistancePillEffects.syncPlayer(event.player, store, gameTime);
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {
