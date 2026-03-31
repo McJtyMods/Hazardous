@@ -2,12 +2,16 @@ package mcjty.hazardous.compat;
 
 import mcjty.lib.varia.Logging;
 import mcjty.lostcities.api.ILostCities;
+import mcjty.lostcities.api.ILostChunkInfo;
+import mcjty.lostcities.api.ILostCityInfo;
 import mcjty.lostcities.api.ILostCityInformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModList;
+
+import java.util.Optional;
 
 public class LostCityCompat {
 
@@ -26,11 +30,19 @@ public class LostCityCompat {
         return hasLostCities;
     }
 
-    public static boolean isCity(Level level, BlockPos pos) {
+    public static boolean isCity(Level level, BlockPos pos, Optional<String> style) {
         ILostCityInformation info = LostCityInternal.lostCities.getLostInfo(level);
         if (info != null) {
             ChunkPos cp =  new ChunkPos(pos);
-            return info.getChunkInfo(cp.x, cp.z).isCity();
+            ILostChunkInfo chunkInfo = info.getChunkInfo(cp.x, cp.z);
+            if (!chunkInfo.isCity()) {
+                return false;
+            }
+            if (style.isEmpty()) {
+                return true;
+            }
+            ILostCityInfo cityInfo = chunkInfo.getCityInfo();
+            return cityInfo != null && style.get().equals(cityInfo.getCityStyle());
         }
         return false;
     }

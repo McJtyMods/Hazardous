@@ -231,7 +231,7 @@ Association variants:
 
 `city`
 - `type: "city"`
-- no extra fields
+- `style` (optional string): only matches Lost Cities chunks whose `ILostCityInfo#getCityStyle()` equals this value
 - only works when Lost Cities is installed
 
 `block`
@@ -397,6 +397,27 @@ Biome-based sky hazard with biome matcher:
         "#minecraft:is_forest"
       ]
     }
+  }
+}
+```
+
+Lost Cities sky hazard limited to one city style:
+
+```json
+{
+  "hazardType": "example:lostcity_radiation",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.03,
+    "requiresDirectSky": false,
+    "rainMultiplier": 1.0,
+    "thunderMultiplier": 1.0,
+    "nightMultiplier": 1.0,
+    "indoorLeak": 1.0
+  },
+  "association": {
+    "type": "city",
+    "style": "ancient"
   }
 }
 ```

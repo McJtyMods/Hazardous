@@ -266,9 +266,12 @@ public record HazardSource(
         /**
          * Hazard applies when inside a Lost Cities city (if Lost Cities is present).
          */
-        record City() implements Association {
-            public static final City INSTANCE = new City();
-            public static final Codec<City> CODEC = Codec.unit(INSTANCE);
+        record City(Optional<String> style) implements Association {
+            public static final City INSTANCE = new City(Optional.empty());
+            public static final Codec<City> CODEC = RecordCodecBuilder.create(instance ->
+                    instance.group(
+                            Codec.STRING.optionalFieldOf("style").forGetter(City::style)
+                    ).apply(instance, City::new));
 
             @Override
             public <R> R accept(HazardType type, Visitor<R> visitor) {
