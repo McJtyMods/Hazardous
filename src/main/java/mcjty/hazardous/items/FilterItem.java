@@ -1,7 +1,6 @@
 package mcjty.hazardous.items;
 
 import mcjty.hazardous.setup.Config;
-import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
 import net.minecraft.network.chat.Component;
@@ -10,7 +9,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -38,18 +36,14 @@ public class FilterItem extends BaseItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack filterStack = player.getItemInHand(hand);
-        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (!helmet.is(Registration.GASMASK.get())) {
-            return InteractionResultHolder.pass(filterStack);
-        }
-
-        if (helmet.getDamageValue() <= 0) {
+        ItemStack gasmask = GasmaskItem.findEquippedGasmask(player, stack -> stack.getDamageValue() > 0).orElse(ItemStack.EMPTY);
+        if (gasmask.isEmpty()) {
             return InteractionResultHolder.pass(filterStack);
         }
 
         if (!level.isClientSide()) {
             int restore = Mth.clamp(Config.GASMASK_FILTER_RESTORE.get(), 1, Integer.MAX_VALUE);
-            int repaired = GasmaskItem.restoreDurability(helmet, restore);
+            int repaired = GasmaskItem.restoreDurability(gasmask, restore);
             if (repaired <= 0) {
                 return InteractionResultHolder.pass(filterStack);
             }

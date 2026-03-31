@@ -598,7 +598,7 @@ This section documents item behavior and practical use.
 ### 4.1 Gas Mask (`hazardous:gasmask`)
 
 Behavior:
-- Must be worn in helmet slot.
+- Must be worn in the armor helmet slot or in the Curios `head` slot.
 - Only protects one configured hazard type id (`gasmaskProtectedType`).
 - Protection amount is `gasmaskProtectionLevel` (0.0 to 1.0).
 - Each protection application consumes 1 durability.

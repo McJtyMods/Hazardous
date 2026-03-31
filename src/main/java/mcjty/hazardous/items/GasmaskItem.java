@@ -1,6 +1,7 @@
 package mcjty.hazardous.items;
 
 import mcjty.hazardous.client.GasmaskItemClient;
+import mcjty.hazardous.compat.CuriosCompat;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class GasmaskItem extends ArmorItem {
 
@@ -60,8 +63,8 @@ public class GasmaskItem extends ArmorItem {
             return input;
         }
 
-        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (!helmet.is(Registration.GASMASK.get()) || getRemainingDurability(helmet) <= 0) {
+        Optional<ItemStack> gasmask = findEquippedGasmask(player, stack -> getRemainingDurability(stack) > 0);
+        if (gasmask.isEmpty()) {
             return input;
         }
 
@@ -70,8 +73,24 @@ public class GasmaskItem extends ArmorItem {
             return input;
         }
 
-        damageByOne(helmet);
+        damageByOne(gasmask.get());
         return input * (1.0 - protectionLevel);
+    }
+
+    public static Optional<ItemStack> findEquippedGasmask(Player player) {
+        return findEquippedGasmask(player, stack -> true);
+    }
+
+    public static Optional<ItemStack> findEquippedGasmask(Player player, Predicate<ItemStack> predicate) {
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (helmet.is(Registration.GASMASK.get()) && predicate.test(helmet)) {
+            return Optional.of(helmet);
+        }
+        if (!ModList.get().isLoaded("curios")) {
+            return Optional.empty();
+        }
+        return CuriosCompat.findFirstHeadCurio(player, Registration.GASMASK.get())
+                .filter(predicate);
     }
 
     public static int restoreDurability(ItemStack stack, int amount) {
