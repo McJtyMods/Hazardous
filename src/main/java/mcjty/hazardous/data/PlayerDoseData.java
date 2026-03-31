@@ -86,6 +86,10 @@ public class PlayerDoseData {
         resistancePills.clear();
     }
 
+    public void clearResistancePills() {
+        resistancePills.clear();
+    }
+
     public void copyFrom(PlayerDoseData oldStore) {
         this.doses.clear();
         this.doses.putAll(oldStore.doses);

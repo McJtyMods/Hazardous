@@ -56,6 +56,20 @@ public class ResistancePillEffects {
         }
     }
 
+    public static void clearModifier(Player player, ResourceLocation attributeId) {
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId);
+        if (attribute == null) {
+            return;
+        }
+
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) {
+            return;
+        }
+
+        instance.removeModifier(getModifierId(attributeId));
+    }
+
     private static UUID getModifierId(ResourceLocation attributeId) {
         return UUID.nameUUIDFromBytes(("hazardous:resistance_pills:" + attributeId).getBytes(StandardCharsets.UTF_8));
     }

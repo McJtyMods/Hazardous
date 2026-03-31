@@ -816,16 +816,19 @@ Useful commands:
 - `/hazardous dose`
 - `/hazardous resistances`
 - `/hazardous resetdose`
+- `/hazardous resetresistances`
 
 Alias:
 - `/haz radiationhere`
 - `/haz dose`
 - `/haz resistances`
 - `/haz resetdose`
+- `/haz resetresistances`
 
 Command notes:
 - `/hazardous resistances` lists the executing player's current resistance attributes for all loaded hazard types.
 - Output includes the hazard type id, the resolved attribute id, and the player's current and base values.
+- `/hazardous resetresistances [player]` sets loaded hazard resistance attribute base values back to `0.0`, removes active anti-rad pill bonuses from those attributes, and clears stored anti-rad pill timers without touching dose.
 
 Suggested workflow:
 1. Use `/haz radiationhere` where your source should apply.

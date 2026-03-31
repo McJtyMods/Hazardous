@@ -15,6 +15,7 @@ public class ModCommands {
                         .then(CommandDose.register(dispatcher))
                         .then(CommandResistances.register(dispatcher))
                         .then(CommandResetDose.register(dispatcher))
+                        .then(CommandResetResistances.register(dispatcher))
         );
 
         dispatcher.register(Commands.literal("haz").redirect(commands));
