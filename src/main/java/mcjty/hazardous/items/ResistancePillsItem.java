@@ -2,18 +2,17 @@ package mcjty.hazardous.items;
 
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Config;
+import mcjty.hazardous.setup.Registration;
 import mcjty.hazardous.setup.ResistancePillEffects;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -36,52 +35,55 @@ public class ResistancePillsItem extends BaseItem {
                     TooltipBuilder.general("usage")
             );
 
-    private static final FoodProperties FOOD = new FoodProperties.Builder()
-            .nutrition(1)
-            .saturationMod(0.1f)
-            .alwaysEat()
-            .build();
-
     public ResistancePillsItem() {
-        super(new Properties().food(FOOD));
+        super(new Properties());
     }
 
     @Override
-    public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        ItemStack result = super.finishUsingItem(stack, level, entity);
-        if (level.isClientSide() || !(entity instanceof Player player)) {
-            return result;
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (level.isClientSide()) {
+            return InteractionResultHolder.sidedSuccess(stack, true);
         }
 
         Optional<ResourceLocation> attributeId = Config.getResistancePillsAttribute();
         double amount = Mth.clamp(Config.RESISTANCE_PILLS_AMOUNT.get(), 0.0, 1.0);
         int durationTicks = Math.max(Config.RESISTANCE_PILLS_DURATION_TICKS.get(), 0);
         if (attributeId.isEmpty() || amount <= 0.0 || durationTicks <= 0) {
-            return result;
+            return InteractionResultHolder.pass(stack);
         }
 
         ResourceLocation resolvedAttributeId = attributeId.get();
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(resolvedAttributeId);
         if (attribute == null) {
-            return result;
+            return InteractionResultHolder.pass(stack);
         }
 
         AttributeInstance instance = player.getAttribute(attribute);
         if (instance == null) {
-            return result;
+            return InteractionResultHolder.pass(stack);
         }
 
         long gameTime = level.getGameTime();
-        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+        boolean applied = PlayerDoseDispatcher.getPlayerDose(player).map(store -> {
             store.addResistancePillEffect(resolvedAttributeId, amount, gameTime + durationTicks);
             ResistancePillEffects.syncPlayer(player, store, gameTime);
-            player.playSound(SoundEvents.GENERIC_DRINK, 0.6f, 1.1f);
-        });
-        return result;
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+            player.playSound(Registration.PILLS_USE.get(), 0.6f, 1.1f);
+            return true;
+        }).orElse(false);
+
+        if (!applied) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        return InteractionResultHolder.sidedSuccess(stack, false);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<net.minecraft.network.chat.Component> tooltip, TooltipFlag flag) {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(this);
         if (id != null && TOOLTIP.isActive()) {
             TOOLTIP.makeTooltip(id, stack, tooltip, flag);

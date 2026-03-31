@@ -46,6 +46,12 @@ public class Registration {
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "geiger.mediumdose")));
     public static final RegistryObject<SoundEvent> GEIGER_HIGHDOSE = SOUND_EVENTS.register("geiger.highdose",
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "geiger.highdose")));
+    public static final RegistryObject<SoundEvent> DOSIMETER_BEEP = SOUND_EVENTS.register("dosimeter.beep",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "dosimeter.beep")));
+    public static final RegistryObject<SoundEvent> PILLS_SHOW = SOUND_EVENTS.register("pills.show",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "pills.show")));
+    public static final RegistryObject<SoundEvent> PILLS_USE = SOUND_EVENTS.register("pills.use",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "pills.use")));
 
     public static final RegistryObject<SimpleCraftingRecipeSerializer<GasmaskFilterRecipe>> GASMASK_FILTER_RECIPE = RECIPE_SERIALIZERS.register("gasmask_filter_refill",
             () -> new SimpleCraftingRecipeSerializer<>(GasmaskFilterRecipe::new));

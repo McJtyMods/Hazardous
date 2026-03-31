@@ -48,6 +48,19 @@ public class PlayerDoseData {
         setDose(hazardType, getDose(hazardType) + amount);
     }
 
+    public double removeDose(ResourceLocation hazardType, double amount) {
+        if (amount <= 0.0) {
+            return 0.0;
+        }
+        double currentValue = getDose(hazardType);
+        if (currentValue <= 0.0) {
+            return 0.0;
+        }
+        double newValue = Math.max(0.0, currentValue - amount);
+        setDose(hazardType, newValue);
+        return currentValue - newValue;
+    }
+
     public double removeDoseFromAll(double amount) {
         if (amount <= 0.0 || doses.isEmpty()) {
             return 0.0;

@@ -1,13 +1,19 @@
 package mcjty.hazardous.items;
 
 import mcjty.hazardous.Hazardous;
+import mcjty.hazardous.data.CustomRegistries;
+import mcjty.hazardous.data.PlayerDoseData;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.setup.Config;
+import mcjty.hazardous.setup.HazardAttributes;
+import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
+import mcjty.lib.varia.Tools;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -20,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
 
 public class PillsItem extends BaseItem {
 
@@ -28,6 +34,7 @@ public class PillsItem extends BaseItem {
             .info(
                     TooltipBuilder.header(),
                     TooltipBuilder.general("desc"),
+                    TooltipBuilder.parameter("attribute", stack -> Config.getPillsAttribute().map(ResourceLocation::toString).orElse("disabled")),
                     TooltipBuilder.parameter("heal", stack -> String.format(Locale.ROOT, "%.2f", Mth.clamp(Config.PILLS_DOSE_HEAL.get(), 0.0, 1_000_000.0))),
                     TooltipBuilder.general("usage")
             );
@@ -43,25 +50,28 @@ public class PillsItem extends BaseItem {
             return InteractionResultHolder.sidedSuccess(stack, true);
         }
 
+        Optional<ResourceLocation> attributeId = Config.getPillsAttribute();
         double healAmount = Mth.clamp(Config.PILLS_DOSE_HEAL.get(), 0.0, 1_000_000.0);
-        if (healAmount <= 0.0) {
+        if (attributeId.isEmpty() || healAmount <= 0.0) {
             return InteractionResultHolder.pass(stack);
         }
 
-        AtomicReference<Double> curedDose = new AtomicReference<>(0.0);
-        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(data -> curedDose.set(data.removeDoseFromAll(healAmount)));
-        if (curedDose.get() <= 0.0) {
+        Registry<HazardType> hazardTypes = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
+        double curedDose = PlayerDoseDispatcher.getPlayerDose(player)
+                .map(data -> removeDoseForAttribute(data, hazardTypes, attributeId.get(), healAmount))
+                .orElse(0.0);
+        if (curedDose <= 0.0) {
             return InteractionResultHolder.pass(stack);
         }
 
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
-        player.playSound(SoundEvents.GENERIC_DRINK, 0.6f, 1.1f);
+        player.playSound(Registration.PILLS_USE.get(), 0.6f, 1.1f);
         player.displayClientMessage(
                 Component.translatable(
                         "message." + Hazardous.MODID + ".pills.cured",
-                        String.format(Locale.ROOT, "%.2f", curedDose.get())
+                        String.format(Locale.ROOT, "%.2f", curedDose)
                 ),
                 false
         );
@@ -74,5 +84,20 @@ public class PillsItem extends BaseItem {
         if (id != null && TOOLTIP.isActive()) {
             TOOLTIP.makeTooltip(id, stack, tooltip, flag);
         }
+    }
+
+    private static double removeDoseForAttribute(PlayerDoseData data, Registry<HazardType> hazardTypes, ResourceLocation attributeId, double healAmount) {
+        double removed = 0.0;
+        for (HazardType hazardType : hazardTypes) {
+            ResourceLocation hazardTypeId = hazardTypes.getKey(hazardType);
+            if (hazardTypeId == null) {
+                continue;
+            }
+            ResourceLocation resistanceAttributeId = HazardAttributes.resolveResistanceAttributeId(hazardTypeId, hazardType);
+            if (attributeId.equals(resistanceAttributeId)) {
+                removed += data.removeDose(hazardTypeId, healAmount);
+            }
+        }
+        return removed;
     }
 }

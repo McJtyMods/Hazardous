@@ -1,5 +1,7 @@
 {
   "geiger.mediumdose" : {"category": "misc", "sounds": ["hazardous:mediumdose"]},
   "geiger.highdose" : {"category": "misc", "sounds": ["hazardous:highdose"]},
-  "dosimeter.mediumbeep" : {"category": "misc", "sounds": ["hazardous:mediumbeep"]}
+  "dosimeter.beep" : {"category": "misc", "sounds": ["hazardous:mediumbeep"]},
+  "pills.show" : {"category": "misc", "sounds": ["hazardous:pillsshow"]},
+  "pills.use" : {"category": "misc", "sounds": ["hazardous:pillsuse"]}
 }

@@ -23,6 +23,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_TYPE;
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
+    public static ForgeConfigSpec.ConfigValue<String> PILLS_ATTRIBUTE;
     public static ForgeConfigSpec.DoubleValue PILLS_DOSE_HEAL;
     public static ForgeConfigSpec.ConfigValue<String> RESISTANCE_PILLS_ATTRIBUTE;
     public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_AMOUNT;
@@ -78,8 +79,11 @@ public class Config {
         GASMASK_FILTER_RESTORE = builder
                 .comment("Durability restored when using a filter on a gasmask (right-click or crafting)")
                 .defineInRange("gasmaskFilterRestore", 250, 1, 1_000_000);
+        PILLS_ATTRIBUTE = builder
+                .comment("Attribute id used by pills to choose which hazard dose to heal. Leave empty to disable")
+                .define("pillsAttribute", Hazardous.MODID + ":radioactive_type_resistance");
         PILLS_DOSE_HEAL = builder
-                .comment("Dose removed from all accumulated personal hazard dose entries when using pills")
+                .comment("Dose removed from accumulated personal hazard dose entries linked to the configured pills attribute")
                 .defineInRange("pillsDoseHeal", 20.0, 0.0, 1_000_000.0);
         RESISTANCE_PILLS_ATTRIBUTE = builder
                 .comment("Attribute id granted by anti-rad pills. Leave empty to disable")
@@ -252,6 +256,14 @@ public class Config {
 
     public static Optional<ResourceLocation> getDosimeterDisplayResource() {
         String value = DOSIMETER_DISPLAY_RESOURCE.get();
+        if (value == null || value.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(ResourceLocation.tryParse(value));
+    }
+
+    public static Optional<ResourceLocation> getPillsAttribute() {
+        String value = PILLS_ATTRIBUTE.get();
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }

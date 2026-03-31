@@ -610,8 +610,10 @@ Behavior:
 
 Behavior:
 - Right-click consumes pills (unless creative).
-- Removes `pillsDoseHeal` from every stored player dose entry.
+- Uses `pillsAttribute` to choose which resistance attribute bucket to heal.
+- Removes `pillsDoseHeal` from each stored player dose entry whose hazard type resolves to that configured attribute.
 - If there is no dose to remove, nothing is consumed.
+- If the configured attribute id is empty, invalid, or unused by loaded hazard types, the item has no effect.
 
 Recipe:
 
@@ -739,7 +741,8 @@ Server config (`hazardous-server.toml`):
 - `gasmaskProtectedType` (string resource location, default `hazardous:radioactive_type`)
 - `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`)
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
-- `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`)
+- `pillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables pill healing)
+- `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`; amount removed from each matching hazard dose entry)
 - `resistancePillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables the bonus)
 - `resistancePillsAmount` (double `0.0..1.0`, default `0.1`; temporary amount granted per use)
 - `resistancePillsDurationTicks` (int `0..1000000`, default `12000`; duration of each temporary pill bonus in ticks)
@@ -775,6 +778,7 @@ Example:
 gasmaskProtectedType = "hazardous:radioactive_type"
 gasmaskProtectionLevel = 0.75
 gasmaskFilterRestore = 250
+pillsAttribute = "hazardous:radioactive_type_resistance"
 pillsDoseHeal = 20.0
 resistancePillsAttribute = "hazardous:radioactive_type_resistance"
 resistancePillsAmount = 0.1

@@ -75,7 +75,7 @@ public class RadiationOverlayRenderer {
         if (hasActiveGeiger(player)) {
             renderGeiger(event, minecraft);
         }
-        if (hasActiveDosimeter(player)) {
+        if (isDosimeterHudVisible(player)) {
             renderDosimeter(event, minecraft);
         }
     }
@@ -361,6 +361,17 @@ public class RadiationOverlayRenderer {
         return OptionalDouble.of(values.getOrDefault(displayResource.get(), 0.0));
     }
 
+    public static OptionalDouble getDisplayedDose(Player player) {
+        if (!isDosimeterHudVisible(player)) {
+            return OptionalDouble.empty();
+        }
+        Map<ResourceLocation, Double> values = ClientData.getDoseValues();
+        if (values == null || values.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+        return OptionalDouble.of(resolveDoseToDisplay(values));
+    }
+
     public static boolean isGeigerHudVisible(Player player) {
         if (player.getInventory().getSelected().is(Registration.GEIGER_COUNTER.get())) {
             return true;
@@ -368,7 +379,7 @@ public class RadiationOverlayRenderer {
         return ModList.get().isLoaded("curios") && CuriosCompat.hasActiveGeigerCounter(player);
     }
 
-    private static boolean hasActiveDosimeter(Player player) {
+    public static boolean isDosimeterHudVisible(Player player) {
         if (player.getInventory().getSelected().is(Registration.DOSIMETER.get())) {
             return true;
         }
