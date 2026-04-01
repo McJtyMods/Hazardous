@@ -447,7 +447,7 @@ public class HazardManager {
                 return 0.0;
             }
             BlockPos pos = player.blockPosition();
-            if (!LostCityCompat.isCity(level, pos, a.style())) {
+            if (!LostCityCompat.isCity(level, pos, a.style(), a.buildings())) {
                 return 0.0;
             }
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {

@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModList;
 
+import java.util.List;
 import java.util.Optional;
 
 public class LostCityCompat {
@@ -30,7 +31,7 @@ public class LostCityCompat {
         return hasLostCities;
     }
 
-    public static boolean isCity(Level level, BlockPos pos, Optional<String> style) {
+    public static boolean isCity(Level level, BlockPos pos, Optional<String> style, List<String> buildings) {
         ILostCityInformation info = LostCityInternal.lostCities.getLostInfo(level);
         if (info != null) {
             ChunkPos cp =  new ChunkPos(pos);
@@ -38,11 +39,19 @@ public class LostCityCompat {
             if (!chunkInfo.isCity()) {
                 return false;
             }
-            if (style.isEmpty()) {
-                return true;
+            if (style.isPresent()) {
+                ILostCityInfo cityInfo = chunkInfo.getCityInfo();
+                if (cityInfo == null || !style.get().equals(cityInfo.getCityStyle())) {
+                    return false;
+                }
             }
-            ILostCityInfo cityInfo = chunkInfo.getCityInfo();
-            return cityInfo != null && style.get().equals(cityInfo.getCityStyle());
+            if (!buildings.isEmpty()) {
+                String buildingType = chunkInfo.getBuildingType();
+                if (!buildings.contains(buildingType)) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }

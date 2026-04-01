@@ -232,6 +232,8 @@ Association variants:
 `city`
 - `type: "city"`
 - `style` (optional string): only matches Lost Cities chunks whose `ILostCityInfo#getCityStyle()` equals this value
+- `buildings` (optional list of strings): only matches Lost Cities chunks whose `ILostChunkInfo#getBuildingType()` is in this list
+- if both `style` and `buildings` are given, both conditions must match
 - only works when Lost Cities is installed
 
 `block`
@@ -418,6 +420,31 @@ Lost Cities sky hazard limited to one city style:
   "association": {
     "type": "city",
     "style": "ancient"
+  }
+}
+```
+
+Lost Cities sky hazard limited to one city style and a set of building types:
+
+```json
+{
+  "hazardType": "example:lostcity_radiation",
+  "transmission": {
+    "type": "sky",
+    "baseIntensity": 0.03,
+    "requiresDirectSky": false,
+    "rainMultiplier": 1.0,
+    "thunderMultiplier": 1.0,
+    "nightMultiplier": 1.0,
+    "indoorLeak": 1.0
+  },
+  "association": {
+    "type": "city",
+    "style": "ancient",
+    "buildings": [
+      "library",
+      "apartment"
+    ]
   }
 }
 ```
