@@ -127,7 +127,8 @@ public class DataGenerators {
                                 .pattern("gfg")
                                 .pattern("iii")
                                 .unlockedBy("has_filter", InventoryChangeTrigger.TriggerInstance.hasItems(Registration.FILTER.get()))
-                                .save(consumer)),
+                                .save(consumer))
+                        .itemTags(List.of(CURIO_TAG)),
                 Dob.itemBuilder(Registration.PILLS)
                         .name("Pills")
                         .generatedItem("item/pills")
