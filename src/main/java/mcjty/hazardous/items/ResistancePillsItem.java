@@ -29,7 +29,7 @@ public class ResistancePillsItem extends BaseItem {
             .info(
                     TooltipBuilder.header(),
                     TooltipBuilder.general("desc"),
-                    TooltipBuilder.parameter("attribute", stack -> Config.getResistancePillsAttribute().map(ResourceLocation::toString).orElse("disabled")),
+                    TooltipBuilder.parameter("attribute", stack -> TooltipNameHelper.getAttributeName(Config.getResistancePillsAttribute().orElse(null))),
                     TooltipBuilder.parameter("amount", stack -> String.format(Locale.ROOT, "%.2f", Mth.clamp(Config.RESISTANCE_PILLS_AMOUNT.get(), 0.0, 1.0))),
                     TooltipBuilder.parameter("duration", stack -> formatDuration(Config.RESISTANCE_PILLS_DURATION_TICKS.get())),
                     TooltipBuilder.general("usage")

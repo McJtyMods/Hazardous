@@ -53,6 +53,14 @@ public class DataGenerators {
                 Dob.builder()
                         .message("attribute.name.hazardous.lava_heat_resistance", "Heat Resistance"),
                 Dob.builder()
+                        .message("hazardtype.hazardous.lava_heat", "Heat"),
+                Dob.builder()
+                        .message("hazardtype.hazardous.lostcity_radiation", "Lost City Radiation"),
+                Dob.builder()
+                        .message("hazardtype.hazardous.radioactive_type", "Radiation"),
+                Dob.builder()
+                        .message("hazardtype.hazardous.solar_burn", "Solar Burn"),
+                Dob.builder()
                         .message("itemGroup." + Hazardous.MODID, "Hazardous"),
                 Dob.builder()
                         .message("hazardous.datapack.hazardtype.resistance_attribute", "Resistance Attribute"),

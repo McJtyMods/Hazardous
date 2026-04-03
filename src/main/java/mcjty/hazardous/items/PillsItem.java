@@ -34,7 +34,7 @@ public class PillsItem extends BaseItem {
             .info(
                     TooltipBuilder.header(),
                     TooltipBuilder.general("desc"),
-                    TooltipBuilder.parameter("attribute", stack -> Config.getPillsAttribute().map(ResourceLocation::toString).orElse("disabled")),
+                    TooltipBuilder.parameter("attribute", stack -> TooltipNameHelper.getAttributeName(Config.getPillsAttribute().orElse(null))),
                     TooltipBuilder.parameter("heal", stack -> String.format(Locale.ROOT, "%.2f", Mth.clamp(Config.PILLS_DOSE_HEAL.get(), 0.0, 1_000_000.0))),
                     TooltipBuilder.general("usage")
             );
