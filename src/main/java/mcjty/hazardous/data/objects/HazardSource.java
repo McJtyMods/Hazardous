@@ -266,12 +266,13 @@ public record HazardSource(
         /**
          * Hazard applies when inside a Lost Cities city (if Lost Cities is present).
          */
-        record City(Optional<String> style, List<String> buildings) implements Association {
-            public static final City INSTANCE = new City(Optional.empty(), List.of());
+        record City(Optional<String> style, List<String> buildings, List<String> multibuildings) implements Association {
+            public static final City INSTANCE = new City(Optional.empty(), List.of(), List.of());
             public static final Codec<City> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             Codec.STRING.optionalFieldOf("style").forGetter(City::style),
-                            Codec.STRING.listOf().optionalFieldOf("buildings", List.of()).forGetter(City::buildings)
+                            Codec.STRING.listOf().optionalFieldOf("buildings", List.of()).forGetter(City::buildings),
+                            Codec.STRING.listOf().optionalFieldOf("multibuildings", List.of()).forGetter(City::multibuildings)
                     ).apply(instance, City::new));
 
             @Override

@@ -31,7 +31,7 @@ public class LostCityCompat {
         return hasLostCities;
     }
 
-    public static boolean isCity(Level level, BlockPos pos, Optional<String> style, List<String> buildings) {
+    public static boolean isCity(Level level, BlockPos pos, Optional<String> style, List<String> buildings, List<String> multibuildings) {
         ILostCityInformation info = LostCityInternal.lostCities.getLostInfo(level);
         if (info != null) {
             ChunkPos cp =  new ChunkPos(pos);
@@ -48,6 +48,12 @@ public class LostCityCompat {
             if (!buildings.isEmpty()) {
                 String buildingType = chunkInfo.getBuildingType();
                 if (!buildings.contains(buildingType)) {
+                    return false;
+                }
+            }
+            if (!multibuildings.isEmpty()) {
+                ILostChunkInfo.MultiBuildingInfo multiBuildingInfo = chunkInfo.getMultiBuildingInfo();
+                if (multiBuildingInfo == null || !multibuildings.contains(multiBuildingInfo.buildingType().toString())) {
                     return false;
                 }
             }
