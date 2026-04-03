@@ -31,7 +31,7 @@ public class GasmaskItem extends ArmorItem {
             .info(
                     TooltipBuilder.header(),
                     TooltipBuilder.general("desc"),
-                    TooltipBuilder.parameter("source", stack -> TooltipNameHelper.getHazardTargetName(null, Config.getGasmaskProtectedType().orElse(null))),
+                    TooltipBuilder.parameter("source", stack -> TooltipNameHelper.getHazardTypeName(Config.getGasmaskProtectedType().orElse(null))),
                     TooltipBuilder.parameter("protection", stack -> String.format(Locale.ROOT, "%.0f%%", Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0) * 100.0)),
                     TooltipBuilder.general("durability")
             );
@@ -42,17 +42,9 @@ public class GasmaskItem extends ArmorItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(this);
-        if (itemId != null && TOOLTIP.isActive()) {
-            TooltipBuilder tooltipBuilder = new TooltipBuilder()
-                    .info(
-                            TooltipBuilder.header(),
-                            TooltipBuilder.general("desc"),
-                            TooltipBuilder.parameter("source", ignored -> TooltipNameHelper.getHazardTargetName(level, Config.getGasmaskProtectedType().orElse(null))),
-                            TooltipBuilder.parameter("protection", ignored -> String.format(Locale.ROOT, "%.0f%%", Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0) * 100.0)),
-                            TooltipBuilder.general("durability")
-                    );
-            tooltipBuilder.makeTooltip(itemId, stack, tooltip, flag);
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(this);
+        if (id != null && TOOLTIP.isActive()) {
+            TOOLTIP.makeTooltip(id, stack, tooltip, flag);
         }
     }
 

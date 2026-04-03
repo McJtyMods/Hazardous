@@ -1,15 +1,7 @@
 package mcjty.hazardous.items;
 
-import mcjty.hazardous.data.CustomRegistries;
-import mcjty.hazardous.data.objects.HazardType;
-import mcjty.hazardous.setup.HazardAttributes;
-import mcjty.lib.varia.Tools;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -25,28 +17,12 @@ final class TooltipNameHelper {
             return "disabled";
         }
 
-        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId);
-        if (attribute != null) {
-            return translatedOrFallback(attribute.getDescriptionId(), humanize(attributeId));
-        }
-
         return translatedOrFallback(getAttributeTranslationKey(attributeId), humanize(attributeId));
     }
 
-    public static String getHazardTargetName(@Nullable Level level, @Nullable ResourceLocation hazardTypeId) {
+    public static String getHazardTypeName(@Nullable ResourceLocation hazardTypeId) {
         if (hazardTypeId == null) {
             return "disabled";
-        }
-
-        if (level != null) {
-            Registry<HazardType> hazardTypes = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
-            HazardType hazardType = hazardTypes.get(hazardTypeId);
-            if (hazardType != null) {
-                ResourceLocation attributeId = HazardAttributes.resolveResistanceAttributeId(hazardTypeId, hazardType);
-                if (attributeId != null) {
-                    return getAttributeName(attributeId);
-                }
-            }
         }
 
         return translatedOrFallback(getHazardTypeTranslationKey(hazardTypeId), humanize(hazardTypeId));
