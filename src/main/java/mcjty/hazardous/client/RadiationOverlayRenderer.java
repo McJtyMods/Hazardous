@@ -4,17 +4,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.compat.CuriosCompat;
+import mcjty.hazardous.data.PlayerDoseData;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
 import java.util.Locale;
@@ -58,6 +62,14 @@ public class RadiationOverlayRenderer {
     private static final float MAX_RADIATION_DEG = 495.0f; // South-east
     private static final float POINTER_TWITCH_MIN_RATIO = 0.27f;
     private static final HudShakeOffset NO_SHAKE = new HudShakeOffset(0.0f, 0.0f);
+    private static final int RESISTANCE_PILLS_BG_COLOR = 0xB010141A;
+    private static final int RESISTANCE_PILLS_BORDER_COLOR = 0xFF6ED06C;
+    private static final int RESISTANCE_PILLS_TITLE_COLOR = 0xFFE8FFF0;
+    private static final int RESISTANCE_PILLS_TEXT_COLOR = 0xFFD6EEDD;
+    private static final int RESISTANCE_PILLS_PADDING = 4;
+    private static final int RESISTANCE_PILLS_LINE_GAP = 2;
+    private static final float RESISTANCE_PILLS_TITLE_SCALE = 0.8f;
+    private static final float RESISTANCE_PILLS_TEXT_SCALE = 0.7f;
 
     private static final float DIAL_CENTER_X_RATIO = 199.0f / 400.0f;
     private static final float DIAL_CENTER_Y_RATIO = 117.0f / 576.0f;
@@ -77,6 +89,9 @@ public class RadiationOverlayRenderer {
         }
         if (isDosimeterHudVisible(player)) {
             renderDosimeter(event, minecraft);
+        }
+        if (Config.RESISTANCE_PILLS_HUD_ENABLED.get()) {
+            renderResistancePills(event, minecraft);
         }
     }
 
@@ -187,6 +202,80 @@ public class RadiationOverlayRenderer {
         event.getGuiGraphics().pose().popPose();
     }
 
+    private static void renderResistancePills(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
+        Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> values = ClientData.getResistancePillStatuses();
+        if (values == null || values.isEmpty()) {
+            return;
+        }
+        if (minecraft.player == null) {
+            return;
+        }
+
+        long gameTime = minecraft.player.level().getGameTime();
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (Map.Entry<ResourceLocation, PlayerDoseData.ResistancePillStatus> entry : values.entrySet()) {
+            long remainingTicks = Math.max(0L, entry.getValue().expiresAt() - gameTime);
+            if (remainingTicks <= 0L || entry.getValue().stacks() <= 0 || entry.getValue().amount() <= 0.0) {
+                continue;
+            }
+            lines.add(formatResistancePillLine(entry.getKey(), entry.getValue(), remainingTicks));
+        }
+        if (lines.isEmpty()) {
+            return;
+        }
+
+        GuiGraphics graphics = event.getGuiGraphics();
+        float uiScale = Config.RESISTANCE_PILLS_HUD_SCALE.get().floatValue();
+        String title = Component.translatable("message.hazardous.resistance_pills.hud_title").getString();
+        int titleHeight = scaledTextHeight(RESISTANCE_PILLS_TITLE_SCALE);
+        int lineHeight = scaledTextHeight(RESISTANCE_PILLS_TEXT_SCALE);
+        int innerWidth = scaledTextWidth(minecraft, title, RESISTANCE_PILLS_TITLE_SCALE);
+        for (String line : lines) {
+            innerWidth = Math.max(innerWidth, scaledTextWidth(minecraft, line, RESISTANCE_PILLS_TEXT_SCALE));
+        }
+        int innerHeight = titleHeight + RESISTANCE_PILLS_LINE_GAP + (lines.size() * lineHeight) + ((lines.size() - 1) * RESISTANCE_PILLS_LINE_GAP);
+        int boxWidth = innerWidth + (RESISTANCE_PILLS_PADDING * 2);
+        int boxHeight = innerHeight + (RESISTANCE_PILLS_PADDING * 2);
+
+        int scaledWidth = Mth.floor(boxWidth * uiScale);
+        int scaledHeight = Mth.floor(boxHeight * uiScale);
+        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
+        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
+        int offsetX = Config.RESISTANCE_PILLS_HUD_OFFSET_X.get();
+        int offsetY = Config.RESISTANCE_PILLS_HUD_OFFSET_Y.get();
+        Config.GeigerHudAnchor anchor = Config.getResistancePillsHudAnchor();
+        int x = switch (anchor) {
+            case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> offsetX;
+            case TOP_CENTER, BOTTOM_CENTER -> (screenWidth - scaledWidth) / 2 + offsetX;
+            case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> screenWidth - scaledWidth - offsetX;
+        };
+        int y = switch (anchor) {
+            case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> offsetY;
+            case CENTER_LEFT, CENTER_RIGHT -> (screenHeight - scaledHeight) / 2 + offsetY;
+            case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> screenHeight - scaledHeight - offsetY;
+        };
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0.0f);
+        graphics.pose().scale(uiScale, uiScale, 1.0f);
+
+        graphics.fill(0, 0, boxWidth, boxHeight, RESISTANCE_PILLS_BG_COLOR);
+        graphics.fill(0, 0, boxWidth, 1, RESISTANCE_PILLS_BORDER_COLOR);
+        graphics.fill(0, boxHeight - 1, boxWidth, boxHeight, RESISTANCE_PILLS_BORDER_COLOR);
+        graphics.fill(0, 0, 1, boxHeight, RESISTANCE_PILLS_BORDER_COLOR);
+        graphics.fill(boxWidth - 1, 0, boxWidth, boxHeight, RESISTANCE_PILLS_BORDER_COLOR);
+
+        int drawY = RESISTANCE_PILLS_PADDING;
+        drawScaledText(graphics, minecraft, title, RESISTANCE_PILLS_PADDING, drawY, RESISTANCE_PILLS_TITLE_SCALE, RESISTANCE_PILLS_TITLE_COLOR);
+        drawY += titleHeight + RESISTANCE_PILLS_LINE_GAP;
+        for (String line : lines) {
+            drawScaledText(graphics, minecraft, line, RESISTANCE_PILLS_PADDING, drawY, RESISTANCE_PILLS_TEXT_SCALE, RESISTANCE_PILLS_TEXT_COLOR);
+            drawY += lineHeight + RESISTANCE_PILLS_LINE_GAP;
+        }
+
+        graphics.pose().popPose();
+    }
+
     private static void renderDosimeterRadiationIcon(RenderGuiOverlayEvent.Post event, Minecraft minecraft, double dose) {
         HudShakeOffset shake = calculateDosimeterIconShake(minecraft, dose);
 
@@ -216,6 +305,51 @@ public class RadiationOverlayRenderer {
             return String.format(Locale.ROOT, "%.1f", dose);
         }
         return String.format(Locale.ROOT, "%.2f", dose);
+    }
+
+    private static String formatResistancePillLine(ResourceLocation attributeId, PlayerDoseData.ResistancePillStatus status, long remainingTicks) {
+        return String.format(
+                Locale.ROOT,
+                "%s +%.2f x%d  %s",
+                getAttributeName(attributeId),
+                status.amount(),
+                status.stacks(),
+                formatDuration(remainingTicks)
+        );
+    }
+
+    private static String getAttributeName(ResourceLocation attributeId) {
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId);
+        if (attribute == null) {
+            return attributeId.toString();
+        }
+        return Component.translatable(attribute.getDescriptionId()).getString();
+    }
+
+    private static String formatDuration(long ticks) {
+        int totalSeconds = Mth.ceil(ticks / 20.0);
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        if (minutes > 0) {
+            return String.format(Locale.ROOT, "%d:%02d", minutes, seconds);
+        }
+        return seconds + "s";
+    }
+
+    private static int scaledTextWidth(Minecraft minecraft, String text, float scale) {
+        return Mth.ceil(minecraft.font.width(text) * scale);
+    }
+
+    private static int scaledTextHeight(float scale) {
+        return Mth.ceil(9 * scale);
+    }
+
+    private static void drawScaledText(GuiGraphics graphics, Minecraft minecraft, String text, int x, int y, float scale, int color) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0.0f);
+        graphics.pose().scale(scale, scale, 1.0f);
+        graphics.drawString(minecraft.font, text, 0, 0, color, false);
+        graphics.pose().popPose();
     }
 
     private static float calculatePointerAngle(double radiation) {

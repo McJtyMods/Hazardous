@@ -798,6 +798,7 @@ Server config (`hazardous-server.toml`):
 - `resistancePillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables the bonus)
 - `resistancePillsAmount` (double `0.0..1.0`, default `0.1`; temporary amount granted per use)
 - `resistancePillsDurationTicks` (int `0..1000000`, default `12000`; duration of each temporary pill bonus in ticks)
+- `resistancePillsMaxStacks` (int `0..1000000`, default `0`; maximum simultaneous active anti-rad pill stacks, `0` = unlimited)
 
 Client config (`hazardous-client.toml`):
 - `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_type`, empty disables dial target)
@@ -822,6 +823,11 @@ Client config (`hazardous-client.toml`):
 - `dosimeterHudScale` (double `0.1..10.0`, default `1.0`)
 - `dosimeterHudOffsetX` (int `-5000..5000`, default `8`)
 - `dosimeterHudOffsetY` (int `-5000..5000`, default `84`)
+- `resistancePillsHudEnabled` (boolean, default `true`; show an anti-rad pill effect indicator while active)
+- `resistancePillsHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_left`)
+- `resistancePillsHudScale` (double `0.1..10.0`, default `1.0`)
+- `resistancePillsHudOffsetX` (int `-5000..5000`, default `8`)
+- `resistancePillsHudOffsetY` (int `-5000..5000`, default `8`)
 
 Example:
 
@@ -835,6 +841,7 @@ pillsDoseHeal = 20.0
 resistancePillsAttribute = "hazardous:radioactive_type_resistance"
 resistancePillsAmount = 0.1
 resistancePillsDurationTicks = 12000
+resistancePillsMaxStacks = 0
 
 # hazardous-client.toml
 geigerDisplayHazardType = "hazardous:radioactive_type"
@@ -859,6 +866,11 @@ dosimeterHudAnchor = "top_right"
 dosimeterHudScale = 1.0
 dosimeterHudOffsetX = 8
 dosimeterHudOffsetY = 84
+resistancePillsHudEnabled = true
+resistancePillsHudAnchor = "top_left"
+resistancePillsHudScale = 1.0
+resistancePillsHudOffsetX = 8
+resistancePillsHudOffsetY = 8
 ```
 
 ## 6) Debugging and Testing

@@ -97,12 +97,20 @@ public class PlayerDoseData {
         oldStore.resistancePills.forEach((attributeId, effects) -> this.resistancePills.put(attributeId, new ArrayList<>(effects)));
     }
 
-    public void addResistancePillEffect(ResourceLocation attributeId, double amount, long expiresAt) {
+    public boolean addResistancePillEffect(ResourceLocation attributeId, double amount, long expiresAt, int maxStacks, long gameTime) {
         if (amount <= 0.0) {
-            return;
+            return false;
         }
-        resistancePills.computeIfAbsent(attributeId, id -> new ArrayList<>())
-                .add(new ResistancePillEffect(amount, expiresAt));
+        List<ResistancePillEffect> effects = resistancePills.computeIfAbsent(attributeId, id -> new ArrayList<>());
+        pruneExpiredEffects(effects, gameTime);
+        if (maxStacks > 0 && effects.size() >= maxStacks) {
+            if (effects.isEmpty()) {
+                resistancePills.remove(attributeId);
+            }
+            return false;
+        }
+        effects.add(new ResistancePillEffect(amount, expiresAt));
+        return true;
     }
 
     public Set<ResourceLocation> getResistancePillAttributeIds() {
@@ -111,26 +119,42 @@ public class PlayerDoseData {
 
     public Map<ResourceLocation, Double> getActiveResistancePillBonuses(long gameTime) {
         Map<ResourceLocation, Double> activeBonuses = new HashMap<>();
+        for (Map.Entry<ResourceLocation, ResistancePillStatus> entry : getActiveResistancePillStatuses(gameTime).entrySet()) {
+            activeBonuses.put(entry.getKey(), entry.getValue().amount());
+        }
+        return activeBonuses;
+    }
+
+    public Map<ResourceLocation, ResistancePillStatus> getActiveResistancePillStatuses(long gameTime) {
+        Map<ResourceLocation, ResistancePillStatus> activeBonuses = new HashMap<>();
         Iterator<Map.Entry<ResourceLocation, List<ResistancePillEffect>>> entryIterator = resistancePills.entrySet().iterator();
         while (entryIterator.hasNext()) {
             Map.Entry<ResourceLocation, List<ResistancePillEffect>> entry = entryIterator.next();
             double total = 0.0;
-            Iterator<ResistancePillEffect> effectIterator = entry.getValue().iterator();
-            while (effectIterator.hasNext()) {
-                ResistancePillEffect effect = effectIterator.next();
-                if (effect.expiresAt() <= gameTime) {
-                    effectIterator.remove();
-                } else {
-                    total += effect.amount();
-                }
+            int stacks = 0;
+            long latestExpiry = 0L;
+            pruneExpiredEffects(entry.getValue(), gameTime);
+            for (ResistancePillEffect effect : entry.getValue()) {
+                total += effect.amount();
+                stacks++;
+                latestExpiry = Math.max(latestExpiry, effect.expiresAt());
             }
             if (entry.getValue().isEmpty()) {
                 entryIterator.remove();
-            } else if (total > 0.0) {
-                activeBonuses.put(entry.getKey(), total);
+            } else if (total > 0.0 && stacks > 0) {
+                activeBonuses.put(entry.getKey(), new ResistancePillStatus(total, stacks, latestExpiry));
             }
         }
         return activeBonuses;
+    }
+
+    private static void pruneExpiredEffects(List<ResistancePillEffect> effects, long gameTime) {
+        Iterator<ResistancePillEffect> effectIterator = effects.iterator();
+        while (effectIterator.hasNext()) {
+            if (effectIterator.next().expiresAt() <= gameTime) {
+                effectIterator.remove();
+            }
+        }
     }
 
     public Tag saveNBTData() {
@@ -175,5 +199,8 @@ public class PlayerDoseData {
                 Codec.DOUBLE.fieldOf("amount").forGetter(ResistancePillEffect::amount),
                 Codec.LONG.fieldOf("expiresAt").forGetter(ResistancePillEffect::expiresAt)
         ).apply(instance, ResistancePillEffect::new));
+    }
+
+    public record ResistancePillStatus(double amount, int stacks, long expiresAt) {
     }
 }

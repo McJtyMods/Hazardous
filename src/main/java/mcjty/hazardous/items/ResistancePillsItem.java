@@ -7,6 +7,7 @@ import mcjty.hazardous.setup.ResistancePillEffects;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -49,6 +50,7 @@ public class ResistancePillsItem extends BaseItem {
         Optional<ResourceLocation> attributeId = Config.getResistancePillsAttribute();
         double amount = Mth.clamp(Config.RESISTANCE_PILLS_AMOUNT.get(), 0.0, 1.0);
         int durationTicks = Math.max(Config.RESISTANCE_PILLS_DURATION_TICKS.get(), 0);
+        int maxStacks = Math.max(Config.RESISTANCE_PILLS_MAX_STACKS.get(), 0);
         if (attributeId.isEmpty() || amount <= 0.0 || durationTicks <= 0) {
             return InteractionResultHolder.pass(stack);
         }
@@ -66,7 +68,12 @@ public class ResistancePillsItem extends BaseItem {
 
         long gameTime = level.getGameTime();
         boolean applied = PlayerDoseDispatcher.getPlayerDose(player).map(store -> {
-            store.addResistancePillEffect(resolvedAttributeId, amount, gameTime + durationTicks);
+            if (!store.addResistancePillEffect(resolvedAttributeId, amount, gameTime + durationTicks, maxStacks, gameTime)) {
+                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                    serverPlayer.displayClientMessage(Component.translatable("message.hazardous.resistance_pills.max_stacks"), true);
+                }
+                return false;
+            }
             ResistancePillEffects.syncPlayer(player, store, gameTime);
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);

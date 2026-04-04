@@ -9,6 +9,7 @@ import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.items.GasmaskItem;
 import mcjty.hazardous.network.PacketPlayerDose;
 import mcjty.hazardous.network.PacketRadiationAtPos;
+import mcjty.hazardous.network.PacketResistancePillStatus;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
 import mcjty.hazardous.setup.HazardAttributes;
@@ -69,7 +70,9 @@ public class EventHandlers {
 
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
+            boolean hadTrackedPills = !store.getResistancePillAttributeIds().isEmpty();
             ResistancePillEffects.syncPlayer(event.player, store, gameTime);
+            Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {
@@ -118,6 +121,9 @@ public class EventHandlers {
                 }
                 Messages.sendToPlayer(new PacketRadiationAtPos(forClient),  event.player);
                 Messages.sendToPlayer(new PacketPlayerDose(doseForClient), event.player);
+            }
+            if (clientNeedsUpdate || hadTrackedPills || !pillStatuses.isEmpty()) {
+                Messages.sendToPlayer(new PacketResistancePillStatus(pillStatuses), event.player);
             }
         });
     }

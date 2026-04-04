@@ -28,6 +28,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> RESISTANCE_PILLS_ATTRIBUTE;
     public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_AMOUNT;
     public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_DURATION_TICKS;
+    public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_MAX_STACKS;
     public static ForgeConfigSpec.ConfigValue<String> GEIGER_DISPLAY_HAZARD_TYPE;
     public static ForgeConfigSpec.DoubleValue GEIGER_MAX_RADIATION;
     public static ForgeConfigSpec.DoubleValue GEIGER_MEDIUM_THRESSHOLD;
@@ -52,6 +53,11 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue DOSIMETER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_Y;
+    public static ForgeConfigSpec.BooleanValue RESISTANCE_PILLS_HUD_ENABLED;
+    public static ForgeConfigSpec.ConfigValue<String> RESISTANCE_PILLS_HUD_ANCHOR;
+    public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_HUD_SCALE;
+    public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_X;
+    public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_Y;
 
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
     private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
@@ -94,6 +100,9 @@ public class Config {
         RESISTANCE_PILLS_DURATION_TICKS = builder
                 .comment("Duration in ticks for the temporary anti-rad pill resistance bonus (20 ticks = 1 second)")
                 .defineInRange("resistancePillsDurationTicks", 12000, 0, 1_000_000);
+        RESISTANCE_PILLS_MAX_STACKS = builder
+                .comment("Maximum number of simultaneous anti-rad pill stacks for the configured attribute. Set to 0 for unlimited")
+                .defineInRange("resistancePillsMaxStacks", 0, 0, 1_000_000);
 
         builder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, builder.build());
@@ -173,6 +182,21 @@ public class Config {
         DOSIMETER_HUD_OFFSET_Y = clientBuilder
                 .comment("Vertical HUD offset from anchor in pixels")
                 .defineInRange("dosimeterHudOffsetY", 84, -5000, 5000);
+        RESISTANCE_PILLS_HUD_ENABLED = clientBuilder
+                .comment("If true, show an on-screen anti-rad pill status indicator while resistance pill effects are active")
+                .define("resistancePillsHudEnabled", true);
+        RESISTANCE_PILLS_HUD_ANCHOR = clientBuilder
+                .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
+                .define("resistancePillsHudAnchor", "top_left");
+        RESISTANCE_PILLS_HUD_SCALE = clientBuilder
+                .comment("Scale factor for the resistance pills HUD indicator")
+                .defineInRange("resistancePillsHudScale", 1.0, 0.1, 10.0);
+        RESISTANCE_PILLS_HUD_OFFSET_X = clientBuilder
+                .comment("Horizontal HUD offset from anchor in pixels")
+                .defineInRange("resistancePillsHudOffsetX", 8, -5000, 5000);
+        RESISTANCE_PILLS_HUD_OFFSET_Y = clientBuilder
+                .comment("Vertical HUD offset from anchor in pixels")
+                .defineInRange("resistancePillsHudOffsetY", 8, -5000, 5000);
 
         clientBuilder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientBuilder.build());
@@ -284,6 +308,10 @@ public class Config {
 
     public static GeigerHudAnchor getDosimeterHudAnchor() {
         return GeigerHudAnchor.fromName(DOSIMETER_HUD_ANCHOR.get());
+    }
+
+    public static GeigerHudAnchor getResistancePillsHudAnchor() {
+        return GeigerHudAnchor.fromName(RESISTANCE_PILLS_HUD_ANCHOR.get());
     }
 
     public enum GeigerHudAnchor {
