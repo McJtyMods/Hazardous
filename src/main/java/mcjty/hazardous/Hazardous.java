@@ -52,7 +52,9 @@ public class Hazardous {
         forgeBus.addListener(EventHandlers::commandRegister);
 
         if (dist.isClient()) {
+            bus.addListener(ClientRegistration::onClientSetup);
             bus.addListener(ClientRegistration::registerLayerDefinitions);
+            bus.addListener(ClientRegistration::addLayers);
             forgeBus.addListener(ClientFxManager::onClientTick);
             forgeBus.addListener(ClientFxManager::onCameraAngles);
             forgeBus.addListener(ClientFxManager::onRenderOverlay);

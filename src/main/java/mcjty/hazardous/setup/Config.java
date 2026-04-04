@@ -58,6 +58,7 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue RESISTANCE_PILLS_HUD_SCALE;
     public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_Y;
+    public static ForgeConfigSpec.BooleanValue CURIOS_HEAD_OVERRIDE_HELMET_RENDER;
 
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
     private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
@@ -197,6 +198,9 @@ public class Config {
         RESISTANCE_PILLS_HUD_OFFSET_Y = clientBuilder
                 .comment("Vertical HUD offset from anchor in pixels")
                 .defineInRange("resistancePillsHudOffsetY", 8, -5000, 5000);
+        CURIOS_HEAD_OVERRIDE_HELMET_RENDER = clientBuilder
+                .comment("If true, a visible helmet-like Curios item in the head slot can hide the normal helmet armor render when it has its own Curios renderer")
+                .define("curiosHeadOverrideHelmetRender", true);
 
         clientBuilder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientBuilder.build());
