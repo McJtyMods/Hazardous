@@ -5,6 +5,7 @@ import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -50,7 +51,7 @@ public class FilterItem extends BaseItem {
             if (!player.getAbilities().instabuild) {
                 filterStack.shrink(1);
             }
-            player.playSound(SoundEvents.ANVIL_USE, 0.5f, 1.7f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.5f, 1.7f);
         }
         return InteractionResultHolder.sidedSuccess(filterStack, level.isClientSide());
     }
