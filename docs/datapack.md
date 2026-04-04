@@ -232,7 +232,7 @@ Association variants:
 `city`
 - `type: "city"`
 - `style` (optional string): only matches Lost Cities chunks whose `ILostCityInfo#getCityStyle()` equals this value
-- `buildings` (optional list of strings): only matches Lost Cities chunks whose `ILostChunkInfo#getBuildingType()` is in this list
+- `buildings` (optional list of strings): only matches Lost Cities chunks whose `ILostChunkInfo#getBuildingId().toString()` is in this list
 - `multibuildings` (optional list of strings): only matches Lost Cities chunks whose `ILostChunkInfo#getMultiBuildingInfo().buildingType().toString()` is in this list
 - if multiple optional filters are given, all of them must match
 - only works when Lost Cities is installed
@@ -443,8 +443,8 @@ Lost Cities sky hazard limited to one city style, a set of building types, and o
     "type": "city",
     "style": "ancient",
     "buildings": [
-      "library",
-      "apartment"
+      "lostcities:library",
+      "lostcities:apartment"
     ],
     "multibuildings": [
       "lostcities:station"

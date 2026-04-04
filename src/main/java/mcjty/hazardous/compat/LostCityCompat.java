@@ -46,8 +46,7 @@ public class LostCityCompat {
                 }
             }
             if (!buildings.isEmpty()) {
-                String buildingType = chunkInfo.getBuildingType();
-                if (!buildings.contains(buildingType)) {
+                if (chunkInfo.getBuildingId() == null || !buildings.contains(chunkInfo.getBuildingId().toString())) {
                     return false;
                 }
             }
