@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,7 +68,7 @@ public class PillsItem extends BaseItem {
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
-        player.playSound(Registration.PILLS_USE.get(), 0.6f, 1.1f);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), Registration.PILLS_USE.get(), SoundSource.PLAYERS, 0.6f, 1.1f);
         player.displayClientMessage(
                 Component.translatable(
                         "message." + Hazardous.MODID + ".pills.cured",
