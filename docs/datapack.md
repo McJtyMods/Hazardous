@@ -693,6 +693,27 @@ Behavior:
 - Each protection application consumes 1 durability.
 - At 0 durability it stays equipped but no longer protects.
 
+Datapack armor tag:
+- Hazardous also checks the item tag `hazardous:protective_armor`.
+- If a damageable armor item with that tag is equipped in its normal armor slot (`head`, `chest`, `legs`, or `feet`), it can provide the same protection as the gas mask.
+- Tagged armor uses the same `gasmaskProtectedType` and `gasmaskProtectionLevel` config values as the gas mask.
+- Each protection application consumes 1 normal armor durability and can break the armor item.
+- If both a usable gas mask and tagged armor are equipped, the gas mask is used first.
+
+Example datapack tag file:
+
+`data/hazardous/tags/items/protective_armor.json`
+
+```json
+{
+  "replace": false,
+  "values": [
+    "minecraft:iron_helmet",
+    "minecraft:diamond_chestplate"
+  ]
+}
+```
+
 Crafting recipe:
 
 ```json
@@ -849,7 +870,7 @@ This section documents config options besides `enabledHazardTypes` and `enabledH
 
 Server config (`hazardous-server.toml`):
 - `gasmaskProtectedType` (string resource location, default `hazardous:radioactive_type`)
-- `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`)
+- `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`; used by both `hazardous:gasmask` and `hazardous:protective_armor` items)
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
 - `pillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables pill healing)
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`; amount removed from each matching hazard dose entry)

@@ -3,6 +3,7 @@ package mcjty.hazardous.items;
 import mcjty.hazardous.client.GasmaskItemClient;
 import mcjty.hazardous.compat.CuriosCompat;
 import mcjty.hazardous.setup.Config;
+import mcjty.hazardous.setup.HazardousTags;
 import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
 import net.minecraft.network.chat.Component;
@@ -63,17 +64,23 @@ public class GasmaskItem extends ArmorItem {
             return input;
         }
 
-        Optional<ItemStack> gasmask = findEquippedGasmask(player, stack -> getRemainingDurability(stack) > 0);
-        if (gasmask.isEmpty()) {
-            return input;
-        }
-
         double protectionLevel = Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0);
         if (protectionLevel <= 0) {
             return input;
         }
 
-        damageByOne(gasmask.get());
+        Optional<ItemStack> gasmask = findEquippedGasmask(player, stack -> getRemainingDurability(stack) > 0);
+        if (gasmask.isPresent()) {
+            damageByOne(gasmask.get());
+            return input * (1.0 - protectionLevel);
+        }
+
+        Optional<TaggedArmorProtection> taggedArmor = findTaggedProtectiveArmor(player);
+        if (taggedArmor.isEmpty()) {
+            return input;
+        }
+
+        damageArmorByOne(player, taggedArmor.get().slot(), taggedArmor.get().stack());
         return input * (1.0 - protectionLevel);
     }
 
@@ -113,6 +120,23 @@ public class GasmaskItem extends ArmorItem {
         return Math.max(0, stack.getMaxDamage() - stack.getDamageValue());
     }
 
+    private static Optional<TaggedArmorProtection> findTaggedProtectiveArmor(Player player) {
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !stack.isDamageableItem() || !stack.is(HazardousTags.PROTECTIVE_ARMOR)) {
+                continue;
+            }
+            if (stack.is(Registration.GASMASK.get()) || getRemainingDurability(stack) <= 0) {
+                continue;
+            }
+            if (!(stack.getItem() instanceof ArmorItem armorItem) || armorItem.getEquipmentSlot() != slot) {
+                continue;
+            }
+            return Optional.of(new TaggedArmorProtection(stack, slot));
+        }
+        return Optional.empty();
+    }
+
     private static void damageByOne(ItemStack stack) {
         if (!stack.isDamageableItem()) {
             return;
@@ -123,5 +147,15 @@ public class GasmaskItem extends ArmorItem {
             return;
         }
         stack.setDamageValue(Math.min(maxDamage, damage + 1));
+    }
+
+    private static void damageArmorByOne(Player player, EquipmentSlot slot, ItemStack stack) {
+        if (!stack.isDamageableItem()) {
+            return;
+        }
+        stack.hurtAndBreak(1, player, living -> living.broadcastBreakEvent(slot));
+    }
+
+    private record TaggedArmorProtection(ItemStack stack, EquipmentSlot slot) {
     }
 }
