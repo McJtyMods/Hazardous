@@ -243,7 +243,9 @@ Association variants:
 - only works when Lost Cities is installed
 - runtime note: `city + sky + falloff = none` starts as soon as the player enters a matching city/building chunk
 - runtime note: `city + sky + falloff != none` searches nearby matching buildings or multibuildings in the current city and uses each center as a source position
+- runtime note: `city + sky + falloff != none` can also detect nearby matching buildings just outside the city boundary
 - runtime note: `city + point` treats matching buildings or multibuildings as point sources centered on their footprint
+- runtime note: `city + point` searches around the player using `transmission.maxDistance`, so nearby matching buildings can contribute even when the player is outside the city boundary
 - runtime note: `city + point` requires `buildings` or `multibuildings`; plain city-wide point sources are not supported
 - runtime note: center-based `city + sky` behavior needs `buildings` or `multibuildings`; if both are empty, Hazardous logs a warning and falls back to city-wide behavior
 

@@ -31,6 +31,7 @@ import java.util.*;
 public class HazardManager {
 
     private static final double MIN_EFFECTIVE_RADIATION = 1.0e-6;
+    private static final int OUTSIDE_CITY_SOURCE_SEARCH_RADIUS = 128;
     private static final Map<Pair<ResourceKey<Level>, ResourceLocation>, Double> lastCachedValue = new HashMap<>();
     private static final Map<HazardType.Blocking.Absorption, AbsorptionModel> ABSORPTION_MODELS = new HashMap<>();
 
@@ -477,14 +478,40 @@ public class HazardManager {
                 return 0.0;
             }
             BlockPos pos = player.blockPosition();
-            LostCityCompat.CityArea cityArea = LostCityCompat.getCityArea(level, pos, a.style());
-            if (cityArea == null) {
-                return 0.0;
+            if (transmission instanceof HazardSource.Transmission.Point t) {
+                if (a.buildings().isEmpty() && a.multibuildings().isEmpty()) {
+                    return 0.0;
+                }
+                int maxDistance = t.maxDistance();
+                if (maxDistance <= 0) {
+                    return 0.0;
+                }
+                double sourceY = targetBodyY;
+                double sum = 0.0;
+                for (LostCityCompat.CitySource source : LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), maxDistance)) {
+                    double dx = targetX - source.centerX();
+                    double dz = targetZ - source.centerZ();
+                    double d = Math.sqrt(dx * dx + dz * dz);
+                    double raw = computePointRaw(t, d);
+                    if (raw <= 0.0) {
+                        continue;
+                    }
+                    double contributed = applyPointBlocking(type, level, source.centerX(), sourceY, source.centerZ(), raw);
+                    if (contributed > MIN_EFFECTIVE_RADIATION) {
+                        sum += contributed;
+                    }
+                }
+                return sum;
             }
             boolean useBuildingCenter = !(falloff instanceof HazardSource.Falloff.None);
+            LostCityCompat.CityArea cityArea = LostCityCompat.getCityArea(level, pos, a.style());
+            if (cityArea == null && !useBuildingCenter) {
+                return 0.0;
+            }
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 private List<LostCityCompat.CitySource> getCitySources() {
-                    return LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), cityArea.searchRadiusBlocks());
+                    int searchRadius = cityArea != null ? cityArea.searchRadiusBlocks() : OUTSIDE_CITY_SOURCE_SEARCH_RADIUS;
+                    return LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), searchRadius);
                 }
 
                 @Override
@@ -512,29 +539,6 @@ public class HazardManager {
                     return sum;
                 }
 
-                @Override
-                public Double point(HazardType type, HazardSource.Transmission.Point t) {
-                    if (a.buildings().isEmpty() && a.multibuildings().isEmpty()) {
-                        return 0.0;
-                    }
-                    double sourceY = targetBodyY;
-                    double sum = 0.0;
-                    // Lost Cities exposes city source footprints in X/Z; project them onto the player's body height for point transmission.
-                    for (LostCityCompat.CitySource source : getCitySources()) {
-                        double dx = targetX - source.centerX();
-                        double dz = targetZ - source.centerZ();
-                        double d = Math.sqrt(dx * dx + dz * dz);
-                        double raw = computePointRaw(t, d);
-                        if (raw <= 0.0) {
-                            continue;
-                        }
-                        double contributed = applyPointBlocking(type, level, source.centerX(), sourceY, source.centerZ(), raw);
-                        if (contributed > MIN_EFFECTIVE_RADIATION) {
-                            sum += contributed;
-                        }
-                    }
-                    return sum;
-                }
             });
         }
 

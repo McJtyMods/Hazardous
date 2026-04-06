@@ -83,10 +83,8 @@ public class LostCityCompat {
                 if (source == null) {
                     continue;
                 }
-                double centerChunkX = chunkX * 16.0 + 8.0;
-                double centerChunkZ = chunkZ * 16.0 + 8.0;
-                double ddx = pos.getX() + 0.5 - centerChunkX;
-                double ddz = pos.getZ() + 0.5 - centerChunkZ;
+                double ddx = pos.getX() + 0.5 - source.source().centerX();
+                double ddz = pos.getZ() + 0.5 - source.source().centerZ();
                 if ((ddx * ddx) + (ddz * ddz) > (searchRadiusBlocks * searchRadiusBlocks)) {
                     continue;
                 }
