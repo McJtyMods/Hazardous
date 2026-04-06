@@ -241,7 +241,7 @@ Association variants:
 - if multiple optional filters are given, all of them must match
 - only works when Lost Cities is installed
 - runtime note: with `falloff = none`, the hazard starts as soon as the player enters a matching city/building chunk
-- runtime note: with any other `falloff`, Hazardous uses the center of the current matching building or multibuilding as the source position
+- runtime note: with any other `falloff`, Hazardous searches nearby matching buildings or multibuildings in the current city and uses each center as a source position
 - runtime note: center-based city falloff needs `buildings` or `multibuildings`; if both are empty, Hazardous logs a warning and falls back to city-wide behavior
 
 `block`

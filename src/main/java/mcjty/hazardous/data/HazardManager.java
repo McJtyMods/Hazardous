@@ -449,22 +449,35 @@ public class HazardManager {
                 return 0.0;
             }
             BlockPos pos = player.blockPosition();
-            LostCityCompat.CityMatch cityMatch = LostCityCompat.getCityMatch(level, pos, a.style(), a.buildings(), a.multibuildings());
-            if (cityMatch == null) {
+            LostCityCompat.CityArea cityArea = LostCityCompat.getCityArea(level, pos, a.style());
+            if (cityArea == null) {
                 return 0.0;
             }
-            boolean useBuildingCenter = !(falloff instanceof HazardSource.Falloff.None) && cityMatch.hasExplicitSource();
+            boolean useBuildingCenter = !(falloff instanceof HazardSource.Falloff.None);
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
                 public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
                     double intensity = computeSkyIntensity(type, t, level, pos);
                     if (!useBuildingCenter) {
+                        if (!LostCityCompat.isCity(level, pos, a.style(), a.buildings(), a.multibuildings())) {
+                            return 0.0;
+                        }
                         return intensity;
                     }
-                    double dx = targetX - cityMatch.centerX();
-                    double dz = targetZ - cityMatch.centerZ();
-                    double d = Math.sqrt(dx * dx + dz * dz);
-                    return applyFalloff(intensity, d, cityMatch.effectiveRange(), falloff);
+                    if (a.buildings().isEmpty() && a.multibuildings().isEmpty()) {
+                        return intensity;
+                    }
+                    double sum = 0.0;
+                    for (LostCityCompat.CitySource source : LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), cityArea.searchRadiusBlocks())) {
+                        double dx = targetX - source.centerX();
+                        double dz = targetZ - source.centerZ();
+                        double d = Math.sqrt(dx * dx + dz * dz);
+                        double contributed = applyFalloff(intensity, d, source.falloffRange(), falloff);
+                        if (contributed > MIN_EFFECTIVE_RADIATION) {
+                            sum += contributed;
+                        }
+                    }
+                    return sum;
                 }
             });
         }
