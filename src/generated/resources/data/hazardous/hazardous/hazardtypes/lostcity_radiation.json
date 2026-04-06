@@ -26,8 +26,5 @@
     "exponential": false,
     "maximum": 200.0
   },
-  "falloff": {
-    "type": "none"
-  },
   "resistanceAttribute": "hazardous:lostcity_radiation_resistance"
 }

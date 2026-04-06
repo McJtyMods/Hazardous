@@ -4,6 +4,9 @@
     "block": "minecraft:lava",
     "maxDistance": 32.0
   },
+  "falloff": {
+    "type": "linear"
+  },
   "hazardType": "hazardous:lava_heat",
   "transmission": {
     "type": "point",

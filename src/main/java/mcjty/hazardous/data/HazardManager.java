@@ -53,7 +53,7 @@ public class HazardManager {
             }
             ResourceLocation hazardId = source.hazardType();
             if (hazardId.equals(typeId)) {
-                Double v = source.association().accept(type, visitor.withTransmission(source.transmission()));
+                Double v = source.association().accept(type, visitor.withSource(source));
                 if (v != null) {
                     value += v;
                 }
@@ -131,6 +131,7 @@ public class HazardManager {
         private final double targetZ;
         private final double targetBodyY;
         private final double targetHeadY;
+        private HazardSource.Falloff falloff;
         private HazardSource.Transmission transmission;
 
         public PlayerTickVisitor(Player player) {
@@ -141,21 +142,22 @@ public class HazardManager {
             this.targetHeadY = player.getEyeY();
         }
 
-        public PlayerTickVisitor withTransmission(HazardSource.Transmission transmission) {
-            this.transmission = transmission;
+        public PlayerTickVisitor withSource(HazardSource source) {
+            this.falloff = source.falloff();
+            this.transmission = source.transmission();
             return this;
         }
 
-        private static double applyFalloff(double base, double d, int maxDistance, HazardType.Falloff falloff) {
+        private static double applyFalloff(double base, double d, int maxDistance, HazardSource.Falloff falloff) {
             if (maxDistance > 0 && d > maxDistance) {
                 return 0.0;
             }
             return falloff.apply(base, d, maxDistance);
         }
 
-        private double computePointRaw(HazardType type, HazardSource.Transmission.Point t, double d) {
+        private double computePointRaw(HazardSource.Transmission.Point t, double d) {
             double atten = t.airAttenuationPerBlock() > 0 ? Math.exp(-t.airAttenuationPerBlock() * d) : 1.0;
-            double withFalloff = applyFalloff(t.baseIntensity(), d, t.maxDistance(), type.falloff());
+            double withFalloff = applyFalloff(t.baseIntensity(), d, t.maxDistance(), falloff);
             double raw = Math.max(0.0, withFalloff * atten);
             if (raw <= MIN_EFFECTIVE_RADIATION) {
                 return 0.0;
@@ -281,7 +283,7 @@ public class HazardManager {
                         if (d > maxDistance) {
                             continue;
                         }
-                        double raw = computePointRaw(type, t, d) * entry.getValue();
+                        double raw = computePointRaw(t, d) * entry.getValue();
                         if (raw <= 0.0) {
                             continue;
                         }
@@ -333,7 +335,7 @@ public class HazardManager {
                         double dy = targetBodyY - y;
                         double dz = targetZ - z;
                         double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        double raw = computePointRaw(type, t, d);
+                        double raw = computePointRaw(t, d);
                         if (raw <= 0.0) {
                             continue;
                         }
@@ -386,7 +388,7 @@ public class HazardManager {
                     for (Map.Entry<Player, Double> entry : sourcePlayers.entrySet()) {
                         Player sourcePlayer = entry.getKey();
                         double d = player.distanceTo(sourcePlayer);
-                        double raw = computePointRaw(type, t, d) * entry.getValue();
+                        double raw = computePointRaw(t, d) * entry.getValue();
                         if (raw <= 0.0) {
                             continue;
                         }
@@ -508,7 +510,7 @@ public class HazardManager {
                                 double ddy = targetBodyY - y;
                                 double ddz = targetZ - z;
                                 double d = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
-                                double raw = computePointRaw(type, t, d);
+                                double raw = computePointRaw(t, d);
                                 if (raw <= 0.0) {
                                     continue;
                                 }

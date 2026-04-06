@@ -2,6 +2,9 @@
   "association": {
     "type": "city"
   },
+  "falloff": {
+    "type": "none"
+  },
   "hazardType": "hazardous:lostcity_radiation",
   "transmission": {
     "type": "sky",

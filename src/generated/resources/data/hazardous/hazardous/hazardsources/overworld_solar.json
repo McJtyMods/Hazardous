@@ -3,6 +3,9 @@
     "type": "level",
     "level": "minecraft:overworld"
   },
+  "falloff": {
+    "type": "none"
+  },
   "hazardType": "hazardous:solar_burn",
   "transmission": {
     "type": "sky",

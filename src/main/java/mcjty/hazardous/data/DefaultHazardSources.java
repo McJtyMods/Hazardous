@@ -14,6 +14,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "overworld_solar"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "solar_burn"),
+                    HazardSource.Falloff.None.INSTANCE,
                     new HazardSource.Transmission.Sky(
                             0.12,
                             true,
@@ -26,6 +27,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "radioactive_zombie"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "radioactive_type"),
+                    new HazardSource.Falloff.Exponential(0.18),
                     new HazardSource.Transmission.Point(
                             1.0,
                             12,
@@ -36,6 +38,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "lostcity_buildings"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
+                    HazardSource.Falloff.None.INSTANCE,
                     new HazardSource.Transmission.Sky(
                             0.03,
                             false,
@@ -48,6 +51,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "lava_bucket"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),
+                    HazardSource.Falloff.Linear.INSTANCE,
                     new HazardSource.Transmission.Point(
                             0.8,
                             4,
@@ -60,6 +64,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "dropped_lava_bucket"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),
+                    HazardSource.Falloff.Linear.INSTANCE,
                     new HazardSource.Transmission.Point(
                             0.8,
                             4,
@@ -73,6 +78,7 @@ public class DefaultHazardSources {
             new ResourceLocation(Hazardous.MODID, "near_lava"),
             new HazardSource(
                     new ResourceLocation(Hazardous.MODID, "lava_heat"),
+                    HazardSource.Falloff.Linear.INSTANCE,
                     new HazardSource.Transmission.Point(
                             0.8,
                             32,

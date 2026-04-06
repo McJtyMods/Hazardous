@@ -60,8 +60,8 @@ Put custom hazard JSON files in your datapack under:
 
 Mental model:
 1. A `hazardsource` says where a hazard exists.
-2. A `hazardsource` also says how the hazard transmits (`sky`, `point`, `contact`).
-3. A `hazardtype` says falloff, blocking, exposure, and effects.
+2. A `hazardsource` also says how the hazard transmits (`sky`, `point`, `contact`) and how it falls off with distance.
+3. A `hazardtype` says blocking, exposure, and effects.
 4. `effectentries` say what happens when exposure or dose reaches certain values.
 5. Items and config (gas mask, pills, geiger) modify or visualize runtime behavior.
 
@@ -70,29 +70,12 @@ Mental model:
 Codec: `mcjty.hazardous.data.objects.HazardType.CODEC`
 
 Top-level fields:
-- `falloff`: `none`, `inverse_square`, `linear`, or `exponential`
 - `blocking`: `none`, `simple`, or `absorption`
 - `exposure`: timing plus accumulation behavior
 - `resistanceAttribute`: optional attribute id used as natural resistance for this hazard type
 - `effects`: list of effect entry ids (optional, defaults to `[]`)
 
-### 1.1 Falloff
-
-`none`
-- no fields
-
-`inverse_square`
-- `minDistance` (double)
-
-`linear`
-- no fields
-- behavior: `base * max(0, 1 - d/maxDistance)`
-
-`exponential`
-- `k` (double)
-- behavior: `base * exp(-k * d)`
-
-### 1.2 Blocking
+### 1.1 Blocking
 
 `none`
 - no fields
@@ -120,7 +103,7 @@ Known runtime behavior:
 
 These fields are still useful for forward-compatible datapacks.
 
-### 1.4 Exposure
+### 1.2 Exposure
 
 - `applyIntervalTicks` (int): evaluation interval (`20` = once per second)
 - `accumulate` (boolean): whether to keep per-player dose
@@ -128,13 +111,12 @@ These fields are still useful for forward-compatible datapacks.
 - `maximum` (double): `<= 0` means uncapped
 - `decayPerTick` (double): decay applied at each evaluation
 
-### 1.5 Example HazardType (point radiation shared settings)
+### 1.3 Example HazardType (point radiation shared settings)
 
 `data/example/hazardous/hazardtypes/radiation_point.json`
 
 ```json
 {
-  "falloff": { "type": "exponential", "k": 0.18 },
   "blocking": {
     "type": "absorption",
     "absorptionRegistryHint": "hazardous:absorption_hints",
@@ -154,7 +136,7 @@ These fields are still useful for forward-compatible datapacks.
 }
 ```
 
-### 1.6 Resistance Attributes
+### 1.4 Resistance Attributes
 
 - `resistanceAttribute` is optional.
 - The attribute value is treated as a `0.0..1.0` resistance multiplier.
@@ -176,8 +158,30 @@ Codec: `mcjty.hazardous.data.objects.HazardSource.CODEC`
 
 Top-level fields:
 - `hazardType`: resource location
+- `falloff`: `none`, `inverse_square`, `linear`, or `exponential`
 - `transmission`: `sky`, `point`, or `contact`
 - `association`: where this hazard exists
+
+### 2.1 Falloff
+
+`none`
+- no fields
+
+`inverse_square`
+- `minDistance` (double)
+
+`linear`
+- no fields
+- behavior: `base * max(0, 1 - d/maxDistance)`
+
+`exponential`
+- `k` (double)
+- behavior: `base * exp(-k * d)`
+- runtime note: the cutoff still comes from `transmission.maxDistance` when that transmission uses distance
+
+Runtime note:
+- `falloff` is currently used by `point` transmission.
+- `sky` and `contact` sources can still declare a falloff, but it is ignored in runtime calculations.
 
 Transmission variants:
 
@@ -257,13 +261,16 @@ Validation note:
 - Reload validates association and transmission compatibility.
 - If they do not match, the datapack is rejected.
 
-### 2.1 Source examples
+### 2.2 Source examples
 
 Entire overworld gets solar hazard:
 
 ```json
 {
   "hazardType": "example:solar_burn",
+  "falloff": {
+    "type": "none"
+  },
   "transmission": {
     "type": "sky",
     "baseIntensity": 0.12,
@@ -285,6 +292,10 @@ Configured entity types act as radioactive point sources:
 ```json
 {
   "hazardType": "example:radioactive_type",
+  "falloff": {
+    "type": "exponential",
+    "k": 0.18
+  },
   "transmission": {
     "type": "point",
     "baseIntensity": 1.0,
@@ -307,6 +318,9 @@ Dropped lava bucket emits heat:
 ```json
 {
   "hazardType": "example:lava_heat",
+  "falloff": {
+    "type": "linear"
+  },
   "transmission": {
     "type": "point",
     "baseIntensity": 0.8,
@@ -334,6 +348,9 @@ Near-lava heat hazard:
 ```json
 {
   "hazardType": "example:lava_heat",
+  "falloff": {
+    "type": "linear"
+  },
   "transmission": {
     "type": "point",
     "baseIntensity": 0.8,
@@ -354,6 +371,9 @@ Lava bucket carrier emits heat:
 ```json
 {
   "hazardType": "example:lava_heat",
+  "falloff": {
+    "type": "linear"
+  },
   "transmission": {
     "type": "point",
     "baseIntensity": 0.8,
@@ -380,6 +400,9 @@ Biome-based sky hazard with biome matcher:
 ```json
 {
   "hazardType": "example:solar_burn",
+  "falloff": {
+    "type": "none"
+  },
   "transmission": {
     "type": "sky",
     "baseIntensity": 0.12,
@@ -409,6 +432,9 @@ Lost Cities sky hazard limited to one city style:
 ```json
 {
   "hazardType": "example:lostcity_radiation",
+  "falloff": {
+    "type": "none"
+  },
   "transmission": {
     "type": "sky",
     "baseIntensity": 0.03,
@@ -430,6 +456,9 @@ Lost Cities sky hazard limited to one city style, a set of building types, and o
 ```json
 {
   "hazardType": "example:lostcity_radiation",
+  "falloff": {
+    "type": "none"
+  },
   "transmission": {
     "type": "sky",
     "baseIntensity": 0.03,

@@ -10,12 +10,9 @@ import java.util.List;
 
 /**
  * Defines how a hazard (radiation / solar burn / etc) behaves.
- * Sources (block/item/biome/...) reference a HazardType id and provide transmission details.
+ * Sources (block/item/biome/...) reference a HazardType id and provide source-specific falloff plus transmission details.
  */
 public record HazardType(
-        // How intensity diminishes with distance (if distance applies)
-        Falloff falloff,
-
         // How blocks/armor/etc can reduce exposure
         Blocking blocking,
 
@@ -31,76 +28,16 @@ public record HazardType(
 
     public static final Codec<HazardType> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Falloff.CODEC.fieldOf("falloff").forGetter(HazardType::falloff),
                     Blocking.CODEC.fieldOf("blocking").forGetter(HazardType::blocking),
                     Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure),
                     ResourceLocation.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects),
                     ResourceLocation.CODEC.optionalFieldOf("resistanceAttribute")
                             .forGetter(type -> java.util.Optional.ofNullable(type.resistanceAttribute()))
-            ).apply(instance, (falloff, blocking, exposure, effects, resistanceAttribute) ->
-                    new HazardType(falloff, blocking, exposure, effects, resistanceAttribute.orElse(null))));
+            ).apply(instance, (blocking, exposure, effects, resistanceAttribute) ->
+                    new HazardType(blocking, exposure, effects, resistanceAttribute.orElse(null))));
 
-    public HazardType(Falloff falloff, Blocking blocking, Exposure exposure, List<ResourceLocation> effects) {
-        this(falloff, blocking, exposure, effects, null);
-    }
-
-    public sealed interface Falloff permits Falloff.None, Falloff.InverseSquare, Falloff.Linear, Falloff.Exponential {
-        Codec<Falloff> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
-                HazardType::falloffType,
-                HazardType::getFalloffCodec));
-
-        /**
-         * Apply this falloff to the given base intensity at distance d.
-         * Implementations should not enforce maxDistance cut-off; the caller may apply a global cutoff.
-         */
-        default double apply(double base, double d, int maxDistance) {
-            return base;
-        }
-
-        record None() implements Falloff {
-            public static final None INSTANCE = new None();
-            public static final Codec<None> CODEC = Codec.unit(INSTANCE);
-        }
-
-        /** intensity *= 1 / (d^2)  (with clamp to avoid infinity) */
-        record InverseSquare(double minDistance) implements Falloff {
-            public static final Codec<InverseSquare> CODEC = RecordCodecBuilder.create(instance ->
-                    instance.group(
-                            Codec.DOUBLE.fieldOf("minDistance").forGetter(InverseSquare::minDistance)
-                    ).apply(instance, InverseSquare::new));
-
-            @Override
-            public double apply(double base, double d, int maxDistance) {
-                double dd = Math.max(minDistance(), Math.max(0.0001, d));
-                return base * (1.0 / (dd * dd));
-            }
-        }
-
-        /** intensity *= max(0, 1 - d/maxDistance) */
-        record Linear() implements Falloff {
-            public static final Linear INSTANCE = new Linear();
-            public static final Codec<Linear> CODEC = Codec.unit(INSTANCE);
-
-            @Override
-            public double apply(double base, double d, int maxDistance) {
-                if (maxDistance <= 0) return base; // no info; don't reduce
-                double f = Math.max(0.0, 1.0 - (d / (double) maxDistance));
-                return base * f;
-            }
-        }
-
-        /** intensity *= exp(-k * d) */
-        record Exponential(double k) implements Falloff {
-            public static final Codec<Exponential> CODEC = RecordCodecBuilder.create(instance ->
-                    instance.group(
-                            Codec.DOUBLE.fieldOf("k").forGetter(Exponential::k)
-                    ).apply(instance, Exponential::new));
-
-            @Override
-            public double apply(double base, double d, int maxDistance) {
-                return base * Math.exp(-k() * d);
-            }
-        }
+    public HazardType(Blocking blocking, Exposure exposure, List<ResourceLocation> effects) {
+        this(blocking, exposure, effects, null);
     }
 
     public sealed interface Blocking permits Blocking.None, Blocking.SimpleOcclusion, Blocking.Absorption {
@@ -216,29 +153,6 @@ public record HazardType(
 
             return next;
         }
-    }
-
-    private static Codec<? extends Falloff> getFalloffCodec(String type) {
-        return switch (type) {
-            case "none" -> Falloff.None.CODEC;
-            case "inverse_square" -> Falloff.InverseSquare.CODEC;
-            case "linear" -> Falloff.Linear.CODEC;
-            case "exponential" -> Falloff.Exponential.CODEC;
-            default -> throw new IllegalStateException("Unknown falloff type '" + type + "'");
-        };
-    }
-
-    private static String falloffType(Falloff falloff) {
-        if (falloff instanceof Falloff.None) {
-            return "none";
-        } else if (falloff instanceof Falloff.InverseSquare) {
-            return "inverse_square";
-        } else if (falloff instanceof Falloff.Linear) {
-            return "linear";
-        } else if (falloff instanceof Falloff.Exponential) {
-            return "exponential";
-        }
-        throw new IllegalStateException("Unknown falloff: " + falloff);
     }
 
     private static Codec<? extends Blocking> getBlockingCodec(String type) {

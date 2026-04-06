@@ -17,8 +17,5 @@
     "exponential": true,
     "maximum": 120.0
   },
-  "falloff": {
-    "type": "none"
-  },
   "resistanceAttribute": "hazardous:solar_burn_resistance"
 }

@@ -6,6 +6,10 @@
     ],
     "maxDistance": 3.0
   },
+  "falloff": {
+    "type": "exponential",
+    "k": 0.18
+  },
   "hazardType": "hazardous:radioactive_type",
   "transmission": {
     "type": "point",

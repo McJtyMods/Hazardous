@@ -12,7 +12,6 @@ public class DefaultHazardTypes {
     public static final Map<ResourceLocation, HazardType> DEFAULT_HAZARD_TYPES = Map.of(
             new ResourceLocation(Hazardous.MODID, "solar_burn"),
             new HazardType(
-                    HazardType.Falloff.None.INSTANCE,
                     new HazardType.Blocking.SimpleOcclusion(
                             0.6,
                             0.75,
@@ -33,7 +32,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "radioactive_type"),
             new HazardType(
-                    new HazardType.Falloff.Exponential(0.18),
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
                             0.2,
@@ -59,7 +57,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_radiation"),
             new HazardType(
-                    HazardType.Falloff.None.INSTANCE,
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
                             0.2,
@@ -84,7 +81,6 @@ public class DefaultHazardTypes {
             ),
             new ResourceLocation(Hazardous.MODID, "lava_heat"),
             new HazardType(
-                    HazardType.Falloff.Linear.INSTANCE,
                     new HazardType.Blocking.Absorption(
                             new ResourceLocation(Hazardous.MODID, "absorption_hints"),
                             0.2,

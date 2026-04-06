@@ -8,6 +8,9 @@
       }
     ]
   },
+  "falloff": {
+    "type": "linear"
+  },
   "hazardType": "hazardous:lava_heat",
   "transmission": {
     "type": "point",

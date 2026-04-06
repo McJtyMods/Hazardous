@@ -19,19 +19,82 @@ import java.util.Set;
 
 /**
  * Describes what produces a hazard, how it transmits, and where it is attached.
- * Points to a HazardType for shared behavior numbers (falloff/blocking/exposure/effects).
+ * Points to a HazardType for shared blocking/exposure/effects while keeping source-specific falloff.
  */
 public record HazardSource(
         ResourceLocation hazardType,
+        Falloff falloff,
         Transmission transmission,
         Association association
 ) {
     public static final Codec<HazardSource> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ResourceLocation.CODEC.fieldOf("hazardType").forGetter(HazardSource::hazardType),
+                    Falloff.CODEC.fieldOf("falloff").forGetter(HazardSource::falloff),
                     Transmission.CODEC.fieldOf("transmission").forGetter(HazardSource::transmission),
                     Association.CODEC.fieldOf("association").forGetter(HazardSource::association)
             ).apply(instance, HazardSource::new));
+
+    public sealed interface Falloff permits Falloff.None, Falloff.InverseSquare, Falloff.Linear, Falloff.Exponential {
+        Codec<Falloff> CODEC = ExtraCodecs.lazyInitializedCodec(() -> Codec.STRING.dispatch("type",
+                HazardSource::falloffType,
+                HazardSource::getFalloffCodec));
+
+        /**
+         * Apply this falloff to the given base intensity at distance d.
+         * Implementations should not enforce maxDistance cut-off; the caller may apply a global cutoff.
+         */
+        default double apply(double base, double d, int maxDistance) {
+            return base;
+        }
+
+        record None() implements Falloff {
+            public static final None INSTANCE = new None();
+            public static final Codec<None> CODEC = Codec.unit(INSTANCE);
+        }
+
+        /** intensity *= 1 / (d^2) (with clamp to avoid infinity) */
+        record InverseSquare(double minDistance) implements Falloff {
+            public static final Codec<InverseSquare> CODEC = RecordCodecBuilder.create(instance ->
+                    instance.group(
+                            Codec.DOUBLE.fieldOf("minDistance").forGetter(InverseSquare::minDistance)
+                    ).apply(instance, InverseSquare::new));
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                double dd = Math.max(minDistance(), Math.max(0.0001, d));
+                return base * (1.0 / (dd * dd));
+            }
+        }
+
+        /** intensity *= max(0, 1 - d/maxDistance) */
+        record Linear() implements Falloff {
+            public static final Linear INSTANCE = new Linear();
+            public static final Codec<Linear> CODEC = Codec.unit(INSTANCE);
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                if (maxDistance <= 0) {
+                    return base;
+                }
+                double factor = Math.max(0.0, 1.0 - (d / (double) maxDistance));
+                return base * factor;
+            }
+        }
+
+        /** intensity *= exp(-k * d) */
+        record Exponential(double k) implements Falloff {
+            public static final Codec<Exponential> CODEC = RecordCodecBuilder.create(instance ->
+                    instance.group(
+                            Codec.DOUBLE.fieldOf("k").forGetter(Exponential::k)
+                    ).apply(instance, Exponential::new));
+
+            @Override
+            public double apply(double base, double d, int maxDistance) {
+                return base * Math.exp(-k() * d);
+            }
+        }
+    }
 
     public sealed interface Transmission permits Transmission.Sky, Transmission.Point, Transmission.Contact {
 
@@ -94,7 +157,7 @@ public record HazardSource(
         }
 
         /**
-         * Exposure comes from a point source and may use distance/LOS.
+         * Exposure comes from a point source and may use distance/LOS plus this source's falloff.
          * Sources like blocks/entities/items can use this.
          */
         record Point(
@@ -129,7 +192,7 @@ public record HazardSource(
 
         /**
          * Exposure comes from direct contact (held item, touched block, etc.).
-         * Distance/falloff usually irrelevant.
+         * Distance-based falloff is usually irrelevant here.
          */
         record Contact(
                 double baseIntensity
@@ -399,6 +462,29 @@ public record HazardSource(
             return "contact";
         }
         throw new IllegalStateException("Unknown transmission: " + transmission);
+    }
+
+    private static Codec<? extends Falloff> getFalloffCodec(String type) {
+        return switch (type) {
+            case "none" -> Falloff.None.CODEC;
+            case "inverse_square" -> Falloff.InverseSquare.CODEC;
+            case "linear" -> Falloff.Linear.CODEC;
+            case "exponential" -> Falloff.Exponential.CODEC;
+            default -> throw new IllegalStateException("Unknown falloff type '" + type + "'");
+        };
+    }
+
+    private static String falloffType(Falloff falloff) {
+        if (falloff instanceof Falloff.None) {
+            return "none";
+        } else if (falloff instanceof Falloff.InverseSquare) {
+            return "inverse_square";
+        } else if (falloff instanceof Falloff.Linear) {
+            return "linear";
+        } else if (falloff instanceof Falloff.Exponential) {
+            return "exponential";
+        }
+        throw new IllegalStateException("Unknown falloff: " + falloff);
     }
 
     private static Codec<? extends Association> getAssociationCodec(String type) {
