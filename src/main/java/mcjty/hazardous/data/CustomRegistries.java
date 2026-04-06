@@ -15,10 +15,8 @@ import net.minecraftforge.registries.DataPackRegistryEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class CustomRegistries {
 
@@ -41,8 +39,10 @@ public class CustomRegistries {
     }
 
     public static void validateSources(Map<ResourceLocation, HazardType> hazardTypes,
-                                Collection<HazardSource> sources) {
-        for (HazardSource s : sources) {
+                                Map<ResourceLocation, HazardSource> sources) {
+        for (Map.Entry<ResourceLocation, HazardSource> entry : sources.entrySet()) {
+            ResourceLocation sourceId = entry.getKey();
+            HazardSource s = entry.getValue();
             HazardType type = hazardTypes.get(s.hazardType());
             if (type == null) {
                 Hazardous.LOGGER.error("HazardSource refers to missing HazardType '{}'", s.hazardType());
@@ -56,6 +56,12 @@ public class CustomRegistries {
                         s.association().kind(),
                         s);
                 throw new RuntimeException("Incompatible hazard source '" + s.association().kind() + "' for type '" + s.hazardType() + "'!");
+            }
+            if (s.association() instanceof HazardSource.Association.City city
+                    && !(s.falloff() instanceof HazardSource.Falloff.None)
+                    && city.buildings().isEmpty()
+                    && city.multibuildings().isEmpty()) {
+                Hazardous.LOGGER.warn("HazardSource '{}' uses city falloff without buildings or multibuildings; Hazardous cannot derive a building center and will fall back to city-wide behavior", sourceId);
             }
         }
     }
@@ -87,7 +93,9 @@ public class CustomRegistries {
         Map<ResourceLocation, HazardType> hazardTypeMap = hazardTypes.entrySet()
                 .stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().location(), Map.Entry::getValue));
-        Collection<HazardSource> sources = StreamSupport.stream(hazardSources.spliterator(), false).toList();
+        Map<ResourceLocation, HazardSource> sources = hazardSources.entrySet()
+                .stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().location(), Map.Entry::getValue));
 
         validateHazardTypes(hazardTypeMap);
         validateSources(hazardTypeMap, sources);

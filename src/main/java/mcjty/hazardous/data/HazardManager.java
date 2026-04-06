@@ -449,13 +449,22 @@ public class HazardManager {
                 return 0.0;
             }
             BlockPos pos = player.blockPosition();
-            if (!LostCityCompat.isCity(level, pos, a.style(), a.buildings(), a.multibuildings())) {
+            LostCityCompat.CityMatch cityMatch = LostCityCompat.getCityMatch(level, pos, a.style(), a.buildings(), a.multibuildings());
+            if (cityMatch == null) {
                 return 0.0;
             }
+            boolean useBuildingCenter = !(falloff instanceof HazardSource.Falloff.None) && cityMatch.hasExplicitSource();
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
                 public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
-                    return computeSkyIntensity(type, t, level, pos);
+                    double intensity = computeSkyIntensity(type, t, level, pos);
+                    if (!useBuildingCenter) {
+                        return intensity;
+                    }
+                    double dx = targetX - cityMatch.centerX();
+                    double dz = targetZ - cityMatch.centerZ();
+                    double d = Math.sqrt(dx * dx + dz * dz);
+                    return applyFalloff(intensity, d, cityMatch.effectiveRange(), falloff);
                 }
             });
         }
