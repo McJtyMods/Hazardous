@@ -45,7 +45,9 @@ public class ItemEmissionTooltipHandler {
         List<Component> tooltip = event.getToolTip();
         tooltip.add(Component.literal("Emissions when carried:").withStyle(ChatFormatting.YELLOW));
         for (HazardManager.TooltipEmission emission : emissions) {
-            tooltip.add(Component.literal(String.format(Locale.ROOT, "  %s: %.2f", emission.hazardTypeId(), emission.intensity()))
+            tooltip.add(Component.literal(String.format(Locale.ROOT, "  %s: %.2f",
+                            TooltipNameHelper.getHazardTypeName(emission.hazardTypeId()),
+                            emission.intensity()))
                     .withStyle(ChatFormatting.GRAY));
         }
     }
