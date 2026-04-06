@@ -158,7 +158,7 @@ public record HazardSource(
 
         /**
          * Exposure comes from a point source and may use distance/LOS plus this source's falloff.
-         * Sources like blocks/entities/items can use this.
+         * Sources like blocks/entities/items and explicit Lost Cities building centers can use this.
          */
         record Point(
                 double baseIntensity,
@@ -180,7 +180,8 @@ public record HazardSource(
                         Association.AssociationKind.LOCATIONS,
                         Association.AssociationKind.ENTITY_TYPE,
                         Association.AssociationKind.BLOCK,
-                        Association.AssociationKind.ITEM
+                        Association.AssociationKind.ITEM,
+                        Association.AssociationKind.CITY
                 );
             }
 

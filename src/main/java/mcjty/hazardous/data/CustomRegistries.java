@@ -58,10 +58,18 @@ public class CustomRegistries {
                 throw new RuntimeException("Incompatible hazard source '" + s.association().kind() + "' for type '" + s.hazardType() + "'!");
             }
             if (s.association() instanceof HazardSource.Association.City city
-                    && !(s.falloff() instanceof HazardSource.Falloff.None)
+                    && transmission instanceof HazardSource.Transmission.Point
                     && city.buildings().isEmpty()
                     && city.multibuildings().isEmpty()) {
-                Hazardous.LOGGER.warn("HazardSource '{}' uses city falloff without buildings or multibuildings; Hazardous cannot derive a building center and will fall back to city-wide behavior", sourceId);
+                Hazardous.LOGGER.error("HazardSource '{}' uses city + point without buildings or multibuildings; Hazardous needs explicit building centers for point transmission", sourceId);
+                throw new RuntimeException("HazardSource '" + sourceId + "' uses city + point without buildings or multibuildings!");
+            }
+            if (s.association() instanceof HazardSource.Association.City city
+                    && !(s.falloff() instanceof HazardSource.Falloff.None)
+                    && transmission instanceof HazardSource.Transmission.Sky
+                    && city.buildings().isEmpty()
+                    && city.multibuildings().isEmpty()) {
+                Hazardous.LOGGER.warn("HazardSource '{}' uses city + sky falloff without buildings or multibuildings; Hazardous cannot derive a building center and will fall back to city-wide behavior", sourceId);
             }
         }
     }

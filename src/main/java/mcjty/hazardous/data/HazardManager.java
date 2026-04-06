@@ -483,6 +483,10 @@ public class HazardManager {
             }
             boolean useBuildingCenter = !(falloff instanceof HazardSource.Falloff.None);
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
+                private List<LostCityCompat.CitySource> getCitySources() {
+                    return LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), cityArea.searchRadiusBlocks());
+                }
+
                 @Override
                 public Double sky(HazardType type, HazardSource.Transmission.Sky t) {
                     double intensity = computeSkyIntensity(type, t, level, pos);
@@ -496,11 +500,35 @@ public class HazardManager {
                         return intensity;
                     }
                     double sum = 0.0;
-                    for (LostCityCompat.CitySource source : LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), cityArea.searchRadiusBlocks())) {
+                    for (LostCityCompat.CitySource source : getCitySources()) {
                         double dx = targetX - source.centerX();
                         double dz = targetZ - source.centerZ();
                         double d = Math.sqrt(dx * dx + dz * dz);
                         double contributed = applyFalloff(intensity, d, source.falloffRange(), falloff);
+                        if (contributed > MIN_EFFECTIVE_RADIATION) {
+                            sum += contributed;
+                        }
+                    }
+                    return sum;
+                }
+
+                @Override
+                public Double point(HazardType type, HazardSource.Transmission.Point t) {
+                    if (a.buildings().isEmpty() && a.multibuildings().isEmpty()) {
+                        return 0.0;
+                    }
+                    double sourceY = targetBodyY;
+                    double sum = 0.0;
+                    // Lost Cities exposes city source footprints in X/Z; project them onto the player's body height for point transmission.
+                    for (LostCityCompat.CitySource source : getCitySources()) {
+                        double dx = targetX - source.centerX();
+                        double dz = targetZ - source.centerZ();
+                        double d = Math.sqrt(dx * dx + dz * dz);
+                        double raw = computePointRaw(t, d);
+                        if (raw <= 0.0) {
+                            continue;
+                        }
+                        double contributed = applyPointBlocking(type, level, source.centerX(), sourceY, source.centerZ(), raw);
                         if (contributed > MIN_EFFECTIVE_RADIATION) {
                             sum += contributed;
                         }

@@ -180,8 +180,9 @@ Top-level fields:
 - runtime note: the cutoff still comes from `transmission.maxDistance` when that transmission uses distance
 
 Runtime note:
-- `falloff` is currently used by `point` transmission.
-- `sky` and `contact` sources can still declare a falloff, but it is ignored in runtime calculations.
+- `falloff` is used by `point` transmission.
+- `falloff` is also used by `city + sky` to shape exposure around matching building or multibuilding centers.
+- Other `sky` sources and all `contact` sources can still declare a falloff, but it is ignored in runtime calculations.
 
 Transmission variants:
 
@@ -201,7 +202,7 @@ Transmission variants:
 - `maxDistance` (int)
 - `requiresLineOfSight` (boolean)
 - `airAttenuationPerBlock` (double)
-- valid with associations: `locations`, `entity_type`, `block`, `item`
+- valid with associations: `locations`, `entity_type`, `block`, `item`, `city`
 
 `contact`
 - `type: "contact"`
@@ -240,9 +241,11 @@ Association variants:
 - `multibuildings` (optional list of strings): only matches Lost Cities chunks whose `ILostChunkInfo#getMultiBuildingInfo().buildingType().toString()` is in this list
 - if multiple optional filters are given, all of them must match
 - only works when Lost Cities is installed
-- runtime note: with `falloff = none`, the hazard starts as soon as the player enters a matching city/building chunk
-- runtime note: with any other `falloff`, Hazardous searches nearby matching buildings or multibuildings in the current city and uses each center as a source position
-- runtime note: center-based city falloff needs `buildings` or `multibuildings`; if both are empty, Hazardous logs a warning and falls back to city-wide behavior
+- runtime note: `city + sky + falloff = none` starts as soon as the player enters a matching city/building chunk
+- runtime note: `city + sky + falloff != none` searches nearby matching buildings or multibuildings in the current city and uses each center as a source position
+- runtime note: `city + point` treats matching buildings or multibuildings as point sources centered on their footprint
+- runtime note: `city + point` requires `buildings` or `multibuildings`; plain city-wide point sources are not supported
+- runtime note: center-based `city + sky` behavior needs `buildings` or `multibuildings`; if both are empty, Hazardous logs a warning and falls back to city-wide behavior
 
 `block`
 - `type: "block"`
@@ -476,6 +479,31 @@ Lost Cities sky hazard limited to one city style, a set of building types, and o
     ],
     "multibuildings": [
       "lostcities:station"
+    ]
+  }
+}
+```
+
+Lost Cities point hazard emitted by matching multi-buildings:
+
+```json
+{
+  "hazardType": "example:lostcity_radiation",
+  "falloff": {
+    "type": "exponential",
+    "k": 0.18
+  },
+  "transmission": {
+    "type": "point",
+    "baseIntensity": 500.0,
+    "maxDistance": 64,
+    "requiresLineOfSight": false,
+    "airAttenuationPerBlock": 0.0
+  },
+  "association": {
+    "type": "city",
+    "multibuildings": [
+      "deceasedcraft:multi_arcfurnace"
     ]
   }
 }
