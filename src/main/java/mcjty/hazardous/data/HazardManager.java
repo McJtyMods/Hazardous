@@ -248,34 +248,21 @@ public class HazardManager {
 
         @Override
         public Double entityType(HazardType type, HazardSource.Association.EntityType a) {
-            double maxDistance = a.maxDistance();
-            if (maxDistance <= 0) {
-                return 0.0;
-            }
             if (a.entityTypes().isEmpty()) {
                 return 0.0;
             }
             Level level = player.level();
-            AABB bounds = player.getBoundingBox().inflate(maxDistance);
-            Map<Entity, Double> entities = new HashMap<>();
-            for (ResourceLocation id : a.entityTypes()) {
-                var entityType = ForgeRegistries.ENTITY_TYPES.getValue(id);
-                if (entityType == null) {
-                    continue;
-                }
-                for (Entity entity : level.getEntities(entityType, bounds, entity -> entity != player)) {
-                    double stackMultiplier = getEntityAssociationStackMultiplier(entity, a);
-                    if (stackMultiplier > 0.0) {
-                        entities.put(entity, stackMultiplier);
-                    }
-                }
-            }
-            if (entities.isEmpty()) {
-                return 0.0;
-            }
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
+                    double maxDistance = t.maxDistance();
+                    if (maxDistance <= 0) {
+                        return 0.0;
+                    }
+                    Map<Entity, Double> entities = getMatchingEntitySources(level, a, player.getBoundingBox().inflate(maxDistance));
+                    if (entities.isEmpty()) {
+                        return 0.0;
+                    }
                     double sum = 0.0;
                     for (Map.Entry<Entity, Double> entry : entities.entrySet()) {
                         Entity entity = entry.getKey();
@@ -297,6 +284,10 @@ public class HazardManager {
 
                 @Override
                 public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
+                    Map<Entity, Double> entities = getMatchingEntitySources(level, a, player.getBoundingBox());
+                    if (entities.isEmpty()) {
+                        return 0.0;
+                    }
                     double sum = 0.0;
                     for (Map.Entry<Entity, Double> entry : entities.entrySet()) {
                         Entity entity = entry.getKey();
@@ -314,6 +305,23 @@ public class HazardManager {
                 return 1.0;
             }
             return getMatchingStackMultiplier(itemEntity.getItem(), association.stacks());
+        }
+
+        private Map<Entity, Double> getMatchingEntitySources(Level level, HazardSource.Association.EntityType association, AABB bounds) {
+            Map<Entity, Double> entities = new HashMap<>();
+            for (ResourceLocation id : association.entityTypes()) {
+                var entityType = ForgeRegistries.ENTITY_TYPES.getValue(id);
+                if (entityType == null) {
+                    continue;
+                }
+                for (Entity entity : level.getEntities(entityType, bounds, entity -> entity != player)) {
+                    double stackMultiplier = getEntityAssociationStackMultiplier(entity, association);
+                    if (stackMultiplier > 0.0) {
+                        entities.put(entity, stackMultiplier);
+                    }
+                }
+            }
+            return entities;
         }
 
         @Override
@@ -356,34 +364,37 @@ public class HazardManager {
 
         @Override
         public Double item(HazardType type, HazardSource.Association.Item a) {
-            double maxDistance = a.maxDistance();
-            if (maxDistance <= 0 || a.stacks().isEmpty()) {
+            if (a.stacks().isEmpty()) {
                 return 0.0;
             }
             Level level = player.level();
-            AABB bounds = player.getBoundingBox().inflate(maxDistance);
-            Map<Player, Double> sourcePlayers = new HashMap<>();
-            for (Player candidate : level.players()) {
-                if (candidate.isRemoved()) {
-                    continue;
-                }
-                if (!candidate.getBoundingBox().intersects(bounds)) {
-                    continue;
-                }
-                if (player.distanceTo(candidate) > maxDistance) {
-                    continue;
-                }
-                double stackMultiplier = getItemAssociationStackMultiplier(candidate, a);
-                if (stackMultiplier > 0.0) {
-                    sourcePlayers.put(candidate, stackMultiplier);
-                }
-            }
-            if (sourcePlayers.isEmpty()) {
-                return 0.0;
-            }
             return transmission.accept(type, new HazardSource.Transmission.Visitor<>() {
                 @Override
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
+                    double maxDistance = t.maxDistance();
+                    if (maxDistance <= 0) {
+                        return 0.0;
+                    }
+                    AABB bounds = player.getBoundingBox().inflate(maxDistance);
+                    Map<Player, Double> sourcePlayers = new HashMap<>();
+                    for (Player candidate : level.players()) {
+                        if (candidate.isRemoved()) {
+                            continue;
+                        }
+                        if (!candidate.getBoundingBox().intersects(bounds)) {
+                            continue;
+                        }
+                        if (player.distanceTo(candidate) > maxDistance) {
+                            continue;
+                        }
+                        double stackMultiplier = getItemAssociationStackMultiplier(candidate, a);
+                        if (stackMultiplier > 0.0) {
+                            sourcePlayers.put(candidate, stackMultiplier);
+                        }
+                    }
+                    if (sourcePlayers.isEmpty()) {
+                        return 0.0;
+                    }
                     double sum = 0.0;
                     for (Map.Entry<Player, Double> entry : sourcePlayers.entrySet()) {
                         Player sourcePlayer = entry.getKey();
@@ -402,6 +413,23 @@ public class HazardManager {
 
                 @Override
                 public Double contact(HazardType type, HazardSource.Transmission.Contact t) {
+                    AABB bounds = player.getBoundingBox();
+                    Map<Player, Double> sourcePlayers = new HashMap<>();
+                    for (Player candidate : level.players()) {
+                        if (candidate.isRemoved()) {
+                            continue;
+                        }
+                        if (!candidate.getBoundingBox().intersects(bounds)) {
+                            continue;
+                        }
+                        double stackMultiplier = getItemAssociationStackMultiplier(candidate, a);
+                        if (stackMultiplier > 0.0) {
+                            sourcePlayers.put(candidate, stackMultiplier);
+                        }
+                    }
+                    if (sourcePlayers.isEmpty()) {
+                        return 0.0;
+                    }
                     double sum = 0.0;
                     for (Map.Entry<Player, Double> entry : sourcePlayers.entrySet()) {
                         Player sourcePlayer = entry.getKey();
@@ -484,13 +512,7 @@ public class HazardManager {
 
         @Override
         public Double block(HazardType type, HazardSource.Association.Block a) {
-            double maxDistance = a.maxDistance();
-            if (maxDistance <= 0) {
-                return 0.0;
-            }
             Level level = player.level();
-            int radius = (int) Math.ceil(maxDistance);
-            double maxDistanceSq = maxDistance * maxDistance;
             BlockPos center = player.blockPosition();
             boolean isTag = a.isTag();
             TagKey<Block> tag = isTag ? TagKey.create(Registries.BLOCK, a.blockOrTag()) : null;
@@ -511,6 +533,12 @@ public class HazardManager {
 
                 @Override
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
+                    double maxDistance = t.maxDistance();
+                    if (maxDistance <= 0) {
+                        return 0.0;
+                    }
+                    int radius = (int) Math.ceil(maxDistance);
+                    double maxDistanceSq = maxDistance * maxDistance;
                     double sum = 0.0;
                     BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
                     for (int dx = -radius; dx <= radius; dx++) {

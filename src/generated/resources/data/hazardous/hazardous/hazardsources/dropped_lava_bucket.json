@@ -4,7 +4,6 @@
     "entityTypes": [
       "minecraft:item"
     ],
-    "maxDistance": 4.0,
     "stacks": [
       {
         "item": "minecraft:lava_bucket"

@@ -218,7 +218,7 @@ Association variants:
 - `type: "entity_type"`
 - `entityTypes`: list of entity ids
 - `stacks` (optional): item stack predicates, only used for matching `minecraft:item` entities
-- `maxDistance`
+- runtime note: with `point` transmission, search radius comes from `transmission.maxDistance`
 
 `locations`
 - `type: "locations"`
@@ -247,12 +247,12 @@ Association variants:
 `block`
 - `type: "block"`
 - exactly one of `block` or `tag`
-- `maxDistance`
+- runtime note: with `point` transmission, search radius comes from `transmission.maxDistance`
 
 `item`
 - `type: "item"`
 - `stacks`: list of item stack predicates
-- `maxDistance`
+- runtime note: with `point` transmission, search radius comes from `transmission.maxDistance`
 - each stack predicate matches any carried stack in main inventory, hotbar, offhand, or armor
 - if any predicate matches, that player becomes the hazard source
 - stack predicate fields:
@@ -310,8 +310,7 @@ Configured entity types act as radioactive point sources:
     "type": "entity_type",
     "entityTypes": [
       "minecraft:zombie"
-    ],
-    "maxDistance": 3.0
+    ]
   }
 }
 ```
@@ -340,8 +339,7 @@ Dropped lava bucket emits heat:
       {
         "item": "minecraft:lava_bucket"
       }
-    ],
-    "maxDistance": 4.0
+    ]
   }
 }
 ```
@@ -363,8 +361,7 @@ Near-lava heat hazard:
   },
   "association": {
     "type": "block",
-    "block": "minecraft:lava",
-    "maxDistance": 4.0
+    "block": "minecraft:lava"
   }
 }
 ```
@@ -390,8 +387,7 @@ Lava bucket carrier emits heat:
       {
         "item": "minecraft:lava_bucket"
       }
-    ],
-    "maxDistance": 4.0
+    ]
   }
 }
 ```

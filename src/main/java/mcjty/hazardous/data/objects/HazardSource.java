@@ -265,14 +265,15 @@ public record HazardSource(
         /**
          * Hazard is attached to all entities of the given types.
          * For item entities, optional stack predicates can further filter the dropped item.
+         * Point search distance comes from transmission.maxDistance.
          */
-        record EntityType(List<ResourceLocation> entityTypes, List<Item.ItemStackPredicate> stacks, double maxDistance) implements Association {
+        record EntityType(List<ResourceLocation> entityTypes, List<Item.ItemStackPredicate> stacks) implements Association {
             public static final Codec<EntityType> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             ResourceLocation.CODEC.listOf().fieldOf("entityTypes").forGetter(EntityType::entityTypes),
                             Item.ItemStackPredicate.CODEC.listOf().optionalFieldOf("stacks", List.of()).forGetter(EntityType::stacks),
-                            Codec.DOUBLE.fieldOf("maxDistance").forGetter(EntityType::maxDistance)
-                    ).apply(instance, EntityType::new));
+                            Codec.DOUBLE.optionalFieldOf("maxDistance").forGetter(a -> Optional.empty())
+                    ).apply(instance, (entityTypes, stacks, ignoredMaxDistance) -> new EntityType(entityTypes, stacks)));
 
             @Override
             public <R> R accept(HazardType type, Visitor<R> visitor) {
@@ -351,18 +352,19 @@ public record HazardSource(
 
         /**
          * Hazard is attached to specific blocks or block tags.
+         * Point search distance comes from transmission.maxDistance.
          */
-        record Block(ResourceLocation blockOrTag, boolean isTag, double maxDistance) implements Association {
+        record Block(ResourceLocation blockOrTag, boolean isTag) implements Association {
             public static final Codec<Block> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             ResourceLocation.CODEC.optionalFieldOf("block").forGetter(a -> a.isTag() ? Optional.empty() : Optional.of(a.blockOrTag())),
                             ResourceLocation.CODEC.optionalFieldOf("tag").forGetter(a -> a.isTag() ? Optional.of(a.blockOrTag()) : Optional.empty()),
-                            Codec.DOUBLE.fieldOf("maxDistance").forGetter(Block::maxDistance)
-                    ).apply(instance, (block, tag, maxDistance) -> {
+                            Codec.DOUBLE.optionalFieldOf("maxDistance").forGetter(a -> Optional.empty())
+                    ).apply(instance, (block, tag, ignoredMaxDistance) -> {
                         if (block.isPresent() == tag.isPresent()) {
                             throw new IllegalStateException("Block association must have either 'block' or 'tag'");
                         }
-                        return new Block(block.orElseGet(tag::get), tag.isPresent(), maxDistance);
+                        return new Block(block.orElseGet(tag::get), tag.isPresent());
                     }));
 
             @Override
@@ -378,13 +380,14 @@ public record HazardSource(
 
         /**
          * Hazard is attached to players carrying matching item stacks.
+         * Point search distance comes from transmission.maxDistance.
          */
-        record Item(List<ItemStackPredicate> stacks, double maxDistance) implements Association {
+        record Item(List<ItemStackPredicate> stacks) implements Association {
             public static final Codec<Item> CODEC = RecordCodecBuilder.create(instance ->
                     instance.group(
                             ItemStackPredicate.CODEC.listOf().fieldOf("stacks").forGetter(Item::stacks),
-                            Codec.DOUBLE.fieldOf("maxDistance").forGetter(Item::maxDistance)
-                    ).apply(instance, Item::new));
+                            Codec.DOUBLE.optionalFieldOf("maxDistance").forGetter(a -> Optional.empty())
+                    ).apply(instance, (stacks, ignoredMaxDistance) -> new Item(stacks)));
 
             @Override
             public <R> R accept(HazardType type, Visitor<R> visitor) {

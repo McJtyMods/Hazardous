@@ -33,7 +33,7 @@ public class DefaultHazardSources {
                             12,
                             true,
                             0.05),
-                    new HazardSource.Association.EntityType(List.of(new ResourceLocation("minecraft", "zombie")), List.of(), 3.0)
+                    new HazardSource.Association.EntityType(List.of(new ResourceLocation("minecraft", "zombie")), List.of())
             ),
             new ResourceLocation(Hazardous.MODID, "lostcity_buildings"),
             new HazardSource(
@@ -58,8 +58,7 @@ public class DefaultHazardSources {
                             false,
                             0.0),
                     new HazardSource.Association.Item(
-                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())),
-                            4.0)
+                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())))
             ),
             new ResourceLocation(Hazardous.MODID, "dropped_lava_bucket"),
             new HazardSource(
@@ -72,8 +71,7 @@ public class DefaultHazardSources {
                             0.0),
                     new HazardSource.Association.EntityType(
                             List.of(new ResourceLocation("minecraft", "item")),
-                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())),
-                            4.0)
+                            List.of(new HazardSource.Association.Item.ItemStackPredicate(new ResourceLocation("minecraft", "lava_bucket"), false, 1, Optional.empty())))
             ),
             new ResourceLocation(Hazardous.MODID, "near_lava"),
             new HazardSource(
@@ -84,7 +82,7 @@ public class DefaultHazardSources {
                             32,
                             false,
                             0.0),
-                    new HazardSource.Association.Block(new ResourceLocation("minecraft", "lava"), false, 32.0)
+                    new HazardSource.Association.Block(new ResourceLocation("minecraft", "lava"), false)
             )
     );
 }
