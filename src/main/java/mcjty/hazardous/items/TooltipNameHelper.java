@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Locale;
 
-final class TooltipNameHelper {
+public final class TooltipNameHelper {
 
     private TooltipNameHelper() {
     }
