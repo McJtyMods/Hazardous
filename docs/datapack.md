@@ -1,6 +1,16 @@
 # Hazardous Datapack Guide
 
-This guide covers Hazardous datapack formats, config, gameplay items, and testing.
+Hazardous is a highly configurable hazard framework for modpacks. You can use it to define custom environmental dangers such as radiation, solar burn, heat, contaminated items, or area-based hazards, and then decide how players detect, resist, or recover from them.
+
+For modpack developers, the main value is flexibility:
+- hazards are defined with datapacks instead of hardcoded logic
+- hazard types, sources, and effects can be mixed and matched
+- server config decides which built-in or custom hazards are actually enabled
+- player-facing tools like the gas mask, Geiger counter, dosimeter, pills, and anti-rad pills can be retargeted through config
+
+Optional integrations:
+- Curios: gas masks work in the `head` Curios slot, and the Geiger counter and dosimeter can also be equipped as Curios
+- Lost Cities: hazard sources can target cities, city styles, buildings, and multibuildings
 
 Included gameplay items:
 - `hazardous:gasmask`
@@ -28,12 +38,12 @@ Built-in hazard type ids you can enable:
 - `hazardous:lava_heat`
 
 Built-in hazard source ids you can enable:
-- `hazardous:overworld_solar`
-- `hazardous:radioactive_zombie`
-- `hazardous:lava_bucket`
-- `hazardous:dropped_lava_bucket`
-- `hazardous:lostcity_buildings`
-- `hazardous:near_lava`
+- `hazardous:overworld_solar` -> uses `hazardous:solar_burn`
+- `hazardous:radioactive_zombie` -> uses `hazardous:radioactive_type`
+- `hazardous:lostcity_buildings` -> uses `hazardous:lostcity_radiation`
+- `hazardous:lava_bucket` -> uses `hazardous:lava_heat`
+- `hazardous:dropped_lava_bucket` -> uses `hazardous:lava_heat`
+- `hazardous:near_lava` -> uses `hazardous:lava_heat`
 
 Enable hazards by listing both:
 1. The hazard type id in `enabledHazardTypes`
@@ -63,11 +73,9 @@ Mental model:
 2. A `hazardsource` also says how the hazard transmits (`sky`, `point`, `contact`) and how it falls off with distance.
 3. A `hazardtype` says blocking, exposure, and effects.
 4. `effectentries` say what happens when exposure or dose reaches certain values.
-5. Items and config (gas mask, pills, geiger) modify or visualize runtime behavior.
+5. Items and config (gas mask, pills, Geiger counter, dosimeter) modify or visualize runtime behavior.
 
 ## 1) HazardType JSON
-
-Codec: `mcjty.hazardous.data.objects.HazardType.CODEC`
 
 Top-level fields:
 - `blocking`: `none`, `simple`, or `absorption`
@@ -100,8 +108,7 @@ Known runtime behavior:
 - Sky absorption traces vertically from world top to player.
 - Point absorption traces from source to player body/head and applies multiplicative attenuation.
 - `hazardsource.transmission.point.requiresLineOfSight` is not enforced in runtime hazard calculations.
-
-These fields are still useful for forward-compatible datapacks.
+- `absorptionRegistryHint` is currently required by the JSON format, but current Hazardous runtime logic does not use it for calculations. Treat it as metadata for the absorption setup rather than a gameplay control.
 
 ### 1.2 Exposure
 
@@ -147,14 +154,11 @@ These fields are still useful for forward-compatible datapacks.
   - `hazardous:radioactive_type_resistance`
   - `hazardous:lostcity_radiation_resistance`
   - `hazardous:lava_heat_resistance`
-- These built-in resistance attributes are attached to players through Forge's entity attribute modification event.
-- The built-in attributes are normal Forge attributes, so they can be modified by commands, equipment, effects, or other mods.
+- These built-in attributes exist on players and can be modified by commands, equipment, effects, or other mods.
 - Custom hazard types should set `resistanceAttribute` to a registered attribute id if they want resistance support.
 - If a hazard type points at a missing attribute id, datapack validation fails on reload.
 
 ## 2) HazardSource JSON
-
-Codec: `mcjty.hazardous.data.objects.HazardSource.CODEC`
 
 Top-level fields:
 - `hazardType`: resource location
@@ -513,8 +517,6 @@ Lost Cities point hazard emitted by matching multi-buildings:
 
 ## 3) EffectEntry JSON
 
-Codec: `mcjty.hazardous.data.objects.EffectEntry.CODEC`
-
 Top-level fields:
 - `trigger`
 - `action`
@@ -682,7 +684,7 @@ Example probability trigger with scaling:
 
 ## 4) Items and Hazard Interaction
 
-This section documents item behavior and practical use.
+This section documents item behavior and practical use. Crafting recipes are intentionally not listed here because many modpacks replace them, and in-game recipe viewers are the most reliable source for the current pack.
 
 ### 4.1 Gas Mask (`hazardous:gasmask`)
 
@@ -714,21 +716,6 @@ Example datapack tag file:
 }
 ```
 
-Crafting recipe:
-
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["iii", "gfg", "iii"],
-  "key": {
-    "i": { "item": "minecraft:iron_ingot" },
-    "g": { "item": "minecraft:glass" },
-    "f": { "item": "hazardous:filter" }
-  },
-  "result": { "item": "hazardous:gasmask" }
-}
-```
-
 ### 4.2 Filter (`hazardous:filter`)
 
 Behavior:
@@ -746,49 +733,20 @@ Behavior:
 - If there is no dose to remove, nothing is consumed.
 - If the configured attribute id is empty, invalid, or unused by loaded hazard types, the item has no effect.
 
-Recipe:
-
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["ccc", "cgc", "ccc"],
-  "key": {
-    "c": { "item": "minecraft:charcoal" },
-    "g": { "item": "minecraft:golden_apple" }
-  },
-  "result": { "item": "hazardous:pills" }
-}
-```
-
 ### 4.4 Anti-rad Pills (`hazardous:resistance_pills`)
 
 Behavior:
-- Edible item with a normal food-use animation.
+- Right-click consumes the item and applies the temporary resistance effect.
 - Uses `resistancePillsAttribute` to choose which player attribute to raise.
 - Each use adds a temporary resistance bonus of `resistancePillsAmount` for `resistancePillsDurationTicks`.
 - Multiple uses stack by amount, and each consumed pill expires independently.
-- If the configured attribute id is empty, invalid, or not attached to the player, eating the item has no resistance effect.
-- The built-in item model uses the `hazardous:item/resistance_pills` texture.
+- `resistancePillsMaxStacks` limits how many simultaneous stacks can be active for that configured attribute. `0` means unlimited.
+- If the configured attribute id is empty, invalid, or not attached to the player, using the item has no resistance effect.
 
 Typical usage:
 1. Point `resistancePillsAttribute` at a hazard resistance attribute such as `hazardous:radioactive_type_resistance`
-2. Eat the item one or more times
+2. Use the item one or more times
 3. Use `/haz resistances` to inspect the updated player values while the timer is active
-
-Recipe:
-
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": [" q ", "gpg", " g "],
-  "key": {
-    "q": { "item": "minecraft:quartz" },
-    "g": { "item": "minecraft:gold_ingot" },
-    "p": { "item": "hazardous:pills" }
-  },
-  "result": { "item": "hazardous:resistance_pills" }
-}
-```
 
 ### 4.5 Geiger Counter (`hazardous:geiger_counter`)
 
@@ -799,35 +757,19 @@ Behavior:
 - Reads a configured hazard type id from client radiation data: `geigerDisplayHazardType`.
 - When the server applies gas mask protection to that hazard type, the displayed client value reflects the reduced exposure after protection.
 - Dial full scale is `geigerMaxRadiation`.
-- Position controlled by `geigerHudAnchor`, `geigerHudOffsetX`, `geigerHudOffsetY`.
+- Pointer color bands are controlled by `geigerMediumThresshold` and `geigerHighTresshold`.
+- Position controlled by `geigerHudAnchor`, `geigerHudScale`, `geigerHudOffsetX`, `geigerHudOffsetY`.
 - Plays looped Geiger audio while the HUD is visible:
 1. No sound below `geigerSoundMediumMinRadiation`
 2. `hazardous:geiger.mediumdose` loop at/above `geigerSoundMediumMinRadiation`
 3. `hazardous:geiger.highdose` loop at/above `geigerSoundHighMinRadiation`
 - Loop loudness is scaled by `geigerSoundVolume`.
-- The needle can add a small animated jitter while radiation is present, controlled by `geigerNeedleJitterAngle` and `geigerNeedleJitterSpeed`.
-- Sound loops stop immediately when the Geiger HUD is no longer visible (not selected / unequipped).
+- The needle adds animated jitter while radiation is present, controlled by `geigerNeedleJitterAngle` and `geigerNeedleJitterSpeed`.
+- Sound loops stop immediately when the Geiger HUD is no longer visible.
 
 Important:
-- The geiger HUD does not depend on `client_fx`; it uses hazard values synced from server to client.
+- The Geiger HUD does not depend on `client_fx`; it uses hazard values synced from server to client.
 - Geiger audio uses the same displayed hazard value as the HUD dial.
-
-Recipe:
-
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["qtq", "dcd", "qiq"],
-  "key": {
-    "q": { "item": "minecraft:quartz" },
-    "t": { "item": "minecraft:redstone_torch" },
-    "d": { "item": "minecraft:diamond" },
-    "c": { "item": "minecraft:comparator" },
-    "i": { "item": "minecraft:iron_ingot" }
-  },
-  "result": { "item": "hazardous:geiger_counter" }
-}
-```
 
 ### 4.6 Dosimeter (`hazardous:dosimeter`)
 
@@ -845,24 +787,14 @@ Behavior:
 2. Yellow/orange at/above `dosimeterMediumDose`
 3. Red at/above `dosimeterHighDose` (internally clamped to be at least `dosimeterMediumDose`)
 - Radiation icon shake starts at `dosimeterMediumDose`, using `dosimeterIconShakeMediumDistance`, and ramps up to `dosimeterIconShakeMaxDistance` by `dosimeterMaxDose`. Animation speed uses `dosimeterIconShakeSpeed`.
+- Plays a looped `hazardous:dosimeter.beep` sound while the HUD is visible and the displayed dose is at or above `dosimeterMediumDose`.
 - Position controlled by `dosimeterHudAnchor`, `dosimeterHudScale`, `dosimeterHudOffsetX`, `dosimeterHudOffsetY`.
 
-Recipe:
+### 4.7 Tooltip Feedback
 
-```json
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["qtq", "ici", "qgq"],
-  "key": {
-    "q": { "item": "minecraft:quartz" },
-    "t": { "item": "minecraft:redstone_torch" },
-    "i": { "item": "minecraft:iron_ingot" },
-    "c": { "item": "minecraft:clock" },
-    "g": { "item": "minecraft:gold_ingot" }
-  },
-  "result": { "item": "hazardous:dosimeter" }
-}
-```
+Behavior:
+- Items that match enabled `item` hazard sources can show a carried-emissions tooltip.
+- Tagged protective armor items can also show a tooltip describing what hazard type they protect against and how much protection they provide.
 
 ## 5) Config Options (Server + Client)
 
@@ -882,6 +814,8 @@ Server config (`hazardous-server.toml`):
 Client config (`hazardous-client.toml`):
 - `geigerDisplayHazardType` (string hazard type resource location, default `hazardous:radioactive_type`, empty disables dial target)
 - `geigerMaxRadiation` (double `0.0001..1000000.0`, default `100.0`)
+- `geigerMediumThresshold` (double `0.0..1000000.0`, default `33.3`; threshold where the pointer enters the yellow segment)
+- `geigerHighTresshold` (double `0.0..1000000.0`, default `66.6`; threshold where the pointer enters the red segment)
 - `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
 - `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
 - `geigerSoundVolume` (double `0.0..1.0`, default `0.8`; volume multiplier for geiger loops)
@@ -907,6 +841,7 @@ Client config (`hazardous-client.toml`):
 - `resistancePillsHudScale` (double `0.1..10.0`, default `1.0`)
 - `resistancePillsHudOffsetX` (int `-5000..5000`, default `8`)
 - `resistancePillsHudOffsetY` (int `-5000..5000`, default `8`)
+- `curiosHeadOverrideHelmetRender` (boolean, default `true`; when Curios is installed, a visible head curio with its own renderer can hide the normal helmet armor render)
 
 Example:
 
@@ -925,6 +860,8 @@ resistancePillsMaxStacks = 0
 # hazardous-client.toml
 geigerDisplayHazardType = "hazardous:radioactive_type"
 geigerMaxRadiation = 100.0
+geigerMediumThresshold = 33.3
+geigerHighTresshold = 66.6
 geigerSoundMediumMinRadiation = 1.0
 geigerSoundHighMinRadiation = 25.0
 geigerSoundVolume = 0.8
@@ -950,6 +887,7 @@ resistancePillsHudAnchor = "top_left"
 resistancePillsHudScale = 1.0
 resistancePillsHudOffsetX = 8
 resistancePillsHudOffsetY = 8
+curiosHeadOverrideHelmetRender = true
 ```
 
 ## 6) Debugging and Testing
@@ -985,7 +923,22 @@ Suggested workflow:
 
 Built-in ids:
 - Hazard types: `hazardous:solar_burn`, `hazardous:radioactive_type`, `hazardous:lostcity_radiation`, `hazardous:lava_heat`
-- Hazard sources: `hazardous:overworld_solar`, `hazardous:radioactive_zombie`, `hazardous:lava_bucket`, `hazardous:dropped_lava_bucket`, `hazardous:lostcity_buildings`, `hazardous:near_lava`
-- Effect entries: `hazardous:solar_weakness`, `hazardous:solar_ignite`, `hazardous:radiation_damage`, `hazardous:radiation_geiger`, `hazardous:lava_fire_damage`
+- Hazard sources:
+  - `hazardous:overworld_solar` -> `hazardous:solar_burn`
+  - `hazardous:radioactive_zombie` -> `hazardous:radioactive_type`
+  - `hazardous:lostcity_buildings` -> `hazardous:lostcity_radiation`
+  - `hazardous:lava_bucket` -> `hazardous:lava_heat`
+  - `hazardous:dropped_lava_bucket` -> `hazardous:lava_heat`
+  - `hazardous:near_lava` -> `hazardous:lava_heat`
+- Effect entries:
+  - `hazardous:solar_weakness`
+  - `hazardous:solar_ignite`
+  - `hazardous:solar_darken`
+  - `hazardous:radiation_damage`
+  - `hazardous:radiation_geiger`
+  - `hazardous:radiation_shake`
+  - `hazardous:radiation_warp`
+  - `hazardous:lava_blur`
+  - `hazardous:lava_fire_damage`
 
 Use these as working templates when creating your own pack.
