@@ -1,6 +1,8 @@
 package mcjty.hazardous.client;
 
+import mcjty.hazardous.Hazardous;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ViewportEvent;
@@ -12,6 +14,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class ClientFxManager {
+
+    private static final ResourceLocation BLUR_OVERLAY = new ResourceLocation(Hazardous.MODID, "textures/gui/blur.png");
+    private static final ResourceLocation BLUR_RADIAL_OVERLAY = new ResourceLocation(Hazardous.MODID, "textures/gui/blur_radial.png");
+    private static final int OVERLAY_TEXTURE_SIZE = 512;
 
     private static final Map<String, ActiveFx> ACTIVE = new HashMap<>();
 
@@ -85,19 +91,23 @@ public class ClientFxManager {
         }
         int width = minecraft.getWindow().getGuiScaledWidth();
         int height = minecraft.getWindow().getGuiScaledHeight();
+        var graphics = event.getGuiGraphics();
 
         float darken = getCurrentIntensity("darken");
         if (darken > 0.0f) {
             int alpha = (int) (Mth.clamp(darken * 0.65f, 0.0f, 0.85f) * 255.0f);
-            event.getGuiGraphics().fill(0, 0, width, height, (alpha << 24));
+            graphics.fill(0, 0, width, height, (alpha << 24));
         }
 
-        float blur = getCurrentIntensity("blur");
-        if (blur > 0.0f) {
-            int alpha = (int) (Mth.clamp(blur * 0.22f, 0.0f, 0.35f) * 255.0f);
+        float lighten = getCurrentIntensity("lighten");
+        if (lighten > 0.0f) {
+            int alpha = (int) (Mth.clamp(lighten * 0.22f, 0.0f, 0.35f) * 255.0f);
             int color = (alpha << 24) | 0xBBBBBB;
-            event.getGuiGraphics().fill(0, 0, width, height, color);
+            graphics.fill(0, 0, width, height, color);
         }
+
+        renderOverlayTexture(graphics, width, height, BLUR_OVERLAY, getCurrentIntensity("blur"), 0.85f);
+        renderOverlayTexture(graphics, width, height, BLUR_RADIAL_OVERLAY, getCurrentIntensity("blurradial"), 0.9f);
     }
 
     private static float getCurrentIntensity(String fxId) {
@@ -106,6 +116,16 @@ public class ClientFxManager {
             return 0.0f;
         }
         return (float) fx.currentIntensity();
+    }
+
+    private static void renderOverlayTexture(net.minecraft.client.gui.GuiGraphics graphics, int width, int height, ResourceLocation texture, float intensity, float maxAlpha) {
+        if (intensity <= 0.0f || maxAlpha <= 0.0f) {
+            return;
+        }
+        float alpha = Mth.clamp(intensity * maxAlpha, 0.0f, maxAlpha);
+        graphics.setColor(1.0f, 1.0f, 1.0f, alpha);
+        graphics.blit(texture, 0, 0, 0.0f, 0.0f, width, height, OVERLAY_TEXTURE_SIZE, OVERLAY_TEXTURE_SIZE);
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     private static class ActiveFx {

@@ -638,7 +638,12 @@ All action objects require a `type` field.
     - duration is clamped to `1..1200`
     - reapplying same `fxId` refreshes effect using max intensity and max remaining duration
   - recognized `fxId` values:
-    - `darken`, `blur`, `shake`, `shaking`, `warp`, `warping`
+    - `darken`: fills the screen with a black overlay
+    - `lighten`: fills the screen with a light gray overlay
+    - `blur`: draws `assets/hazardous/textures/gui/blur.png` over the screen, with overlay alpha scaled by intensity
+    - `blurradial`: draws `assets/hazardous/textures/gui/blur_radial.png` over the screen, with overlay alpha scaled by intensity
+    - `shake`, `shaking`: adds camera yaw/pitch jitter
+    - `warp`, `warping`: adds camera roll/yaw/pitch distortion
   - unknown `fxId` values are accepted but have no visible effect unless custom client code handles them
   - `geiger` is used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`
 
