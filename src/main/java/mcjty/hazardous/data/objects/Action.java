@@ -1,15 +1,20 @@
 package mcjty.hazardous.data.objects;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.network.PacketClientFx;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Messages;
 import mcjty.hazardous.setup.ResistancePillEffects;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -20,6 +25,15 @@ import java.util.UUID;
 
 /** What happens when the trigger fires */
 public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire, Action.Attribute, Action.ClientFx, Action.Command {
+    Codec<MobEffect> MOB_EFFECT_CODEC = ResourceLocation.CODEC.comapFlatMap(
+            Action::decodeMobEffect,
+            Action::encodeMobEffect
+    );
+    Codec<ResourceKey<DamageType>> DAMAGE_TYPE_KEY_CODEC = ResourceLocation.CODEC.xmap(
+            id -> ResourceKey.create(Registries.DAMAGE_TYPE, id),
+            ResourceKey::location
+    );
+
     private static Codec<? extends Action> actionCodec(String type) {
         return switch (type) {
             case "potion" -> Action.Potion.CODEC;
@@ -44,7 +58,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
 
     /** Apply a MobEffectInstance (vanilla potion effect) */
     record Potion(
-            ResourceLocation effect, // mob effect id
+            MobEffect effect,
             int durationTicks,
             int amplifier,
             boolean ambient,
@@ -53,7 +67,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             Scaling intensityToAmplifier // optional scaling hook
     ) implements Action {
         public static final Codec<Potion> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ResourceLocation.CODEC.fieldOf("effect").forGetter(Potion::effect),
+                MOB_EFFECT_CODEC.fieldOf("effect").forGetter(Potion::effect),
                 Codec.INT.fieldOf("durationTicks").forGetter(Potion::durationTicks),
                 Codec.INT.fieldOf("amplifier").forGetter(Potion::amplifier),
                 Codec.BOOL.optionalFieldOf("ambient", false).forGetter(Potion::ambient),
@@ -70,25 +84,22 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         @Override
         public void apply(Player player, double value, double factor) {
             if (factor <= 0) return;
-            MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effect());
-            if (effect != null) {
-                int duration = Math.max(1, durationTicks());
-                double scaled = intensityToAmplifier().eval(value) * factor;
-                int amp = Math.max(0, (int) Math.round(amplifier() * scaled));
-                MobEffectInstance inst = new MobEffectInstance(effect, duration, amp, ambient(), showParticles(), showIcon());
-                player.addEffect(inst);
-            }
+            int duration = Math.max(1, durationTicks());
+            double scaled = intensityToAmplifier().eval(value) * factor;
+            int amp = Math.max(0, (int) Math.round(amplifier() * scaled));
+            MobEffectInstance inst = new MobEffectInstance(effect(), duration, amp, ambient(), showParticles(), showIcon());
+            player.addEffect(inst);
         }
     }
 
     /** Direct damage (custom damage type). */
     record Damage(
-            ResourceLocation damageType, // 1.20+ DamageType registry id
+            ResourceKey<DamageType> damageType,
             double amount,
             Scaling scaleAmount // scale with intensity/dose
     ) implements Action {
         public static final Codec<Damage> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ResourceLocation.CODEC.fieldOf("damageType").forGetter(Damage::damageType),
+                DAMAGE_TYPE_KEY_CODEC.fieldOf("damageType").forGetter(Damage::damageType),
                 Codec.DOUBLE.fieldOf("amount").forGetter(Damage::amount),
                 Scaling.CODEC.optionalFieldOf("scaleAmount", new Scaling.Constant(1.0)).forGetter(Damage::scaleAmount)
         ).apply(i, Damage::new));
@@ -104,14 +115,11 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             double scaled = amount() * scaleAmount().eval(value) * factor;
             float amt = (float) Math.max(0.0, scaled);
             if (amt <= 0f) return;
-            String path = damageType().getPath();
-            switch (path) {
-                case "magic" -> player.hurt(player.damageSources().magic(), amt);
-                case "on_fire" -> player.hurt(player.damageSources().onFire(), amt);
-                case "in_fire" -> player.hurt(player.damageSources().inFire(), amt);
-                case "wither" -> player.hurt(player.damageSources().wither(), amt);
-                default -> player.hurt(player.damageSources().generic(), amt);
+            var damageTypeRegistry = player.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+            if (!damageTypeRegistry.containsKey(damageType())) {
+                return;
             }
+            player.hurt(new DamageSource(damageTypeRegistry.getHolderOrThrow(damageType())), amt);
         }
     }
 
@@ -229,5 +237,21 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         public void apply(Player player, double value, double factor) {
             // Not implemented for safety; placeholder no-op
         }
+    }
+
+    private static DataResult<MobEffect> decodeMobEffect(ResourceLocation effectId) {
+        MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effectId);
+        if (effect == null) {
+            return DataResult.error(() -> "Unknown mob effect '" + effectId + "'");
+        }
+        return DataResult.success(effect);
+    }
+
+    private static ResourceLocation encodeMobEffect(MobEffect effect) {
+        ResourceLocation effectId = ForgeRegistries.MOB_EFFECTS.getKey(effect);
+        if (effectId == null) {
+            throw new IllegalStateException("Cannot encode unregistered mob effect " + effect);
+        }
+        return effectId;
     }
 }

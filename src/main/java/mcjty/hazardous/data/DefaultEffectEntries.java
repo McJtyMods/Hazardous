@@ -5,9 +5,15 @@ import mcjty.hazardous.data.objects.Action;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.Scaling;
 import mcjty.hazardous.data.objects.Trigger;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Some example effect entries used for datagen. These are generic and meant to
@@ -21,7 +27,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Threshold(0.05, 0.01),
                     new Action.Potion(
-                            new ResourceLocation("minecraft", "weakness"),
+                            effect("minecraft", "weakness"),
                             200,
                             0,
                             false,
@@ -57,7 +63,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Range(0.10, 1.0),
                     new Action.Damage(
-                            new ResourceLocation("minecraft", "magic"),
+                            damageType("minecraft", "magic"),
                             1.0,
                             new Scaling.Linear01(0.10, 1.0)
                     )
@@ -112,10 +118,18 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Range(0.10, 1.0),
                     new Action.Damage(
-                            new ResourceLocation("minecraft", "on_fire"),
+                            damageType("minecraft", "on_fire"),
                             1.0,
                             new Scaling.Linear01(0.05, 1.0)
                     )
             )
     );
+
+    private static MobEffect effect(String namespace, String path) {
+        return Objects.requireNonNull(ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(namespace, path)));
+    }
+
+    private static ResourceKey<DamageType> damageType(String namespace, String path) {
+        return ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(namespace, path));
+    }
 }
