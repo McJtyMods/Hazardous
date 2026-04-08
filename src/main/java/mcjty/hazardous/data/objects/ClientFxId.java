@@ -11,6 +11,7 @@ public enum ClientFxId {
     LIGHTEN("lighten"),
     BLUR("blur"),
     BLUR_RADIAL("blurradial"),
+    NAUSEA("nausea"),
     SHAKE("shake"),
     WARP("warp"),
     GEIGER("geiger");

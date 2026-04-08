@@ -650,6 +650,7 @@ All action objects require a `type` field.
     - `lighten`: fills the screen with a light gray overlay
     - `blur`: draws `assets/hazardous/textures/gui/blur.png` over the screen, with overlay alpha scaled by intensity
     - `blurradial`: draws `assets/hazardous/textures/gui/blur_radial.png` over the screen, with overlay alpha scaled by intensity
+    - `nausea`: applies Minecraft-style spinning screen distortion, with strength scaled by intensity; when the user's screen effect scale is reduced it also renders the vanilla green nausea overlay fallback
     - `shake`: adds camera yaw/pitch jitter
     - `warp`: adds camera roll/yaw/pitch distortion
     - `geiger`: used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`

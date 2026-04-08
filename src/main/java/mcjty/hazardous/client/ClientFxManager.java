@@ -3,13 +3,17 @@ package mcjty.hazardous.client;
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.objects.ClientFxId;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 
+import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,6 +23,7 @@ public class ClientFxManager {
     private static final ResourceLocation BLUR_OVERLAY = new ResourceLocation(Hazardous.MODID, "textures/gui/blur.png");
     private static final ResourceLocation BLUR_RADIAL_OVERLAY = new ResourceLocation(Hazardous.MODID, "textures/gui/blur_radial.png");
     private static final int OVERLAY_TEXTURE_SIZE = 512;
+    private static final int CLIENT_NAUSEA_DURATION = 5;
 
     private static final Map<ClientFxId, ActiveFx> ACTIVE = new EnumMap<>(ClientFxId.class);
 
@@ -40,16 +45,19 @@ public class ClientFxManager {
     }
 
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || ACTIVE.isEmpty()) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
-        Iterator<Map.Entry<ClientFxId, ActiveFx>> it = ACTIVE.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<ClientFxId, ActiveFx> entry = it.next();
-            if (entry.getValue().tickDown()) {
-                it.remove();
+        if (!ACTIVE.isEmpty()) {
+            Iterator<Map.Entry<ClientFxId, ActiveFx>> it = ACTIVE.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<ClientFxId, ActiveFx> entry = it.next();
+                if (entry.getValue().tickDown()) {
+                    it.remove();
+                }
             }
         }
+        applyNauseaFx();
     }
 
     public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
@@ -127,6 +135,41 @@ public class ClientFxManager {
         graphics.setColor(1.0f, 1.0f, 1.0f, alpha);
         graphics.blit(texture, 0, 0, 0.0f, 0.0f, width, height, OVERLAY_TEXTURE_SIZE, OVERLAY_TEXTURE_SIZE);
         graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    private static void applyNauseaFx() {
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer localPlayer = minecraft.player;
+        if (localPlayer == null || minecraft.isPaused()) {
+            return;
+        }
+        float nausea = getCurrentIntensity(ClientFxId.NAUSEA);
+        MobEffectInstance confusion = localPlayer.getEffect(MobEffects.CONFUSION);
+        boolean injectedConfusion = isInjectedClientConfusion(confusion);
+
+        if (nausea <= 0.0f) {
+            if (injectedConfusion) {
+                localPlayer.spinningEffectIntensity = 0.0f;
+                localPlayer.oSpinningEffectIntensity = 0.0f;
+            }
+            return;
+        }
+
+        if (confusion == null || injectedConfusion) {
+            localPlayer.addEffect(new MobEffectInstance(MobEffects.CONFUSION, CLIENT_NAUSEA_DURATION, 0, false, false, false));
+        }
+
+        float appliedNausea = Math.max(nausea, Math.max(localPlayer.spinningEffectIntensity, localPlayer.oSpinningEffectIntensity));
+        localPlayer.spinningEffectIntensity = appliedNausea;
+        localPlayer.oSpinningEffectIntensity = appliedNausea;
+    }
+
+    private static boolean isInjectedClientConfusion(@Nullable MobEffectInstance effect) {
+        return effect != null
+                && effect.endsWithin(CLIENT_NAUSEA_DURATION)
+                && !effect.isAmbient()
+                && !effect.isVisible()
+                && !effect.showIcon();
     }
 
     private static class ActiveFx {
