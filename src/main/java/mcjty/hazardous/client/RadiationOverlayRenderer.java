@@ -307,9 +307,9 @@ public class RadiationOverlayRenderer {
     private static String formatResistancePillLine(ResourceLocation attributeId, PlayerDoseData.ResistancePillStatus status, long remainingTicks) {
         return String.format(
                 Locale.ROOT,
-                "%s +%.2f x%d  %s",
+                "%s +%d%% x%d  %s",
                 getAttributeName(attributeId),
-                status.amount(),
+                (int)(status.amount() * 100.0),
                 status.stacks(),
                 formatDuration(remainingTicks)
         );
