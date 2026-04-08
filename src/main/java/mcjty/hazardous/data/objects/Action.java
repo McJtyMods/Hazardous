@@ -24,7 +24,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.UUID;
 
 /** What happens when the trigger fires */
-public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire, Action.Attribute, Action.ClientFx, Action.Command {
+public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire, Action.Attribute, Action.ClientFx {
     Codec<MobEffect> MOB_EFFECT_CODEC = ResourceLocation.CODEC.comapFlatMap(
             Action::decodeMobEffect,
             Action::encodeMobEffect
@@ -41,7 +41,6 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             case "fire" -> Action.Fire.CODEC;
             case "attribute" -> Action.Attribute.CODEC;
             case "client_fx" -> Action.ClientFx.CODEC;
-            case "command" -> Action.Command.CODEC;
             default -> throw new IllegalStateException("Unknown action type '" + type + "'");
         };
     }
@@ -219,23 +218,6 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             }
             int ticks = Mth.clamp(durationTicks(), 1, 20 * 60);
             Messages.sendToPlayer(new PacketClientFx(fxId(), scaledIntensity, ticks), serverPlayer);
-        }
-    }
-
-    /** Execute a command (server) with placeholders later. */
-    record Command(String command) implements Action {
-        public static final Codec<Command> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.STRING.fieldOf("command").forGetter(Command::command)
-        ).apply(i, Command::new));
-
-        @Override
-        public String actionType() {
-            return "command";
-        }
-
-        @Override
-        public void apply(Player player, double value, double factor) {
-            // Not implemented for safety; placeholder no-op
         }
     }
 

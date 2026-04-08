@@ -656,13 +656,6 @@ All action objects require a `type` field.
   - legacy aliases `shaking` and `warping` are accepted by the codec and normalize to `shake` and `warp`
   - unknown `fxId` values are rejected by the codec
 
-`command` action
-- Required fields:
-  - `type` = `"command"`
-  - `command` (string)
-- Runtime behavior:
-  - currently disabled for safety (no-op placeholder)
-
 ### 3.3 Scaling
 
 Variants:
