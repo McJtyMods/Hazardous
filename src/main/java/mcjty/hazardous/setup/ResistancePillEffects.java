@@ -19,6 +19,10 @@ import java.util.UUID;
 public class ResistancePillEffects {
 
     private static final String MODIFIER_NAME = "hazardous.resistance_pills";
+    public static final Codec<Attribute> ATTRIBUTE_CODEC = ResourceLocation.CODEC.comapFlatMap(
+            ResistancePillEffects::decodeAttribute,
+            ResistancePillEffects::encodeAttribute
+    );
     public static final Codec<AttributeModifier.Operation> ATTRIBUTE_MODIFIER_OPERATION_CODEC = Codec.STRING.comapFlatMap(
             ResistancePillEffects::decodeOperation,
             ResistancePillEffects::encodeOperation
@@ -74,12 +78,7 @@ public class ResistancePillEffects {
         trackedEffects.addAll(activeEffects.keySet());
 
         for (PlayerDoseData.TimedAttributeKey effectKey : trackedEffects) {
-            Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(effectKey.attributeId());
-            if (attribute == null) {
-                continue;
-            }
-
-            AttributeInstance instance = player.getAttribute(attribute);
+            AttributeInstance instance = player.getAttribute(effectKey.attribute());
             if (instance == null) {
                 continue;
             }
@@ -139,6 +138,22 @@ public class ResistancePillEffects {
         };
     }
 
+    private static DataResult<Attribute> decodeAttribute(ResourceLocation attributeId) {
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attributeId);
+        if (attribute == null) {
+            return DataResult.error(() -> "Unknown attribute '" + attributeId + "'");
+        }
+        return DataResult.success(attribute);
+    }
+
+    private static ResourceLocation encodeAttribute(Attribute attribute) {
+        ResourceLocation attributeId = ForgeRegistries.ATTRIBUTES.getKey(attribute);
+        if (attributeId == null) {
+            throw new IllegalStateException("Cannot encode unregistered attribute " + attribute);
+        }
+        return attributeId;
+    }
+
     private static String encodeOperation(AttributeModifier.Operation operation) {
         return switch (operation) {
             case ADDITION -> "add";
@@ -154,12 +169,7 @@ public class ResistancePillEffects {
     }
 
     private static void clearTimedAttributeModifier(Player player, PlayerDoseData.TimedAttributeKey effectKey) {
-        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(effectKey.attributeId());
-        if (attribute == null) {
-            return;
-        }
-
-        AttributeInstance instance = player.getAttribute(attribute);
+        AttributeInstance instance = player.getAttribute(effectKey.attribute());
         if (instance == null) {
             return;
         }

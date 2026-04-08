@@ -138,7 +138,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
 
     /** Add temporary attribute modifiers (e.g. max health, movement). */
     record Attribute(
-            ResourceLocation attribute,
+            net.minecraft.world.entity.ai.attributes.Attribute attribute,
             UUID uuid,
             String name,
             double amount,
@@ -147,7 +147,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             Scaling scaleAmount
     ) implements Action {
         public static final Codec<Attribute> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ResourceLocation.CODEC.fieldOf("attribute").forGetter(Attribute::attribute),
+                ResistancePillEffects.ATTRIBUTE_CODEC.fieldOf("attribute").forGetter(Attribute::attribute),
                 Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(Attribute::uuid),
                 Codec.STRING.fieldOf("name").forGetter(Attribute::name),
                 Codec.DOUBLE.fieldOf("amount").forGetter(Attribute::amount),
@@ -166,8 +166,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             if (factor <= 0.0) {
                 return;
             }
-            net.minecraft.world.entity.ai.attributes.Attribute attributeObj = ForgeRegistries.ATTRIBUTES.getValue(attribute());
-            if (attributeObj == null || player.getAttribute(attributeObj) == null) {
+            if (player.getAttribute(attribute()) == null) {
                 return;
             }
             double scaled = amount() * scaleAmount().eval(value) * factor;

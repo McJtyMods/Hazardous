@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 import java.util.ArrayList;
@@ -27,13 +28,13 @@ public class PlayerDoseData {
 
     private final Map<ResourceLocation, Double> doses = new HashMap<>();
     private final Map<ResourceLocation, List<ResistancePillEffect>> resistancePills = new HashMap<>();
-    private final Map<ResourceLocation, List<TimedAttributeEffect>> timedAttributes = new HashMap<>();
+    private final Map<Attribute, List<TimedAttributeEffect>> timedAttributes = new HashMap<>();
 
     private static final Codec<Map<ResourceLocation, Double>> DOSE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE);
     private static final Codec<Map<ResourceLocation, List<ResistancePillEffect>>> RESISTANCE_PILLS_CODEC =
             Codec.unboundedMap(ResourceLocation.CODEC, ResistancePillEffect.CODEC.listOf());
-    private static final Codec<Map<ResourceLocation, List<TimedAttributeEffect>>> TIMED_ATTRIBUTES_CODEC =
-            Codec.unboundedMap(ResourceLocation.CODEC, TimedAttributeEffect.CODEC.listOf());
+    private static final Codec<Map<Attribute, List<TimedAttributeEffect>>> TIMED_ATTRIBUTES_CODEC =
+            Codec.unboundedMap(ResistancePillEffects.ATTRIBUTE_CODEC, TimedAttributeEffect.CODEC.listOf());
 
     public double getDose(ResourceLocation hazardType) {
         return doses.getOrDefault(hazardType, 0.0);
@@ -80,7 +81,7 @@ public class PlayerDoseData {
         this.resistancePills.clear();
         oldStore.resistancePills.forEach((attributeId, effects) -> this.resistancePills.put(attributeId, new ArrayList<>(effects)));
         this.timedAttributes.clear();
-        oldStore.timedAttributes.forEach((attributeId, effects) -> this.timedAttributes.put(attributeId, new ArrayList<>(effects)));
+        oldStore.timedAttributes.forEach((attribute, effects) -> this.timedAttributes.put(attribute, new ArrayList<>(effects)));
     }
 
     public boolean addResistancePillEffect(ResourceLocation attributeId, double amount, long expiresAt, int maxStacks, long gameTime) {
@@ -103,24 +104,24 @@ public class PlayerDoseData {
         return Set.copyOf(resistancePills.keySet());
     }
 
-    public boolean addTimedAttributeEffect(ResourceLocation attributeId, UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt, long gameTime) {
+    public boolean addTimedAttributeEffect(Attribute attribute, UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt, long gameTime) {
         if (amount == 0.0 || expiresAt <= gameTime) {
             return false;
         }
-        List<TimedAttributeEffect> effects = timedAttributes.computeIfAbsent(attributeId, id -> new ArrayList<>());
+        List<TimedAttributeEffect> effects = timedAttributes.computeIfAbsent(attribute, id -> new ArrayList<>());
         pruneExpiredTimedAttributeEffects(effects, gameTime);
         effects.removeIf(effect -> effect.uuid().equals(uuid));
         effects.add(new TimedAttributeEffect(uuid, name, amount, operation, expiresAt));
         return true;
     }
 
-    public Set<ResourceLocation> getTimedAttributeAttributeIds() {
+    public Set<Attribute> getTimedAttributeAttributes() {
         return Set.copyOf(timedAttributes.keySet());
     }
 
     public Set<TimedAttributeKey> getTimedAttributeKeys() {
         Set<TimedAttributeKey> keys = new java.util.HashSet<>();
-        for (Map.Entry<ResourceLocation, List<TimedAttributeEffect>> entry : timedAttributes.entrySet()) {
+        for (Map.Entry<Attribute, List<TimedAttributeEffect>> entry : timedAttributes.entrySet()) {
             for (TimedAttributeEffect effect : entry.getValue()) {
                 keys.add(new TimedAttributeKey(entry.getKey(), effect.uuid()));
             }
@@ -130,9 +131,9 @@ public class PlayerDoseData {
 
     public Map<TimedAttributeKey, TimedAttributeModifier> getActiveTimedAttributeEffects(long gameTime) {
         Map<TimedAttributeKey, TimedAttributeModifier> activeEffects = new HashMap<>();
-        Iterator<Map.Entry<ResourceLocation, List<TimedAttributeEffect>>> entryIterator = timedAttributes.entrySet().iterator();
+        Iterator<Map.Entry<Attribute, List<TimedAttributeEffect>>> entryIterator = timedAttributes.entrySet().iterator();
         while (entryIterator.hasNext()) {
-            Map.Entry<ResourceLocation, List<TimedAttributeEffect>> entry = entryIterator.next();
+            Map.Entry<Attribute, List<TimedAttributeEffect>> entry = entryIterator.next();
             pruneExpiredTimedAttributeEffects(entry.getValue(), gameTime);
             if (entry.getValue().isEmpty()) {
                 entryIterator.remove();
@@ -214,7 +215,7 @@ public class PlayerDoseData {
             decodeField("resistancePills", compound.get("resistancePills"), RESISTANCE_PILLS_CODEC)
                     .ifPresent(decoded -> decoded.forEach((attributeId, effects) -> resistancePills.put(attributeId, new ArrayList<>(effects))));
             decodeField("timedAttributes", compound.get("timedAttributes"), TIMED_ATTRIBUTES_CODEC)
-                    .ifPresent(decoded -> decoded.forEach((attributeId, effects) -> timedAttributes.put(attributeId, new ArrayList<>(effects))));
+                    .ifPresent(decoded -> decoded.forEach((attribute, effects) -> timedAttributes.put(attribute, new ArrayList<>(effects))));
             return;
         }
         decodeField("legacy doses", tag, DOSE_CODEC).ifPresent(doses::putAll);
@@ -256,7 +257,7 @@ public class PlayerDoseData {
     public record ResistancePillStatus(double amount, int stacks, long expiresAt) {
     }
 
-    public record TimedAttributeKey(ResourceLocation attributeId, UUID uuid) {
+    public record TimedAttributeKey(Attribute attribute, UUID uuid) {
     }
 
     public record TimedAttributeModifier(UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt) {
