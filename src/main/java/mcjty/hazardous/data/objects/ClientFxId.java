@@ -13,8 +13,7 @@ public enum ClientFxId {
     BLUR_RADIAL("blurradial"),
     NAUSEA("nausea"),
     SHAKE("shake"),
-    WARP("warp"),
-    GEIGER("geiger");
+    WARP("warp");
 
     public static final Codec<ClientFxId> CODEC = Codec.STRING.comapFlatMap(
             ClientFxId::decode,

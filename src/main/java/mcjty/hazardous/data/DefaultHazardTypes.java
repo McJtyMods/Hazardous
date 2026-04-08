@@ -49,7 +49,6 @@ public class DefaultHazardTypes {
                     ),
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
-                            new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
                             new ResourceLocation(Hazardous.MODID, "radiation_shake"),
                             new ResourceLocation(Hazardous.MODID, "radiation_warp")
                     ),
@@ -74,7 +73,6 @@ public class DefaultHazardTypes {
                     ),
                     List.of(
                             new ResourceLocation(Hazardous.MODID, "radiation_damage"),
-                            new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
                             new ResourceLocation(Hazardous.MODID, "radiation_warp")
                     ),
                     new ResourceLocation(Hazardous.MODID, "lostcity_radiation_resistance")

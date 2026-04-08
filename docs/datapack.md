@@ -653,7 +653,6 @@ All action objects require a `type` field.
     - `nausea`: applies Minecraft-style spinning screen distortion, with strength scaled by intensity; when the user's screen effect scale is reduced it also renders the vanilla green nausea overlay fallback
     - `shake`: adds camera yaw/pitch jitter
     - `warp`: adds camera roll/yaw/pitch distortion
-    - `geiger`: used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`
   - legacy aliases `shaking` and `warping` are accepted by the codec and normalize to `shake` and `warp`
   - unknown `fxId` values are rejected by the codec
 
@@ -950,7 +949,6 @@ Built-in ids:
   - `hazardous:solar_ignite`
   - `hazardous:solar_darken`
   - `hazardous:radiation_damage`
-  - `hazardous:radiation_geiger`
   - `hazardous:radiation_shake`
   - `hazardous:radiation_warp`
   - `hazardous:lava_blur`

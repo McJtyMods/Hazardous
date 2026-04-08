@@ -191,7 +191,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
         }
     }
 
-    /** Client-side only visuals (screen vignette, blur, particles, geiger clicks). */
+    /** Client-side only visuals (screen vignette, blur, particles). */
     record ClientFx(
             ClientFxId fxId,
             Scaling intensity,

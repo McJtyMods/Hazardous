@@ -92,17 +92,6 @@ public class DefaultEffectEntries {
                     )
             ),
 
-            // Client geiger click effect with probability increasing with intensity
-            new ResourceLocation(Hazardous.MODID, "radiation_geiger"),
-            new EffectEntry(
-                    new Trigger.Probability(new Scaling.Linear01(0.05, 1.0)),
-                    new Action.ClientFx(
-                            ClientFxId.GEIGER,
-                            new Scaling.Constant(1.0),
-                            20
-                    )
-            ),
-
             // Heat haze around lava can blur vision
             new ResourceLocation(Hazardous.MODID, "lava_blur"),
             new EffectEntry(

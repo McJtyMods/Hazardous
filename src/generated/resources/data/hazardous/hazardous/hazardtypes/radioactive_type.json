@@ -16,7 +16,6 @@
   },
   "effects": [
     "hazardous:radiation_damage",
-    "hazardous:radiation_geiger",
     "hazardous:radiation_shake",
     "hazardous:radiation_warp"
   ],
