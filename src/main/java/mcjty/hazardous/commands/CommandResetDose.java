@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.setup.TimedAttributeEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -35,7 +35,7 @@ public class CommandResetDose {
     }
 
     private static void resetDose(CommandSourceStack source, ServerPlayer player) {
-        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+        PlayerHazardDataDispatcher.getPlayerHazardData(player).ifPresent(store -> {
             TimedAttributeEffects.clearAllModifiers(player, store);
             store.clear();
         });

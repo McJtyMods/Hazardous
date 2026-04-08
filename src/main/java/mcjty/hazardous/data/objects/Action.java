@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.network.PacketClientFx;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.setup.Messages;
 import mcjty.hazardous.setup.TimedAttributeEffects;
 import net.minecraft.core.registries.Registries;
@@ -182,7 +182,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             }
             int duration = Math.max(1, durationTicks());
             long gameTime = player.level().getGameTime();
-            PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+            PlayerHazardDataDispatcher.getPlayerHazardData(player).ifPresent(store -> {
                 if (store.addTimedAttributeEffect(attribute(), uuid(), name(), scaled, operation(), gameTime + duration, gameTime)) {
                     TimedAttributeEffects.syncPlayer(player, store, gameTime);
                 }

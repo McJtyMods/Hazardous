@@ -2,7 +2,7 @@ package mcjty.hazardous.setup;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import mcjty.hazardous.data.PlayerDoseData;
+import mcjty.hazardous.data.PlayerHazardData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -28,12 +28,12 @@ public class TimedAttributeEffects {
             TimedAttributeEffects::encodeOperation
     );
 
-    public static void syncPlayer(Player player, PlayerDoseData store, long gameTime) {
+    public static void syncPlayer(Player player, PlayerHazardData store, long gameTime) {
         syncResistancePills(player, store, gameTime);
         syncTimedAttributes(player, store, gameTime);
     }
 
-    private static void syncResistancePills(Player player, PlayerDoseData store, long gameTime) {
+    private static void syncResistancePills(Player player, PlayerHazardData store, long gameTime) {
         Set<ResourceLocation> trackedAttributes = new HashSet<>(store.getResistancePillAttributeIds());
         Map<ResourceLocation, Double> activeBonuses = store.getActiveResistancePillBonuses(gameTime);
         trackedAttributes.addAll(activeBonuses.keySet());
@@ -72,19 +72,19 @@ public class TimedAttributeEffects {
         }
     }
 
-    private static void syncTimedAttributes(Player player, PlayerDoseData store, long gameTime) {
-        Set<PlayerDoseData.TimedAttributeKey> trackedEffects = new HashSet<>(store.getTimedAttributeKeys());
-        Map<PlayerDoseData.TimedAttributeKey, PlayerDoseData.TimedAttributeModifier> activeEffects = getActiveTimedAttributeModifiers(store, gameTime);
+    private static void syncTimedAttributes(Player player, PlayerHazardData store, long gameTime) {
+        Set<PlayerHazardData.TimedAttributeKey> trackedEffects = new HashSet<>(store.getTimedAttributeKeys());
+        Map<PlayerHazardData.TimedAttributeKey, PlayerHazardData.TimedAttributeModifier> activeEffects = getActiveTimedAttributeModifiers(store, gameTime);
         trackedEffects.addAll(activeEffects.keySet());
 
-        for (PlayerDoseData.TimedAttributeKey effectKey : trackedEffects) {
+        for (PlayerHazardData.TimedAttributeKey effectKey : trackedEffects) {
             AttributeInstance instance = player.getAttribute(effectKey.attribute());
             if (instance == null) {
                 continue;
             }
 
             AttributeModifier existing = instance.getModifier(effectKey.uuid());
-            PlayerDoseData.TimedAttributeModifier activeEffect = activeEffects.get(effectKey);
+            PlayerHazardData.TimedAttributeModifier activeEffect = activeEffects.get(effectKey);
             if (activeEffect == null) {
                 if (existing != null) {
                     instance.removeModifier(effectKey.uuid());
@@ -120,11 +120,11 @@ public class TimedAttributeEffects {
         instance.removeModifier(getModifierId(attributeId));
     }
 
-    public static void clearAllModifiers(Player player, PlayerDoseData store) {
+    public static void clearAllModifiers(Player player, PlayerHazardData store) {
         for (ResourceLocation attributeId : store.getResistancePillAttributeIds()) {
             clearModifier(player, attributeId);
         }
-        for (PlayerDoseData.TimedAttributeKey effectKey : store.getTimedAttributeKeys()) {
+        for (PlayerHazardData.TimedAttributeKey effectKey : store.getTimedAttributeKeys()) {
             clearTimedAttributeModifier(player, effectKey);
         }
     }
@@ -162,13 +162,13 @@ public class TimedAttributeEffects {
         };
     }
 
-    private static Map<PlayerDoseData.TimedAttributeKey, PlayerDoseData.TimedAttributeModifier> getActiveTimedAttributeModifiers(PlayerDoseData store, long gameTime) {
-        Map<PlayerDoseData.TimedAttributeKey, PlayerDoseData.TimedAttributeModifier> activeEffects = new java.util.HashMap<>();
+    private static Map<PlayerHazardData.TimedAttributeKey, PlayerHazardData.TimedAttributeModifier> getActiveTimedAttributeModifiers(PlayerHazardData store, long gameTime) {
+        Map<PlayerHazardData.TimedAttributeKey, PlayerHazardData.TimedAttributeModifier> activeEffects = new java.util.HashMap<>();
         activeEffects.putAll(store.getActiveTimedAttributeEffects(gameTime));
         return activeEffects;
     }
 
-    private static void clearTimedAttributeModifier(Player player, PlayerDoseData.TimedAttributeKey effectKey) {
+    private static void clearTimedAttributeModifier(Player player, PlayerHazardData.TimedAttributeKey effectKey) {
         AttributeInstance instance = player.getAttribute(effectKey.attribute());
         if (instance == null) {
             return;

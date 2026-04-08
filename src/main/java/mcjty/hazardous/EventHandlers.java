@@ -2,8 +2,8 @@ package mcjty.hazardous;
 
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.data.HazardManager;
-import mcjty.hazardous.data.PlayerDoseData;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardData;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.items.GasmaskItem;
@@ -37,13 +37,13 @@ public class EventHandlers {
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(PlayerDoseData.class);
+        event.register(PlayerHazardData.class);
     }
 
     public static void onEntityConstructing(AttachCapabilitiesEvent<Entity> event){
         if (event.getObject() instanceof Player) {
-            if (!event.getCapabilities().containsKey(DoseSetup.PLAYER_DOSE_KEY) && !event.getObject().getCapability(DoseSetup.PLAYER_DOSE).isPresent()) {
-                event.addCapability(DoseSetup.PLAYER_DOSE_KEY, new PlayerDoseDispatcher());
+            if (!event.getCapabilities().containsKey(DoseSetup.PLAYER_HAZARD_DATA_KEY) && !event.getObject().getCapability(DoseSetup.PLAYER_HAZARD_DATA).isPresent()) {
+                event.addCapability(DoseSetup.PLAYER_HAZARD_DATA_KEY, new PlayerHazardDataDispatcher());
             } else {
                 throw new IllegalStateException(event.getObject().toString());
             }
@@ -52,8 +52,8 @@ public class EventHandlers {
 
     public static void onPlayerCloned(PlayerEvent.Clone event) {
         if (event.isWasDeath()) {
-            event.getOriginal().getCapability(DoseSetup.PLAYER_DOSE).ifPresent(oldStore -> {
-                event.getEntity().getCapability(DoseSetup.PLAYER_DOSE).ifPresent(newStore -> {
+            event.getOriginal().getCapability(DoseSetup.PLAYER_HAZARD_DATA).ifPresent(oldStore -> {
+                event.getEntity().getCapability(DoseSetup.PLAYER_HAZARD_DATA).ifPresent(newStore -> {
                     newStore.copyFrom(oldStore);
                 });
             });
@@ -68,11 +68,11 @@ public class EventHandlers {
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
         Registry<EffectEntry> effectEntries = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.EFFECT_ENTRY_REGISTRY_KEY);
 
-        PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
+        PlayerHazardDataDispatcher.getPlayerHazardData(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
             boolean hadTrackedPills = !store.getResistancePillAttributeIds().isEmpty();
             TimedAttributeEffects.syncPlayer(event.player, store, gameTime);
-            Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
+            Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {

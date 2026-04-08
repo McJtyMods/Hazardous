@@ -6,8 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.hazardous.data.CustomRegistries;
-import mcjty.hazardous.data.PlayerDoseData;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.setup.Config;
 import mcjty.lib.varia.Tools;
@@ -38,7 +37,7 @@ public class CommandDose implements Command<CommandSourceStack> {
 
         source.sendSuccess(() -> Component.literal("Accumulated hazard dose for you:"), false);
 
-        var opt = PlayerDoseDispatcher.getPlayerDose(player);
+        var opt = PlayerHazardDataDispatcher.getPlayerHazardData(player);
         if (opt.isPresent()) {
             opt.ifPresent(store -> {
                 for (HazardType type : types) {

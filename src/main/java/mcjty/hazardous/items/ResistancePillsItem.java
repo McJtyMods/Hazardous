@@ -1,6 +1,6 @@
 package mcjty.hazardous.items;
 
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import mcjty.hazardous.setup.TimedAttributeEffects;
@@ -68,7 +68,7 @@ public class ResistancePillsItem extends BaseItem {
         }
 
         long gameTime = level.getGameTime();
-        boolean applied = PlayerDoseDispatcher.getPlayerDose(player).map(store -> {
+        boolean applied = PlayerHazardDataDispatcher.getPlayerHazardData(player).map(store -> {
             if (!store.addResistancePillEffect(resolvedAttributeId, amount, gameTime + durationTicks, maxStacks, gameTime)) {
                 if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                     serverPlayer.displayClientMessage(Component.translatable("message.hazardous.resistance_pills.max_stacks"), true);

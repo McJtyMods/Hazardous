@@ -1,5 +1,6 @@
 package mcjty.hazardous.data;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,19 +13,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Stores accumulated dose per HazardType (identified by ResourceLocation)
+ * Additionally stores resistance pill and timed attribute effects
  * for a given player.
  */
-public class PlayerDoseData {
+public class PlayerHazardData {
 
     private final Map<ResourceLocation, Double> doses = new HashMap<>();
     private final Map<ResourceLocation, List<ResistancePillEffect>> resistancePills = new HashMap<>();
@@ -75,7 +71,7 @@ public class PlayerDoseData {
         timedAttributes.clear();
     }
 
-    public void copyFrom(PlayerDoseData oldStore) {
+    public void copyFrom(PlayerHazardData oldStore) {
         this.doses.clear();
         this.doses.putAll(oldStore.doses);
         this.resistancePills.clear();
@@ -178,21 +174,11 @@ public class PlayerDoseData {
     }
 
     private static void pruneExpiredEffects(List<ResistancePillEffect> effects, long gameTime) {
-        Iterator<ResistancePillEffect> effectIterator = effects.iterator();
-        while (effectIterator.hasNext()) {
-            if (effectIterator.next().expiresAt() <= gameTime) {
-                effectIterator.remove();
-            }
-        }
+        effects.removeIf(resistancePillEffect -> resistancePillEffect.expiresAt() <= gameTime);
     }
 
     private static void pruneExpiredTimedAttributeEffects(List<TimedAttributeEffect> effects, long gameTime) {
-        Iterator<TimedAttributeEffect> effectIterator = effects.iterator();
-        while (effectIterator.hasNext()) {
-            if (effectIterator.next().expiresAt() <= gameTime) {
-                effectIterator.remove();
-            }
-        }
+        effects.removeIf(timedAttributeEffect -> timedAttributeEffect.expiresAt() <= gameTime);
     }
 
     public Tag saveNBTData() {
@@ -227,13 +213,13 @@ public class PlayerDoseData {
                 .ifPresent(encoded -> compound.put(fieldName, encoded));
     }
 
-    private static <T> java.util.Optional<T> decodeField(String fieldName, Tag tag, Codec<T> codec) {
+    private static <T> Optional<T> decodeField(String fieldName, Tag tag, Codec<T> codec) {
         if (tag == null) {
             return java.util.Optional.empty();
         }
         return codec.decode(NbtOps.INSTANCE, tag)
                 .resultOrPartial(error -> Hazardous.LOGGER.error("Failed to decode PlayerDoseData {}: {}", fieldName, error))
-                .map(pair -> pair.getFirst());
+                .map(Pair::getFirst);
     }
 
     private record ResistancePillEffect(double amount, long expiresAt) {

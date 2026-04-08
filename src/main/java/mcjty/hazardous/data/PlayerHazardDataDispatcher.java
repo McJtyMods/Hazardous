@@ -12,19 +12,19 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PlayerDoseDispatcher implements ICapabilityProvider, INBTSerializable<Tag> {
+public class PlayerHazardDataDispatcher implements ICapabilityProvider, INBTSerializable<Tag> {
 
-    public static LazyOptional<PlayerDoseData> getPlayerDose(Player player) {
-        return player.getCapability(DoseSetup.PLAYER_DOSE);
+    public static LazyOptional<PlayerHazardData> getPlayerHazardData(Player player) {
+        return player.getCapability(DoseSetup.PLAYER_HAZARD_DATA);
     }
 
-    private final PlayerDoseData data = new PlayerDoseData();
-    private final LazyOptional<PlayerDoseData> cap = LazyOptional.of(() -> data);
+    private final PlayerHazardData data = new PlayerHazardData();
+    private final LazyOptional<PlayerHazardData> cap = LazyOptional.of(() -> data);
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability) {
-        if (capability == DoseSetup.PLAYER_DOSE) {
+        if (capability == DoseSetup.PLAYER_HAZARD_DATA) {
             return cap.cast();
         }
         return LazyOptional.empty();

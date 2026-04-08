@@ -1,6 +1,6 @@
 package mcjty.hazardous.client;
 
-import mcjty.hazardous.data.PlayerDoseData;
+import mcjty.hazardous.data.PlayerHazardData;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.Map;
 public class ClientData {
     private static Map<ResourceLocation, Double> doseValues = new HashMap<>();
     static Map<ResourceLocation, Double> radiationValues = new HashMap<>();
-    private static Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> resistancePillStatuses = new HashMap<>();
+    private static Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> resistancePillStatuses = new HashMap<>();
 
     public static void setDoseValues(Map<ResourceLocation, Double> doseValues) {
         ClientData.doseValues = doseValues;
@@ -27,11 +27,11 @@ public class ClientData {
         return radiationValues;
     }
 
-    public static void setResistancePillStatuses(Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> resistancePillStatuses) {
+    public static void setResistancePillStatuses(Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> resistancePillStatuses) {
         ClientData.resistancePillStatuses = resistancePillStatuses;
     }
 
-    public static Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> getResistancePillStatuses() {
+    public static Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> getResistancePillStatuses() {
         return resistancePillStatuses;
     }
 }

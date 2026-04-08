@@ -5,8 +5,8 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mcjty.hazardous.data.CustomRegistries;
-import mcjty.hazardous.data.PlayerDoseData;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardData;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.setup.HazardAttributes;
 import mcjty.hazardous.setup.TimedAttributeEffects;
@@ -50,7 +50,7 @@ public class CommandResetResistances {
     private static void resetResistances(CommandSourceStack source, ServerPlayer player) {
         Set<ResourceLocation> attributeIds = collectResistanceAttributeIds(player);
 
-        PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+        PlayerHazardDataDispatcher.getPlayerHazardData(player).ifPresent(store -> {
             attributeIds.addAll(store.getResistancePillAttributeIds());
             resetResistanceState(player, store, attributeIds);
         });
@@ -94,7 +94,7 @@ public class CommandResetResistances {
         return attributeIds;
     }
 
-    private static void resetResistanceState(ServerPlayer player, PlayerDoseData store, Set<ResourceLocation> attributeIds) {
+    private static void resetResistanceState(ServerPlayer player, PlayerHazardData store, Set<ResourceLocation> attributeIds) {
         for (ResourceLocation attributeId : attributeIds) {
             TimedAttributeEffects.clearModifier(player, attributeId);
         }

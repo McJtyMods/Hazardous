@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.compat.CuriosCompat;
-import mcjty.hazardous.data.PlayerDoseData;
+import mcjty.hazardous.data.PlayerHazardData;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
 import net.minecraft.client.Minecraft;
@@ -200,7 +200,7 @@ public class RadiationOverlayRenderer {
     }
 
     private static void renderResistancePills(RenderGuiOverlayEvent.Post event, Minecraft minecraft) {
-        Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> values = ClientData.getResistancePillStatuses();
+        Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> values = ClientData.getResistancePillStatuses();
         if (values == null || values.isEmpty()) {
             return;
         }
@@ -210,7 +210,7 @@ public class RadiationOverlayRenderer {
 
         long gameTime = minecraft.player.level().getGameTime();
         List<String> lines = new ArrayList<>();
-        for (Map.Entry<ResourceLocation, PlayerDoseData.ResistancePillStatus> entry : values.entrySet()) {
+        for (Map.Entry<ResourceLocation, PlayerHazardData.ResistancePillStatus> entry : values.entrySet()) {
             long remainingTicks = Math.max(0L, entry.getValue().expiresAt() - gameTime);
             if (remainingTicks <= 0L || entry.getValue().stacks() <= 0 || entry.getValue().amount() <= 0.0) {
                 continue;
@@ -304,7 +304,7 @@ public class RadiationOverlayRenderer {
         return String.format(Locale.ROOT, "%.2f", dose);
     }
 
-    private static String formatResistancePillLine(ResourceLocation attributeId, PlayerDoseData.ResistancePillStatus status, long remainingTicks) {
+    private static String formatResistancePillLine(ResourceLocation attributeId, PlayerHazardData.ResistancePillStatus status, long remainingTicks) {
         return String.format(
                 Locale.ROOT,
                 "%s +%d%% x%d  %s",

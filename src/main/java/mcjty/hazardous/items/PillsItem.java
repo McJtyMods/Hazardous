@@ -2,8 +2,8 @@ package mcjty.hazardous.items;
 
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.CustomRegistries;
-import mcjty.hazardous.data.PlayerDoseData;
-import mcjty.hazardous.data.PlayerDoseDispatcher;
+import mcjty.hazardous.data.PlayerHazardData;
+import mcjty.hazardous.data.PlayerHazardDataDispatcher;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.HazardAttributes;
@@ -58,7 +58,7 @@ public class PillsItem extends BaseItem {
         }
 
         Registry<HazardType> hazardTypes = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
-        double curedDose = PlayerDoseDispatcher.getPlayerDose(player)
+        double curedDose = PlayerHazardDataDispatcher.getPlayerHazardData(player)
                 .map(data -> removeDoseForAttribute(data, hazardTypes, attributeId.get(), healAmount))
                 .orElse(0.0);
         if (curedDose <= 0.0) {
@@ -87,7 +87,7 @@ public class PillsItem extends BaseItem {
         }
     }
 
-    private static double removeDoseForAttribute(PlayerDoseData data, Registry<HazardType> hazardTypes, ResourceLocation attributeId, double healAmount) {
+    private static double removeDoseForAttribute(PlayerHazardData data, Registry<HazardType> hazardTypes, ResourceLocation attributeId, double healAmount) {
         double removed = 0.0;
         for (HazardType hazardType : hazardTypes) {
             ResourceLocation hazardTypeId = hazardTypes.getKey(hazardType);
