@@ -631,7 +631,7 @@ All action objects require a `type` field.
 `client_fx` action
 - Required fields:
   - `type` = `"client_fx"`
-  - `fxId` (string)
+  - `fxId` (string enum)
 - Optional fields:
   - `intensity` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
   - `durationTicks` (int, default `40`)
@@ -650,10 +650,11 @@ All action objects require a `type` field.
     - `lighten`: fills the screen with a light gray overlay
     - `blur`: draws `assets/hazardous/textures/gui/blur.png` over the screen, with overlay alpha scaled by intensity
     - `blurradial`: draws `assets/hazardous/textures/gui/blur_radial.png` over the screen, with overlay alpha scaled by intensity
-    - `shake`, `shaking`: adds camera yaw/pitch jitter
-    - `warp`, `warping`: adds camera roll/yaw/pitch distortion
-  - unknown `fxId` values are accepted but have no visible effect unless custom client code handles them
-  - `geiger` is used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`
+    - `shake`: adds camera yaw/pitch jitter
+    - `warp`: adds camera roll/yaw/pitch distortion
+    - `geiger`: used by built-in data but has no dedicated visual/audio behavior in current `ClientFxManager`
+  - legacy aliases `shaking` and `warping` are accepted by the codec and normalize to `shake` and `warp`
+  - unknown `fxId` values are rejected by the codec
 
 `command` action
 - Required fields:

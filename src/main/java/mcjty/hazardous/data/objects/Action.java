@@ -193,12 +193,12 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
 
     /** Client-side only visuals (screen vignette, blur, particles, geiger clicks). */
     record ClientFx(
-            String fxId,
+            ClientFxId fxId,
             Scaling intensity,
             int durationTicks
     ) implements Action {
         public static final Codec<ClientFx> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.STRING.fieldOf("fxId").forGetter(ClientFx::fxId),
+                ClientFxId.CODEC.fieldOf("fxId").forGetter(ClientFx::fxId),
                 Scaling.CODEC.optionalFieldOf("intensity", new Scaling.Constant(1.0)).forGetter(ClientFx::intensity),
                 Codec.INT.optionalFieldOf("durationTicks", 40).forGetter(ClientFx::durationTicks)
         ).apply(i, ClientFx::new));

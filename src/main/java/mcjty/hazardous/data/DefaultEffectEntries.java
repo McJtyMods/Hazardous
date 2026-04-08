@@ -2,6 +2,7 @@ package mcjty.hazardous.data;
 
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.objects.Action;
+import mcjty.hazardous.data.objects.ClientFxId;
 import mcjty.hazardous.data.objects.EffectEntry;
 import mcjty.hazardous.data.objects.Scaling;
 import mcjty.hazardous.data.objects.Trigger;
@@ -52,7 +53,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Threshold(0.12, 0.01),
                     new Action.ClientFx(
-                            "darken",
+                            ClientFxId.DARKEN,
                             new Scaling.Linear01(0.12, 1.0),
                             35
                     )
@@ -74,7 +75,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Threshold(0.30, 0.02),
                     new Action.ClientFx(
-                            "shake",
+                            ClientFxId.SHAKE,
                             new Scaling.Linear01(0.30, 1.0),
                             18
                     )
@@ -85,7 +86,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Threshold(0.45, 0.02),
                     new Action.ClientFx(
-                            "warp",
+                            ClientFxId.WARP,
                             new Scaling.Linear01(0.45, 1.0),
                             24
                     )
@@ -96,7 +97,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Probability(new Scaling.Linear01(0.05, 1.0)),
                     new Action.ClientFx(
-                            "geiger",
+                            ClientFxId.GEIGER,
                             new Scaling.Constant(1.0),
                             20
                     )
@@ -107,7 +108,7 @@ public class DefaultEffectEntries {
             new EffectEntry(
                     new Trigger.Threshold(0.25, 0.03),
                     new Action.ClientFx(
-                            "blur",
+                            ClientFxId.BLUR,
                             new Scaling.Linear01(0.25, 1.0),
                             16
                     )

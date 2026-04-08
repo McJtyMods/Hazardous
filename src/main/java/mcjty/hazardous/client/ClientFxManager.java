@@ -1,6 +1,7 @@
 package mcjty.hazardous.client;
 
 import mcjty.hazardous.Hazardous;
+import mcjty.hazardous.data.objects.ClientFxId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -9,7 +10,7 @@ import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -19,10 +20,10 @@ public class ClientFxManager {
     private static final ResourceLocation BLUR_RADIAL_OVERLAY = new ResourceLocation(Hazardous.MODID, "textures/gui/blur_radial.png");
     private static final int OVERLAY_TEXTURE_SIZE = 512;
 
-    private static final Map<String, ActiveFx> ACTIVE = new HashMap<>();
+    private static final Map<ClientFxId, ActiveFx> ACTIVE = new EnumMap<>(ClientFxId.class);
 
-    public static void activate(String fxId, double intensity, int durationTicks) {
-        if (fxId == null || fxId.isEmpty()) {
+    public static void activate(ClientFxId fxId, double intensity, int durationTicks) {
+        if (fxId == null) {
             return;
         }
         double clampedIntensity = Mth.clamp(intensity, 0.0, 2.0);
@@ -42,9 +43,9 @@ public class ClientFxManager {
         if (event.phase != TickEvent.Phase.END || ACTIVE.isEmpty()) {
             return;
         }
-        Iterator<Map.Entry<String, ActiveFx>> it = ACTIVE.entrySet().iterator();
+        Iterator<Map.Entry<ClientFxId, ActiveFx>> it = ACTIVE.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<String, ActiveFx> entry = it.next();
+            Map.Entry<ClientFxId, ActiveFx> entry = it.next();
             if (entry.getValue().tickDown()) {
                 it.remove();
             }
@@ -62,7 +63,7 @@ public class ClientFxManager {
 
         float time = (float) (minecraft.player.tickCount + event.getPartialTick());
 
-        float shake = Math.max(getCurrentIntensity("shake"), getCurrentIntensity("shaking"));
+        float shake = getCurrentIntensity(ClientFxId.SHAKE);
         if (shake > 0.0f) {
             float yawJitter = (Mth.sin(time * 17.0f) * 0.9f + Mth.sin(time * 31.0f) * 0.5f) * shake * 0.8f;
             float pitchJitter = (Mth.cos(time * 19.0f) * 0.8f + Mth.sin(time * 29.0f) * 0.4f) * shake * 0.6f;
@@ -70,7 +71,7 @@ public class ClientFxManager {
             event.setPitch(event.getPitch() + pitchJitter);
         }
 
-        float warp = Math.max(getCurrentIntensity("warp"), getCurrentIntensity("warping"));
+        float warp = getCurrentIntensity(ClientFxId.WARP);
         if (warp > 0.0f) {
             float roll = Mth.sin(time * 2.2f) * warp * 4.5f;
             float yaw = Mth.sin(time * 1.1f) * warp * 1.0f;
@@ -93,24 +94,24 @@ public class ClientFxManager {
         int height = minecraft.getWindow().getGuiScaledHeight();
         var graphics = event.getGuiGraphics();
 
-        float darken = getCurrentIntensity("darken");
+        float darken = getCurrentIntensity(ClientFxId.DARKEN);
         if (darken > 0.0f) {
             int alpha = (int) (Mth.clamp(darken * 0.65f, 0.0f, 0.85f) * 255.0f);
             graphics.fill(0, 0, width, height, (alpha << 24));
         }
 
-        float lighten = getCurrentIntensity("lighten");
+        float lighten = getCurrentIntensity(ClientFxId.LIGHTEN);
         if (lighten > 0.0f) {
             int alpha = (int) (Mth.clamp(lighten * 0.22f, 0.0f, 0.35f) * 255.0f);
             int color = (alpha << 24) | 0xBBBBBB;
             graphics.fill(0, 0, width, height, color);
         }
 
-        renderOverlayTexture(graphics, width, height, BLUR_OVERLAY, getCurrentIntensity("blur"), 0.85f);
-        renderOverlayTexture(graphics, width, height, BLUR_RADIAL_OVERLAY, getCurrentIntensity("blurradial"), 0.9f);
+        renderOverlayTexture(graphics, width, height, BLUR_OVERLAY, getCurrentIntensity(ClientFxId.BLUR), 0.85f);
+        renderOverlayTexture(graphics, width, height, BLUR_RADIAL_OVERLAY, getCurrentIntensity(ClientFxId.BLUR_RADIAL), 0.9f);
     }
 
-    private static float getCurrentIntensity(String fxId) {
+    private static float getCurrentIntensity(ClientFxId fxId) {
         ActiveFx fx = ACTIVE.get(fxId);
         if (fx == null) {
             return 0.0f;
