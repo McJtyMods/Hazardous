@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.Hazardous;
+import mcjty.hazardous.setup.ResistancePillEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Stores accumulated dose per HazardType (identified by ResourceLocation)
@@ -24,10 +27,13 @@ public class PlayerDoseData {
 
     private final Map<ResourceLocation, Double> doses = new HashMap<>();
     private final Map<ResourceLocation, List<ResistancePillEffect>> resistancePills = new HashMap<>();
+    private final Map<ResourceLocation, List<TimedAttributeEffect>> timedAttributes = new HashMap<>();
 
     private static final Codec<Map<ResourceLocation, Double>> DOSE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE);
     private static final Codec<Map<ResourceLocation, List<ResistancePillEffect>>> RESISTANCE_PILLS_CODEC =
             Codec.unboundedMap(ResourceLocation.CODEC, ResistancePillEffect.CODEC.listOf());
+    private static final Codec<Map<ResourceLocation, List<TimedAttributeEffect>>> TIMED_ATTRIBUTES_CODEC =
+            Codec.unboundedMap(ResourceLocation.CODEC, TimedAttributeEffect.CODEC.listOf());
 
     public double getDose(ResourceLocation hazardType) {
         return doses.getOrDefault(hazardType, 0.0);
@@ -39,13 +45,6 @@ public class PlayerDoseData {
         } else {
             doses.put(hazardType, value);
         }
-    }
-
-    public void addDose(ResourceLocation hazardType, double amount) {
-        if (amount == 0.0) {
-            return;
-        }
-        setDose(hazardType, getDose(hazardType) + amount);
     }
 
     public double removeDose(ResourceLocation hazardType, double amount) {
@@ -61,33 +60,18 @@ public class PlayerDoseData {
         return currentValue - newValue;
     }
 
-    public double removeDoseFromAll(double amount) {
-        if (amount <= 0.0 || doses.isEmpty()) {
-            return 0.0;
-        }
-        double removed = 0.0;
-        Iterator<Map.Entry<ResourceLocation, Double>> iterator = doses.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<ResourceLocation, Double> entry = iterator.next();
-            double currentValue = entry.getValue();
-            double newValue = Math.max(0.0, currentValue - amount);
-            removed += currentValue - newValue;
-            if (newValue <= 0.0) {
-                iterator.remove();
-            } else if (newValue != currentValue) {
-                entry.setValue(newValue);
-            }
-        }
-        return removed;
-    }
-
     public void clear() {
         doses.clear();
         resistancePills.clear();
+        timedAttributes.clear();
     }
 
     public void clearResistancePills() {
         resistancePills.clear();
+    }
+
+    public void clearTimedAttributes() {
+        timedAttributes.clear();
     }
 
     public void copyFrom(PlayerDoseData oldStore) {
@@ -95,6 +79,8 @@ public class PlayerDoseData {
         this.doses.putAll(oldStore.doses);
         this.resistancePills.clear();
         oldStore.resistancePills.forEach((attributeId, effects) -> this.resistancePills.put(attributeId, new ArrayList<>(effects)));
+        this.timedAttributes.clear();
+        oldStore.timedAttributes.forEach((attributeId, effects) -> this.timedAttributes.put(attributeId, new ArrayList<>(effects)));
     }
 
     public boolean addResistancePillEffect(ResourceLocation attributeId, double amount, long expiresAt, int maxStacks, long gameTime) {
@@ -115,6 +101,48 @@ public class PlayerDoseData {
 
     public Set<ResourceLocation> getResistancePillAttributeIds() {
         return Set.copyOf(resistancePills.keySet());
+    }
+
+    public boolean addTimedAttributeEffect(ResourceLocation attributeId, UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt, long gameTime) {
+        if (amount == 0.0 || expiresAt <= gameTime) {
+            return false;
+        }
+        List<TimedAttributeEffect> effects = timedAttributes.computeIfAbsent(attributeId, id -> new ArrayList<>());
+        pruneExpiredTimedAttributeEffects(effects, gameTime);
+        effects.removeIf(effect -> effect.uuid().equals(uuid));
+        effects.add(new TimedAttributeEffect(uuid, name, amount, operation, expiresAt));
+        return true;
+    }
+
+    public Set<ResourceLocation> getTimedAttributeAttributeIds() {
+        return Set.copyOf(timedAttributes.keySet());
+    }
+
+    public Set<TimedAttributeKey> getTimedAttributeKeys() {
+        Set<TimedAttributeKey> keys = new java.util.HashSet<>();
+        for (Map.Entry<ResourceLocation, List<TimedAttributeEffect>> entry : timedAttributes.entrySet()) {
+            for (TimedAttributeEffect effect : entry.getValue()) {
+                keys.add(new TimedAttributeKey(entry.getKey(), effect.uuid()));
+            }
+        }
+        return keys;
+    }
+
+    public Map<TimedAttributeKey, TimedAttributeModifier> getActiveTimedAttributeEffects(long gameTime) {
+        Map<TimedAttributeKey, TimedAttributeModifier> activeEffects = new HashMap<>();
+        Iterator<Map.Entry<ResourceLocation, List<TimedAttributeEffect>>> entryIterator = timedAttributes.entrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Map.Entry<ResourceLocation, List<TimedAttributeEffect>> entry = entryIterator.next();
+            pruneExpiredTimedAttributeEffects(entry.getValue(), gameTime);
+            if (entry.getValue().isEmpty()) {
+                entryIterator.remove();
+                continue;
+            }
+            for (TimedAttributeEffect effect : entry.getValue()) {
+                activeEffects.put(new TimedAttributeKey(entry.getKey(), effect.uuid()), TimedAttributeModifier.fromEffect(effect));
+            }
+        }
+        return activeEffects;
     }
 
     public Map<ResourceLocation, Double> getActiveResistancePillBonuses(long gameTime) {
@@ -157,23 +185,36 @@ public class PlayerDoseData {
         }
     }
 
+    private static void pruneExpiredTimedAttributeEffects(List<TimedAttributeEffect> effects, long gameTime) {
+        Iterator<TimedAttributeEffect> effectIterator = effects.iterator();
+        while (effectIterator.hasNext()) {
+            if (effectIterator.next().expiresAt() <= gameTime) {
+                effectIterator.remove();
+            }
+        }
+    }
+
     public Tag saveNBTData() {
         CompoundTag compound = new CompoundTag();
         encodeField("doses", DOSE_CODEC, doses, compound);
         encodeField("resistancePills", RESISTANCE_PILLS_CODEC, resistancePills, compound);
+        encodeField("timedAttributes", TIMED_ATTRIBUTES_CODEC, timedAttributes, compound);
         return compound;
     }
 
     public void loadNBTData(Tag tag) {
         this.doses.clear();
         this.resistancePills.clear();
+        this.timedAttributes.clear();
         if (tag == null) {
             return;
         }
-        if (tag instanceof CompoundTag compound && (compound.contains("doses") || compound.contains("resistancePills"))) {
+        if (tag instanceof CompoundTag compound && (compound.contains("doses") || compound.contains("resistancePills") || compound.contains("timedAttributes"))) {
             decodeField("doses", compound.get("doses"), DOSE_CODEC).ifPresent(doses::putAll);
             decodeField("resistancePills", compound.get("resistancePills"), RESISTANCE_PILLS_CODEC)
                     .ifPresent(decoded -> decoded.forEach((attributeId, effects) -> resistancePills.put(attributeId, new ArrayList<>(effects))));
+            decodeField("timedAttributes", compound.get("timedAttributes"), TIMED_ATTRIBUTES_CODEC)
+                    .ifPresent(decoded -> decoded.forEach((attributeId, effects) -> timedAttributes.put(attributeId, new ArrayList<>(effects))));
             return;
         }
         decodeField("legacy doses", tag, DOSE_CODEC).ifPresent(doses::putAll);
@@ -201,6 +242,26 @@ public class PlayerDoseData {
         ).apply(instance, ResistancePillEffect::new));
     }
 
+    private record TimedAttributeEffect(UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt) {
+        private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
+        private static final Codec<TimedAttributeEffect> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                UUID_CODEC.fieldOf("uuid").forGetter(TimedAttributeEffect::uuid),
+                Codec.STRING.fieldOf("name").forGetter(TimedAttributeEffect::name),
+                Codec.DOUBLE.fieldOf("amount").forGetter(TimedAttributeEffect::amount),
+                ResistancePillEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(TimedAttributeEffect::operation),
+                Codec.LONG.fieldOf("expiresAt").forGetter(TimedAttributeEffect::expiresAt)
+        ).apply(instance, TimedAttributeEffect::new));
+    }
+
     public record ResistancePillStatus(double amount, int stacks, long expiresAt) {
+    }
+
+    public record TimedAttributeKey(ResourceLocation attributeId, UUID uuid) {
+    }
+
+    public record TimedAttributeModifier(UUID uuid, String name, double amount, AttributeModifier.Operation operation, long expiresAt) {
+        public static TimedAttributeModifier fromEffect(TimedAttributeEffect effect) {
+            return new TimedAttributeModifier(effect.uuid(), effect.name(), effect.amount(), effect.operation(), effect.expiresAt());
+        }
     }
 }

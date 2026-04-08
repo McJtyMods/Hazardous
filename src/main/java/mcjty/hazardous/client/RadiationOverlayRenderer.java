@@ -20,10 +20,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Map;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import java.util.*;
 
 public class RadiationOverlayRenderer {
 
@@ -212,7 +209,7 @@ public class RadiationOverlayRenderer {
         }
 
         long gameTime = minecraft.player.level().getGameTime();
-        java.util.List<String> lines = new java.util.ArrayList<>();
+        List<String> lines = new ArrayList<>();
         for (Map.Entry<ResourceLocation, PlayerDoseData.ResistancePillStatus> entry : values.entrySet()) {
             long remainingTicks = Math.max(0L, entry.getValue().expiresAt() - gameTime);
             if (remainingTicks <= 0L || entry.getValue().stacks() <= 0 || entry.getValue().amount() <= 0.0) {

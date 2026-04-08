@@ -613,12 +613,20 @@ All action objects require a `type` field.
   - `uuid` (string UUID, e.g. `"123e4567-e89b-12d3-a456-426614174000"`)
   - `name` (string)
   - `amount` (double)
-  - `operation` (string, intended values: `add`, `multiply_base`, `multiply_total`)
+  - `operation` (string enum: `add`, `multiply_base`, `multiply_total`)
   - `durationTicks` (int)
 - Optional fields:
   - `scaleAmount` (Scaling, default `{ "type": "constant", "value": 1.0 }`)
 - Runtime behavior:
-  - currently not implemented (no-op placeholder)
+  - skipped when factor `<= 0`
+  - skipped if the target attribute id is missing or not present on the player
+  - final modifier amount = `amount * scaleAmount.eval(value) * factor`
+  - skipped if the final modifier amount is `0`
+  - `durationTicks` is clamped to a minimum of `1`
+  - applies a transient timed attribute modifier using the configured `uuid`, `name`, `operation`, and final modifier amount
+  - reapplying the same `uuid` on the same attribute replaces the existing timed modifier entry and refreshes its duration
+  - active timed attribute modifiers persist in player capability data and are restored after reloads and death-copy capability transfer
+  - timed attribute modifiers are separate from resistance pill tracking and do not appear in the resistance status HUD
 
 `client_fx` action
 - Required fields:

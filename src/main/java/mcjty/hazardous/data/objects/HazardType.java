@@ -7,6 +7,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Defines how a hazard (radiation / solar burn / etc) behaves.
@@ -32,7 +33,7 @@ public record HazardType(
                     Exposure.CODEC.fieldOf("exposure").forGetter(HazardType::exposure),
                     ResourceLocation.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(HazardType::effects),
                     ResourceLocation.CODEC.optionalFieldOf("resistanceAttribute")
-                            .forGetter(type -> java.util.Optional.ofNullable(type.resistanceAttribute()))
+                            .forGetter(type -> Optional.ofNullable(type.resistanceAttribute()))
             ).apply(instance, (blocking, exposure, effects, resistanceAttribute) ->
                     new HazardType(blocking, exposure, effects, resistanceAttribute.orElse(null))));
 

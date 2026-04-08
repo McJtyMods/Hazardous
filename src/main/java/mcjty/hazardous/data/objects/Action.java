@@ -3,13 +3,16 @@ package mcjty.hazardous.data.objects;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.network.PacketClientFx;
+import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Messages;
+import mcjty.hazardous.setup.ResistancePillEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -139,7 +142,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             UUID uuid,
             String name,
             double amount,
-            String operation, // "add", "multiply_base", "multiply_total"
+            AttributeModifier.Operation operation,
             int durationTicks,
             Scaling scaleAmount
     ) implements Action {
@@ -148,7 +151,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
                 Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(Attribute::uuid),
                 Codec.STRING.fieldOf("name").forGetter(Attribute::name),
                 Codec.DOUBLE.fieldOf("amount").forGetter(Attribute::amount),
-                Codec.STRING.fieldOf("operation").forGetter(Attribute::operation),
+                ResistancePillEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(Attribute::operation),
                 Codec.INT.fieldOf("durationTicks").forGetter(Attribute::durationTicks),
                 Scaling.CODEC.optionalFieldOf("scaleAmount", new Scaling.Constant(1.0)).forGetter(Attribute::scaleAmount)
         ).apply(i, Attribute::new));
@@ -160,7 +163,24 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
 
         @Override
         public void apply(Player player, double value, double factor) {
-            // Not implemented yet; placeholder no-op
+            if (factor <= 0.0) {
+                return;
+            }
+            net.minecraft.world.entity.ai.attributes.Attribute attributeObj = ForgeRegistries.ATTRIBUTES.getValue(attribute());
+            if (attributeObj == null || player.getAttribute(attributeObj) == null) {
+                return;
+            }
+            double scaled = amount() * scaleAmount().eval(value) * factor;
+            if (scaled == 0.0) {
+                return;
+            }
+            int duration = Math.max(1, durationTicks());
+            long gameTime = player.level().getGameTime();
+            PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
+                if (store.addTimedAttributeEffect(attribute(), uuid(), name(), scaled, operation(), gameTime + duration, gameTime)) {
+                    ResistancePillEffects.syncPlayer(player, store, gameTime);
+                }
+            });
         }
     }
 
