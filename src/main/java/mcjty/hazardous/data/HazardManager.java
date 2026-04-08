@@ -166,8 +166,74 @@ public class HazardManager {
             return raw;
         }
 
-        private double applyPointBlocking(HazardType type, Level level, double sourceX, double sourceY, double sourceZ, double rawIntensity) {
+        private boolean hasLineOfSight(Level level, double sx, double sy, double sz, double ex, double ey, double ez) {
+            int x = Mth.floor(sx);
+            int y = Mth.floor(sy);
+            int z = Mth.floor(sz);
+            int endX = Mth.floor(ex);
+            int endY = Mth.floor(ey);
+            int endZ = Mth.floor(ez);
+
+            if (x == endX && y == endY && z == endZ) {
+                return true;
+            }
+
+            double dx = ex - sx;
+            double dy = ey - sy;
+            double dz = ez - sz;
+
+            int stepX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+            int stepY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+            int stepZ = dz > 0 ? 1 : (dz < 0 ? -1 : 0);
+
+            double tDeltaX = stepX == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dx);
+            double tDeltaY = stepY == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dy);
+            double tDeltaZ = stepZ == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dz);
+
+            double tMaxX = stepX == 0 ? Double.POSITIVE_INFINITY
+                    : (stepX > 0 ? (x + 1.0 - sx) : (sx - x)) * tDeltaX;
+            double tMaxY = stepY == 0 ? Double.POSITIVE_INFINITY
+                    : (stepY > 0 ? (y + 1.0 - sy) : (sy - y)) * tDeltaY;
+            double tMaxZ = stepZ == 0 ? Double.POSITIVE_INFINITY
+                    : (stepZ > 0 ? (z + 1.0 - sz) : (sz - z)) * tDeltaZ;
+
+            int maxSteps = 1 + Math.abs(endX - x) + Math.abs(endY - y) + Math.abs(endZ - z);
+            BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+            boolean processCurrent = false;
+
+            for (int i = 0; i <= maxSteps; i++) {
+                if (processCurrent && !(x == endX && y == endY && z == endZ)) {
+                    mutable.set(x, y, z);
+                    if (!level.getBlockState(mutable).getCollisionShape(level, mutable).isEmpty()) {
+                        return false;
+                    }
+                }
+                if (x == endX && y == endY && z == endZ) {
+                    break;
+                }
+                processCurrent = true;
+                if (tMaxX <= tMaxY && tMaxX <= tMaxZ) {
+                    x += stepX;
+                    tMaxX += tDeltaX;
+                } else if (tMaxY <= tMaxZ) {
+                    y += stepY;
+                    tMaxY += tDeltaY;
+                } else {
+                    z += stepZ;
+                    tMaxZ += tDeltaZ;
+                }
+            }
+
+            return true;
+        }
+
+        private double applyPointBlocking(HazardType type, Level level, HazardSource.Transmission.Point transmission, double sourceX, double sourceY, double sourceZ, double rawIntensity) {
             if (rawIntensity <= MIN_EFFECTIVE_RADIATION) {
+                return 0.0;
+            }
+            boolean bodyVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ);
+            boolean headVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ);
+            if (!bodyVisible && !headVisible) {
                 return 0.0;
             }
             if (!(type.blocking() instanceof HazardType.Blocking.Absorption absorption)) {
@@ -175,16 +241,13 @@ public class HazardManager {
             }
             AbsorptionModel model = getAbsorptionModel(absorption);
             double cutoffFactor = MIN_EFFECTIVE_RADIATION / rawIntensity;
-            double bodyFactor = model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, cutoffFactor);
-            if (bodyFactor <= 0.0) {
-                double headFactor = model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, cutoffFactor);
-                if (headFactor <= 0.0) {
-                    return 0.0;
-                }
-                return rawIntensity * headFactor;
+            double bodyFactor = bodyVisible ? model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, cutoffFactor) : 0.0;
+            double headFactor = headVisible ? model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, cutoffFactor) : 0.0;
+            double bestFactor = Math.max(bodyFactor, headFactor);
+            if (bestFactor <= 0.0) {
+                return 0.0;
             }
-            double headFactor = model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, cutoffFactor);
-            return rawIntensity * Math.max(bodyFactor, headFactor);
+            return rawIntensity * bestFactor;
         }
 
         private double applySkyBlocking(HazardType type, Level level, double intensity) {
@@ -275,7 +338,7 @@ public class HazardManager {
                         if (raw <= 0.0) {
                             continue;
                         }
-                        double contributed = applyPointBlocking(type, level, entity.getX(), entity.getY(0.5), entity.getZ(), raw);
+                        double contributed = applyPointBlocking(type, level, t, entity.getX(), entity.getY(0.5), entity.getZ(), raw);
                         if (contributed > MIN_EFFECTIVE_RADIATION) {
                             sum += contributed;
                         }
@@ -348,7 +411,7 @@ public class HazardManager {
                         if (raw <= 0.0) {
                             continue;
                         }
-                        double contributed = applyPointBlocking(type, level, x, y, z, raw);
+                        double contributed = applyPointBlocking(type, level, t, x, y, z, raw);
                         if (contributed > MIN_EFFECTIVE_RADIATION) {
                             sum += contributed;
                         }
@@ -404,7 +467,7 @@ public class HazardManager {
                         if (raw <= 0.0) {
                             continue;
                         }
-                        double contributed = applyPointBlocking(type, level, sourcePlayer.getX(), sourcePlayer.getY(0.5), sourcePlayer.getZ(), raw);
+                        double contributed = applyPointBlocking(type, level, t, sourcePlayer.getX(), sourcePlayer.getY(0.5), sourcePlayer.getZ(), raw);
                         if (contributed > MIN_EFFECTIVE_RADIATION) {
                             sum += contributed;
                         }
@@ -496,7 +559,7 @@ public class HazardManager {
                     if (raw <= 0.0) {
                         continue;
                     }
-                    double contributed = applyPointBlocking(type, level, source.centerX(), sourceY, source.centerZ(), raw);
+                    double contributed = applyPointBlocking(type, level, t, source.centerX(), sourceY, source.centerZ(), raw);
                     if (contributed > MIN_EFFECTIVE_RADIATION) {
                         sum += contributed;
                     }
@@ -596,7 +659,7 @@ public class HazardManager {
                                 if (raw <= 0.0) {
                                     continue;
                                 }
-                                double contributed = applyPointBlocking(type, level, x, y, z, raw);
+                                double contributed = applyPointBlocking(type, level, t, x, y, z, raw);
                                 if (contributed > MIN_EFFECTIVE_RADIATION) {
                                     sum += contributed;
                                 }
