@@ -1,12 +1,10 @@
 package mcjty.hazardous;
 
-import mcjty.hazardous.client.DosimeterSoundController;
-import mcjty.hazardous.client.GeigerSoundController;
 import mcjty.hazardous.client.ItemEmissionTooltipHandler;
-import mcjty.hazardous.client.PillsShowSoundController;
 import mcjty.hazardous.client.RadiationOverlayRenderer;
 import mcjty.hazardous.client.ClientFxManager;
 import mcjty.hazardous.client.ClientRegistration;
+import mcjty.hazardous.client.SoundController;
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.datagen.DataGenerators;
 import mcjty.hazardous.setup.Config;
@@ -59,9 +57,7 @@ public class Hazardous {
             forgeBus.addListener(ClientFxManager::onCameraAngles);
             forgeBus.addListener(ClientFxManager::onRenderOverlay);
             forgeBus.addListener(RadiationOverlayRenderer::onRender);
-            forgeBus.addListener(DosimeterSoundController::onClientTick);
-            forgeBus.addListener(GeigerSoundController::onClientTick);
-            forgeBus.addListener(PillsShowSoundController::onClientTick);
+            forgeBus.addListener(SoundController::onClientTick);
             forgeBus.addListener(ItemEmissionTooltipHandler::onItemTooltip);
         }
     }
