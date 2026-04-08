@@ -18,10 +18,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -167,64 +170,9 @@ public class HazardManager {
         }
 
         private boolean hasLineOfSight(Level level, double sx, double sy, double sz, double ex, double ey, double ez) {
-            int x = Mth.floor(sx);
-            int y = Mth.floor(sy);
-            int z = Mth.floor(sz);
-            int endX = Mth.floor(ex);
-            int endY = Mth.floor(ey);
-            int endZ = Mth.floor(ez);
-
-            if (x == endX && y == endY && z == endZ) {
-                return true;
-            }
-
-            double dx = ex - sx;
-            double dy = ey - sy;
-            double dz = ez - sz;
-
-            int stepX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
-            int stepY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
-            int stepZ = dz > 0 ? 1 : (dz < 0 ? -1 : 0);
-
-            double tDeltaX = stepX == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dx);
-            double tDeltaY = stepY == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dy);
-            double tDeltaZ = stepZ == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dz);
-
-            double tMaxX = stepX == 0 ? Double.POSITIVE_INFINITY
-                    : (stepX > 0 ? (x + 1.0 - sx) : (sx - x)) * tDeltaX;
-            double tMaxY = stepY == 0 ? Double.POSITIVE_INFINITY
-                    : (stepY > 0 ? (y + 1.0 - sy) : (sy - y)) * tDeltaY;
-            double tMaxZ = stepZ == 0 ? Double.POSITIVE_INFINITY
-                    : (stepZ > 0 ? (z + 1.0 - sz) : (sz - z)) * tDeltaZ;
-
-            int maxSteps = 1 + Math.abs(endX - x) + Math.abs(endY - y) + Math.abs(endZ - z);
-            BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-            boolean processCurrent = false;
-
-            for (int i = 0; i <= maxSteps; i++) {
-                if (processCurrent && !(x == endX && y == endY && z == endZ)) {
-                    mutable.set(x, y, z);
-                    if (!level.getBlockState(mutable).getCollisionShape(level, mutable).isEmpty()) {
-                        return false;
-                    }
-                }
-                if (x == endX && y == endY && z == endZ) {
-                    break;
-                }
-                processCurrent = true;
-                if (tMaxX <= tMaxY && tMaxX <= tMaxZ) {
-                    x += stepX;
-                    tMaxX += tDeltaX;
-                } else if (tMaxY <= tMaxZ) {
-                    y += stepY;
-                    tMaxY += tDeltaY;
-                } else {
-                    z += stepZ;
-                    tMaxZ += tDeltaZ;
-                }
-            }
-
-            return true;
+            Vec3 start = new Vec3(sx, sy, sz);
+            Vec3 end = new Vec3(ex, ey, ez);
+            return level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getType() == HitResult.Type.MISS;
         }
 
         private double applyPointBlocking(HazardType type, Level level, HazardSource.Transmission.Point transmission, double sourceX, double sourceY, double sourceZ, double rawIntensity) {
