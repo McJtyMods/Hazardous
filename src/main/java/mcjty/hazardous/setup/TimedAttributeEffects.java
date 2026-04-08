@@ -16,16 +16,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class ResistancePillEffects {
+public class TimedAttributeEffects {
 
     private static final String MODIFIER_NAME = "hazardous.resistance_pills";
     public static final Codec<Attribute> ATTRIBUTE_CODEC = ResourceLocation.CODEC.comapFlatMap(
-            ResistancePillEffects::decodeAttribute,
-            ResistancePillEffects::encodeAttribute
+            TimedAttributeEffects::decodeAttribute,
+            TimedAttributeEffects::encodeAttribute
     );
     public static final Codec<AttributeModifier.Operation> ATTRIBUTE_MODIFIER_OPERATION_CODEC = Codec.STRING.comapFlatMap(
-            ResistancePillEffects::decodeOperation,
-            ResistancePillEffects::encodeOperation
+            TimedAttributeEffects::decodeOperation,
+            TimedAttributeEffects::encodeOperation
     );
 
     public static void syncPlayer(Player player, PlayerDoseData store, long gameTime) {

@@ -9,7 +9,7 @@ import mcjty.hazardous.data.PlayerDoseData;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.data.objects.HazardType;
 import mcjty.hazardous.setup.HazardAttributes;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import mcjty.lib.varia.Tools;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -67,7 +67,7 @@ public class CommandResetResistances {
             }
 
             instance.setBaseValue(0.0);
-            ResistancePillEffects.clearModifier(player, attributeId);
+            TimedAttributeEffects.clearModifier(player, attributeId);
         }
 
         if (source.getEntity() == player) {
@@ -96,7 +96,7 @@ public class CommandResetResistances {
 
     private static void resetResistanceState(ServerPlayer player, PlayerDoseData store, Set<ResourceLocation> attributeIds) {
         for (ResourceLocation attributeId : attributeIds) {
-            ResistancePillEffects.clearModifier(player, attributeId);
+            TimedAttributeEffects.clearModifier(player, attributeId);
         }
         store.clearResistancePills();
     }

@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.network.PacketClientFx;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Messages;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -155,11 +155,11 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             Scaling scaleAmount
     ) implements Action {
         public static final Codec<Attribute> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ResistancePillEffects.ATTRIBUTE_CODEC.fieldOf("attribute").forGetter(Attribute::attribute),
+                TimedAttributeEffects.ATTRIBUTE_CODEC.fieldOf("attribute").forGetter(Attribute::attribute),
                 Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(Attribute::uuid),
                 Codec.STRING.fieldOf("name").forGetter(Attribute::name),
                 Codec.DOUBLE.fieldOf("amount").forGetter(Attribute::amount),
-                ResistancePillEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(Attribute::operation),
+                TimedAttributeEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(Attribute::operation),
                 Codec.INT.fieldOf("durationTicks").forGetter(Attribute::durationTicks),
                 Scaling.CODEC.optionalFieldOf("scaleAmount", new Scaling.Constant(1.0)).forGetter(Attribute::scaleAmount)
         ).apply(i, Attribute::new));
@@ -185,7 +185,7 @@ public sealed interface Action permits Action.Potion, Action.Damage, Action.Fire
             long gameTime = player.level().getGameTime();
             PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
                 if (store.addTimedAttributeEffect(attribute(), uuid(), name(), scaled, operation(), gameTime + duration, gameTime)) {
-                    ResistancePillEffects.syncPlayer(player, store, gameTime);
+                    TimedAttributeEffects.syncPlayer(player, store, gameTime);
                 }
             });
         }

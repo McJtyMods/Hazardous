@@ -14,7 +14,7 @@ import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
 import mcjty.hazardous.setup.HazardAttributes;
 import mcjty.hazardous.setup.Messages;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -71,7 +71,7 @@ public class EventHandlers {
         PlayerDoseDispatcher.getPlayerDose(event.player).ifPresent(store -> {
             long gameTime = level.getGameTime();
             boolean hadTrackedPills = !store.getResistancePillAttributeIds().isEmpty();
-            ResistancePillEffects.syncPlayer(event.player, store, gameTime);
+            TimedAttributeEffects.syncPlayer(event.player, store, gameTime);
             Map<ResourceLocation, PlayerDoseData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();

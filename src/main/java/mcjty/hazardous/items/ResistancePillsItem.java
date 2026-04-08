@@ -3,7 +3,7 @@ package mcjty.hazardous.items;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
 import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.Registration;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import mcjty.lib.builder.TooltipBuilder;
 import mcjty.lib.items.BaseItem;
 import net.minecraft.resources.ResourceLocation;
@@ -75,7 +75,7 @@ public class ResistancePillsItem extends BaseItem {
                 }
                 return false;
             }
-            ResistancePillEffects.syncPlayer(player, store, gameTime);
+            TimedAttributeEffects.syncPlayer(player, store, gameTime);
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }

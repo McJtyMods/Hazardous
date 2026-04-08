@@ -4,9 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import mcjty.hazardous.data.PlayerDoseData;
 import mcjty.hazardous.data.PlayerDoseDispatcher;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -37,7 +36,7 @@ public class CommandResetDose {
 
     private static void resetDose(CommandSourceStack source, ServerPlayer player) {
         PlayerDoseDispatcher.getPlayerDose(player).ifPresent(store -> {
-            ResistancePillEffects.clearAllModifiers(player, store);
+            TimedAttributeEffects.clearAllModifiers(player, store);
             store.clear();
         });
         if (source.getEntity() == player) {

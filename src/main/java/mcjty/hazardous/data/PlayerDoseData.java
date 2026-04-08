@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import mcjty.hazardous.Hazardous;
-import mcjty.hazardous.setup.ResistancePillEffects;
+import mcjty.hazardous.setup.TimedAttributeEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -34,7 +34,7 @@ public class PlayerDoseData {
     private static final Codec<Map<ResourceLocation, List<ResistancePillEffect>>> RESISTANCE_PILLS_CODEC =
             Codec.unboundedMap(ResourceLocation.CODEC, ResistancePillEffect.CODEC.listOf());
     private static final Codec<Map<Attribute, List<TimedAttributeEffect>>> TIMED_ATTRIBUTES_CODEC =
-            Codec.unboundedMap(ResistancePillEffects.ATTRIBUTE_CODEC, TimedAttributeEffect.CODEC.listOf());
+            Codec.unboundedMap(TimedAttributeEffects.ATTRIBUTE_CODEC, TimedAttributeEffect.CODEC.listOf());
 
     public double getDose(ResourceLocation hazardType) {
         return doses.getOrDefault(hazardType, 0.0);
@@ -249,7 +249,7 @@ public class PlayerDoseData {
                 UUID_CODEC.fieldOf("uuid").forGetter(TimedAttributeEffect::uuid),
                 Codec.STRING.fieldOf("name").forGetter(TimedAttributeEffect::name),
                 Codec.DOUBLE.fieldOf("amount").forGetter(TimedAttributeEffect::amount),
-                ResistancePillEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(TimedAttributeEffect::operation),
+                TimedAttributeEffects.ATTRIBUTE_MODIFIER_OPERATION_CODEC.fieldOf("operation").forGetter(TimedAttributeEffect::operation),
                 Codec.LONG.fieldOf("expiresAt").forGetter(TimedAttributeEffect::expiresAt)
         ).apply(instance, TimedAttributeEffect::new));
     }
