@@ -58,6 +58,8 @@ public class Hazardous {
             forgeBus.addListener(ClientFxManager::onRenderOverlay);
             forgeBus.addListener(RadiationOverlayRenderer::onRender);
             forgeBus.addListener(SoundController::onClientTick);
+            forgeBus.addListener(SoundController::onPlaySound);
+            forgeBus.addListener(SoundController::onRightClickItem);
             forgeBus.addListener(ItemEmissionTooltipHandler::onItemTooltip);
         }
     }

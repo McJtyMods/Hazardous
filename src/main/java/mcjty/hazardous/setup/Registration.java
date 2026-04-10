@@ -48,6 +48,12 @@ public class Registration {
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "geiger.highdose")));
     public static final RegistryObject<SoundEvent> DOSIMETER_BEEP = SOUND_EVENTS.register("dosimeter.beep",
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "dosimeter.beep")));
+    public static final RegistryObject<SoundEvent> GASMASK_BREATHING = SOUND_EVENTS.register("gasmask.breathing",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "gasmask.breathing")));
+    public static final RegistryObject<SoundEvent> GASMASK_CHOKING = SOUND_EVENTS.register("gasmask.choking",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "gasmask.choking")));
+    public static final RegistryObject<SoundEvent> FILTER_REPLENISH = SOUND_EVENTS.register("filter.replenish",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "filter.replenish")));
     public static final RegistryObject<SoundEvent> PILLS_SHOW = SOUND_EVENTS.register("pills.show",
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "pills.show")));
     public static final RegistryObject<SoundEvent> PILLS_USE = SOUND_EVENTS.register("pills.use",

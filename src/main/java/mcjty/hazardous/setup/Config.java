@@ -49,6 +49,9 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_MEDIUM_DISTANCE;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_MAX_DISTANCE;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_SPEED;
+    public static ForgeConfigSpec.DoubleValue MASTER_SOUND_VOLUME;
+    public static ForgeConfigSpec.DoubleValue GASMASK_BREATHING_VOLUME;
+    public static ForgeConfigSpec.DoubleValue FILTER_REPLENISH_VOLUME;
     public static ForgeConfigSpec.ConfigValue<String> DOSIMETER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_HUD_SCALE;
     public static ForgeConfigSpec.IntValue DOSIMETER_HUD_OFFSET_X;
@@ -171,6 +174,15 @@ public class Config {
         DOSIMETER_ICON_SHAKE_SPEED = clientBuilder
                 .comment("Speed multiplier for dosimeter radiation icon shake animation")
                 .defineInRange("dosimeterIconShakeSpeed", 0.9, 0.1, 10.0);
+        MASTER_SOUND_VOLUME = clientBuilder
+                .comment("Master volume multiplier applied to all Hazardous client sounds. Set to 0 to disable them all")
+                .defineInRange("masterSoundVolume", 1.0, 0.0, 1.0);
+        GASMASK_BREATHING_VOLUME = clientBuilder
+                .comment("Volume multiplier for the looping gasmask breathing sound. Set to 0 to disable")
+                .defineInRange("gasmaskBreathingVolume", 0.5, 0.0, 1.0);
+        FILTER_REPLENISH_VOLUME = clientBuilder
+                .comment("Volume multiplier for the filter replenish sound. Set to 0 to disable")
+                .defineInRange("filterReplenishVolume", 0.7, 0.0, 1.0);
         DOSIMETER_HUD_ANCHOR = clientBuilder
                 .comment("HUD anchor: top_left, top_center, top_right, center_left, center_right, bottom_left, bottom_center, bottom_right")
                 .define("dosimeterHudAnchor", "top_right");
@@ -316,6 +328,22 @@ public class Config {
 
     public static GeigerHudAnchor getResistancePillsHudAnchor() {
         return GeigerHudAnchor.fromName(RESISTANCE_PILLS_HUD_ANCHOR.get());
+    }
+
+    public static float getClampedMasterSoundVolume() {
+        return clampSoundVolume(MASTER_SOUND_VOLUME.get());
+    }
+
+    public static float applyMasterSoundVolume(double baseVolume) {
+        return clampSoundVolume(getClampedMasterSoundVolume() * Math.max(0.0, baseVolume));
+    }
+
+    public static float applyMasterSoundVolume(ForgeConfigSpec.DoubleValue soundVolume) {
+        return applyMasterSoundVolume(soundVolume.get());
+    }
+
+    private static float clampSoundVolume(double value) {
+        return (float) Math.max(0.0, Math.min(1.0, value));
     }
 
     public enum GeigerHudAnchor {

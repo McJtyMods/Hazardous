@@ -2,6 +2,9 @@
   "geiger.mediumdose" : {"category": "misc", "sounds": ["hazardous:mediumdose"]},
   "geiger.highdose" : {"category": "misc", "sounds": ["hazardous:highdose"]},
   "dosimeter.beep" : {"category": "misc", "sounds": ["hazardous:mediumbeep"]},
+  "gasmask.breathing" : {"category": "misc", "sounds": ["hazardous:breathing_gasmask"]},
+  "gasmask.choking" : {"category": "misc", "sounds": ["hazardous:heavy_breathing_choking"]},
+  "filter.replenish" : {"category": "misc", "sounds": ["hazardous:filter_replenish"]},
   "pills.show" : {"category": "misc", "sounds": ["hazardous:pillsshow"]},
   "pills.use" : {"category": "misc", "sounds": ["hazardous:pillsuse"]}
 }

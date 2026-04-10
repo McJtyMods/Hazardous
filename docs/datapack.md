@@ -702,6 +702,7 @@ Behavior:
 - Protection amount is `gasmaskProtectionLevel` (0.0 to 1.0).
 - Each protection application consumes 1 durability.
 - At 0 durability it stays equipped but no longer protects.
+- While worn, plays `hazardous:gasmask.breathing` if durability is above 0 and `hazardous:gasmask.choking` if durability is 0. Loudness uses `gasmaskBreathingVolume` scaled by `masterSoundVolume`.
 
 Datapack armor tag:
 - Hazardous also checks the item tag `hazardous:protective_armor`.
@@ -731,6 +732,7 @@ Behavior:
 - Two supported usages:
 1. Right-click while wearing a damaged gas mask.
 2. Crafting grid with exactly one damaged gas mask plus one filter (custom recipe type `hazardous:gasmask_filter_refill`).
+- Right-click activation plays `hazardous:filter.replenish`, and it plays again when the equipped gas mask durability is actually restored. Loudness uses `filterReplenishVolume` scaled by `masterSoundVolume`.
 
 ### 4.3 Pills (`hazardous:pills`)
 
@@ -740,6 +742,8 @@ Behavior:
 - Removes `pillsDoseHeal` from each stored player dose entry whose hazard type resolves to that configured attribute.
 - If there is no dose to remove, nothing is consumed.
 - If the configured attribute id is empty, invalid, or unused by loaded hazard types, the item has no effect.
+- Successful use plays `hazardous:pills.use`, scaled by `masterSoundVolume`.
+- Selecting either pill item in the hotbar plays `hazardous:pills.show`, scaled by `masterSoundVolume`.
 
 ### 4.4 Anti-rad Pills (`hazardous:resistance_pills`)
 
@@ -750,6 +754,7 @@ Behavior:
 - Multiple uses stack by amount, and each consumed pill expires independently.
 - `resistancePillsMaxStacks` limits how many simultaneous stacks can be active for that configured attribute. `0` means unlimited.
 - If the configured attribute id is empty, invalid, or not attached to the player, using the item has no resistance effect.
+- Successful use plays `hazardous:pills.use`, scaled by `masterSoundVolume`.
 
 Typical usage:
 1. Point `resistancePillsAttribute` at a hazard resistance attribute such as `hazardous:radioactive_type_resistance`
@@ -771,7 +776,7 @@ Behavior:
 1. No sound below `geigerSoundMediumMinRadiation`
 2. `hazardous:geiger.mediumdose` loop at/above `geigerSoundMediumMinRadiation`
 3. `hazardous:geiger.highdose` loop at/above `geigerSoundHighMinRadiation`
-- Loop loudness is scaled by `geigerSoundVolume`.
+- Loop loudness is scaled by `geigerSoundVolume` and then by `masterSoundVolume`.
 - The needle adds animated jitter while radiation is present, controlled by `geigerNeedleJitterAngle` and `geigerNeedleJitterSpeed`.
 - Sound loops stop immediately when the Geiger HUD is no longer visible.
 
@@ -795,7 +800,7 @@ Behavior:
 2. Yellow/orange at/above `dosimeterMediumDose`
 3. Red at/above `dosimeterHighDose` (internally clamped to be at least `dosimeterMediumDose`)
 - Radiation icon shake starts at `dosimeterMediumDose`, using `dosimeterIconShakeMediumDistance`, and ramps up to `dosimeterIconShakeMaxDistance` by `dosimeterMaxDose`. Animation speed uses `dosimeterIconShakeSpeed`.
-- Plays a looped `hazardous:dosimeter.beep` sound while the HUD is visible and the displayed dose is at or above `dosimeterMediumDose`.
+- Plays a looped `hazardous:dosimeter.beep` sound while the HUD is visible and the displayed dose is at or above `dosimeterMediumDose`. Loudness is scaled by `masterSoundVolume`.
 - Position controlled by `dosimeterHudAnchor`, `dosimeterHudScale`, `dosimeterHudOffsetX`, `dosimeterHudOffsetY`.
 
 ### 4.7 Tooltip Feedback
@@ -826,7 +831,7 @@ Client config (`hazardous-client.toml`):
 - `geigerHighTresshold` (double `0.0..1000000.0`, default `66.6`; threshold where the pointer enters the red segment)
 - `geigerSoundMediumMinRadiation` (double `0.0..1000000.0`, default `1.0`; minimum radiation for the medium loop)
 - `geigerSoundHighMinRadiation` (double `0.0..1000000.0`, default `25.0`; minimum radiation for the high loop, clamped to be at least the medium threshold)
-- `geigerSoundVolume` (double `0.0..1.0`, default `0.8`; volume multiplier for geiger loops)
+- `geigerSoundVolume` (double `0.0..1.0`, default `0.8`; per-sound volume multiplier for geiger loops, additionally scaled by `masterSoundVolume`)
 - `geigerNeedleJitterAngle` (double `0.0..10.0`, default `1.8`; maximum jitter angle in degrees for the geiger needle)
 - `geigerNeedleJitterSpeed` (double `0.1..10.0`, default `1.1`; speed multiplier for geiger needle jitter animation)
 - `geigerHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
@@ -840,6 +845,9 @@ Client config (`hazardous-client.toml`):
 - `dosimeterIconShakeMediumDistance` (double `0.0..10.0`, default `0.35`; icon shake offset once medium dose is reached)
 - `dosimeterIconShakeMaxDistance` (double `0.0..10.0`, default `1.1`; icon shake offset once max dose is reached)
 - `dosimeterIconShakeSpeed` (double `0.1..10.0`, default `0.9`; speed multiplier for icon shake animation)
+- `masterSoundVolume` (double `0.0..1.0`, default `1.0`; master multiplier applied to all Hazardous client sounds, `0` disables them all)
+- `gasmaskBreathingVolume` (double `0.0..1.0`, default `0.5`; per-sound volume multiplier for both gasmask breathing and gasmask choking loops, additionally scaled by `masterSoundVolume`)
+- `filterReplenishVolume` (double `0.0..1.0`, default `0.7`; per-sound volume multiplier for the filter replenish sound, additionally scaled by `masterSoundVolume`)
 - `dosimeterHudAnchor` (string: `top_left`, `top_center`, `top_right`, `center_left`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`; default `top_right`)
 - `dosimeterHudScale` (double `0.1..10.0`, default `1.0`)
 - `dosimeterHudOffsetX` (int `-5000..5000`, default `8`)
@@ -886,6 +894,9 @@ dosimeterHighDose = 6.0
 dosimeterIconShakeMediumDistance = 0.35
 dosimeterIconShakeMaxDistance = 1.1
 dosimeterIconShakeSpeed = 0.9
+masterSoundVolume = 1.0
+gasmaskBreathingVolume = 0.5
+filterReplenishVolume = 0.7
 dosimeterHudAnchor = "top_right"
 dosimeterHudScale = 1.0
 dosimeterHudOffsetX = 8
