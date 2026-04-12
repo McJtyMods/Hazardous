@@ -9,6 +9,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
@@ -74,7 +75,6 @@ public class SoundController {
             return;
         }
 
-        playLocalSound(player, Registration.FILTER_REPLENISH.get(), getFilterReplenishVolume(), 1.0f);
         filterRepairPending = true;
         filterRepairTimeout = 10;
     }
@@ -93,6 +93,10 @@ public class SoundController {
         float masterVolume = Config.getClampedMasterSoundVolume();
         if (masterVolume <= 0.0f) {
             event.setSound(null);
+            return;
+        }
+
+        if (sound instanceof TickableSoundInstance) {
             return;
         }
 
@@ -310,7 +314,7 @@ public class SoundController {
     }
 
     private static float getGasmaskBreathingVolume() {
-        return (float) Math.max(0.0, Math.min(1.0, Config.GASMASK_BREATHING_VOLUME.get()));
+        return applyMasterVolume((float) Math.max(0.0, Math.min(1.0, Config.GASMASK_BREATHING_VOLUME.get())));
     }
 
     private static float getFilterReplenishVolume() {
@@ -318,11 +322,11 @@ public class SoundController {
     }
 
     private static float getGeigerVolume() {
-        return (float) Math.max(0.0, Math.min(1.0, Config.GEIGER_SOUND_VOLUME.get()));
+        return applyMasterVolume((float) Math.max(0.0, Math.min(1.0, Config.GEIGER_SOUND_VOLUME.get())));
     }
 
     private static float getDosimeterVolume() {
-        return 1.0f;
+        return applyMasterVolume(1.0f);
     }
 
     private static float getPillsShowVolume() {
@@ -357,6 +361,10 @@ public class SoundController {
                 pitch,
                 false
         );
+    }
+
+    private static float applyMasterVolume(float volume) {
+        return volume * Config.getClampedMasterSoundVolume();
     }
 
     private enum SoundLevel {
