@@ -46,6 +46,7 @@ public class Hazardous {
         forgeBus.addListener(EventHandlers::registerCapabilities);
         forgeBus.addGenericListener(Entity.class, EventHandlers::onEntityConstructing);
         forgeBus.addListener(EventHandlers::onPlayerCloned);
+        forgeBus.addListener(EventHandlers::onPlayerLoggedOut);
         forgeBus.addListener(EventHandlers::onPlayerTickEvent);
         forgeBus.addListener(EventHandlers::commandRegister);
 

@@ -29,8 +29,11 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class EventHandlers {
+
+    private static final Map<HazardTickKey, Long> LAST_HAZARD_APPLICATION_TIMES = new HashMap<>();
 
     public static void commandRegister(RegisterCommandsEvent event) {
         mcjty.hazardous.commands.ModCommands.register(event.getDispatcher());
@@ -60,16 +63,26 @@ public class EventHandlers {
         }
     }
 
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        UUID playerId = event.getEntity().getUUID();
+        LAST_HAZARD_APPLICATION_TIMES.keySet().removeIf(key -> key.playerId().equals(playerId));
+    }
+
     public static void onPlayerTickEvent(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.START || event.player.level().isClientSide) {
             return;
         }
         Level level = event.player.level();
+        long gameTime = level.getGameTime();
+        int workInterval = Math.max(1, Config.PLAYER_TICK_WORK_INTERVAL.get());
+        if (gameTime % workInterval != 0) {
+            return;
+        }
+
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
         Registry<EffectEntry> effectEntries = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.EFFECT_ENTRY_REGISTRY_KEY);
 
         PlayerHazardDataDispatcher.getPlayerHazardData(event.player).ifPresent(store -> {
-            long gameTime = level.getGameTime();
             boolean hadTrackedPills = !store.getResistancePillAttributeIds().isEmpty();
             TimedAttributeEffects.syncPlayer(event.player, store, gameTime);
             Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
@@ -80,11 +93,17 @@ public class EventHandlers {
                 if (typeId == null || !Config.isHazardTypeEnabled(typeId)) {
                     continue;
                 }
-                int intervalTicks = type.exposure().applyIntervalTicks();
-                if (intervalTicks > 0 && gameTime % intervalTicks != 0) {
-                    // Skip dose and effect handling this tick for this hazard type
-                    continue;
+                int intervalTicks = Math.max(1, type.exposure().applyIntervalTicks());
+                HazardTickKey tickKey = new HazardTickKey(event.player.getUUID(), typeId);
+                Long lastApplicationTime = LAST_HAZARD_APPLICATION_TIMES.get(tickKey);
+                if (lastApplicationTime != null) {
+                    long elapsed = gameTime - lastApplicationTime;
+                    if (elapsed < intervalTicks) {
+                        // Skip dose and effect handling this tick for this hazard type
+                        continue;
+                    }
                 }
+                LAST_HAZARD_APPLICATION_TIMES.put(tickKey, gameTime);
 
                 clientNeedsUpdate = true;
 
@@ -126,5 +145,8 @@ public class EventHandlers {
                 Messages.sendToPlayer(new PacketResistancePillStatus(pillStatuses), event.player);
             }
         });
+    }
+
+    private record HazardTickKey(UUID playerId, ResourceLocation typeId) {
     }
 }
