@@ -1,2 +1,10 @@
+1.20-0.0.2:
+- Added a server-side playerTickWorkInterval config option to reduce expensive per-player hazard calculations.
+- Hazard apply intervals are now tracked per player and hazard type, so skipped worker ticks do not break exposure timing.
+- Cleared cached player hazard tick state on logout.
+- Improved point hazard line-of-sight handling, including block sources that should not block themselves.
+- Absorption-based point hazards now use absorption tracing instead of treating solid blocks as all-or-nothing line-of-sight blockers.
+- Updated datapack documentation for playerTickWorkInterval and point hazard blocking/absorption behavior.
+
 1.20-0.0.1:
 - Initial creation of Hazardous mod
