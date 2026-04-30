@@ -169,18 +169,57 @@ public class HazardManager {
             return raw;
         }
 
-        private boolean hasLineOfSight(Level level, double sx, double sy, double sz, double ex, double ey, double ez) {
+        private boolean hasLineOfSight(Level level, double sx, double sy, double sz, double ex, double ey, double ez, @Nullable BlockPos ignoredSourceBlock) {
             Vec3 start = new Vec3(sx, sy, sz);
             Vec3 end = new Vec3(ex, ey, ez);
+            if (ignoredSourceBlock != null
+                    && Mth.floor(sx) == ignoredSourceBlock.getX()
+                    && Mth.floor(sy) == ignoredSourceBlock.getY()
+                    && Mth.floor(sz) == ignoredSourceBlock.getZ()) {
+                start = movePastSourceBlock(start, end, ignoredSourceBlock);
+            }
             return level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getType() == HitResult.Type.MISS;
         }
 
+        private Vec3 movePastSourceBlock(Vec3 start, Vec3 end, BlockPos sourceBlock) {
+            double dx = end.x - start.x;
+            double dy = end.y - start.y;
+            double dz = end.z - start.z;
+            if (dx == 0.0 && dy == 0.0 && dz == 0.0) {
+                return start;
+            }
+
+            double exitT = 1.0;
+            if (dx > 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getX() + 1.0 - start.x) / dx);
+            } else if (dx < 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getX() - start.x) / dx);
+            }
+            if (dy > 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getY() + 1.0 - start.y) / dy);
+            } else if (dy < 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getY() - start.y) / dy);
+            }
+            if (dz > 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getZ() + 1.0 - start.z) / dz);
+            } else if (dz < 0.0) {
+                exitT = Math.min(exitT, (sourceBlock.getZ() - start.z) / dz);
+            }
+
+            double t = Mth.clamp(exitT + 1.0e-7, 0.0, 1.0);
+            return new Vec3(start.x + dx * t, start.y + dy * t, start.z + dz * t);
+        }
+
         private double applyPointBlocking(HazardType type, Level level, HazardSource.Transmission.Point transmission, double sourceX, double sourceY, double sourceZ, double rawIntensity) {
+            return applyPointBlocking(type, level, transmission, sourceX, sourceY, sourceZ, rawIntensity, null);
+        }
+
+        private double applyPointBlocking(HazardType type, Level level, HazardSource.Transmission.Point transmission, double sourceX, double sourceY, double sourceZ, double rawIntensity, @Nullable BlockPos ignoredSourceBlock) {
             if (rawIntensity <= MIN_EFFECTIVE_RADIATION) {
                 return 0.0;
             }
-            boolean bodyVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ);
-            boolean headVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ);
+            boolean bodyVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, ignoredSourceBlock);
+            boolean headVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, ignoredSourceBlock);
             if (!bodyVisible && !headVisible) {
                 return 0.0;
             }
@@ -607,7 +646,7 @@ public class HazardManager {
                                 if (raw <= 0.0) {
                                     continue;
                                 }
-                                double contributed = applyPointBlocking(type, level, t, x, y, z, raw);
+                                double contributed = applyPointBlocking(type, level, t, x, y, z, raw, mutable.immutable());
                                 if (contributed > MIN_EFFECTIVE_RADIATION) {
                                     sum += contributed;
                                 }
