@@ -218,18 +218,18 @@ public class HazardManager {
             if (rawIntensity <= MIN_EFFECTIVE_RADIATION) {
                 return 0.0;
             }
-            boolean bodyVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, ignoredSourceBlock);
-            boolean headVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, ignoredSourceBlock);
-            if (!bodyVisible && !headVisible) {
-                return 0.0;
-            }
             if (!(type.blocking() instanceof HazardType.Blocking.Absorption absorption)) {
+                boolean bodyVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, ignoredSourceBlock);
+                boolean headVisible = !transmission.requiresLineOfSight() || hasLineOfSight(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, ignoredSourceBlock);
+                if (!bodyVisible && !headVisible) {
+                    return 0.0;
+                }
                 return rawIntensity;
             }
             AbsorptionModel model = getAbsorptionModel(absorption);
             double cutoffFactor = MIN_EFFECTIVE_RADIATION / rawIntensity;
-            double bodyFactor = bodyVisible ? model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, cutoffFactor) : 0.0;
-            double headFactor = headVisible ? model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, cutoffFactor) : 0.0;
+            double bodyFactor = model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetBodyY, targetZ, cutoffFactor);
+            double headFactor = model.lineFactor(level, sourceX, sourceY, sourceZ, targetX, targetHeadY, targetZ, cutoffFactor);
             double bestFactor = Math.max(bodyFactor, headFactor);
             if (bestFactor <= 0.0) {
                 return 0.0;

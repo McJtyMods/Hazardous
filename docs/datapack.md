@@ -106,8 +106,8 @@ Top-level fields:
 Known runtime behavior:
 - `blocking.type = absorption` is applied for `transmission = sky` and `transmission = point`.
 - Sky absorption traces vertically from world top to player.
-- Point absorption traces from source to player body/head and applies multiplicative attenuation.
-- `hazardsource.transmission.point.requiresLineOfSight` is enforced in runtime hazard calculations. A point source only contributes when it has an unobstructed path to the player's body or head.
+- Point absorption traces from source to player body/head and applies multiplicative attenuation. Multiple absorbing blocks on the same path stack multiplicatively.
+- `hazardsource.transmission.point.requiresLineOfSight` is enforced for non-absorption point hazards. Absorption point hazards use their absorption ray instead, so solid absorbing blocks reduce exposure instead of acting as an all-or-nothing collider stop.
 - `absorptionRegistryHint` is currently required by the JSON format, but current Hazardous runtime logic does not use it for calculations. Treat it as metadata for the absorption setup rather than a gameplay control.
 
 ### 1.2 Exposure
@@ -207,7 +207,7 @@ Transmission variants:
 - `requiresLineOfSight` (boolean)
 - `airAttenuationPerBlock` (double)
 - valid with associations: `locations`, `entity_type`, `block`, `item`, `city`
-- runtime note: when `requiresLineOfSight = true`, the source must have an unobstructed line to the player's body or head
+- runtime note: when `requiresLineOfSight = true`, non-absorption point hazards must have an unobstructed line to the player's body or head. Absorption point hazards still trace through blocks and apply the configured absorption values.
 
 `contact`
 - `type: "contact"`
