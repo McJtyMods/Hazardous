@@ -4,6 +4,7 @@
 - Cleared cached player hazard tick state on logout.
 - Improved point hazard line-of-sight handling, including block sources that should not block themselves.
 - Absorption-based point hazards now use absorption tracing instead of treating solid blocks as all-or-nothing line-of-sight blockers.
+- Avoided loading chunks while checking hazard block sources and blockers; unloaded chunks now use conservative defaults.
 - Updated datapack documentation for playerTickWorkInterval and point hazard blocking/absorption behavior.
 
 1.20-0.0.1:

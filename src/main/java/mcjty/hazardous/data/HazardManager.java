@@ -129,6 +129,10 @@ public class HazardManager {
         return Mth.clamp(value, 0.0, 1.0);
     }
 
+    private static boolean isChunkLoaded(Level level, BlockPos pos) {
+        return level.hasChunkAt(pos);
+    }
+
     private static class PlayerTickVisitor implements HazardSource.Association.Visitor<Double> {
         private final Player player;
         private final double targetX;
@@ -178,7 +182,70 @@ public class HazardManager {
                     && Mth.floor(sz) == ignoredSourceBlock.getZ()) {
                 start = movePastSourceBlock(start, end, ignoredSourceBlock);
             }
+            if (!areTraceChunksLoaded(level, start.x, start.y, start.z, end.x, end.y, end.z)) {
+                return false;
+            }
             return level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getType() == HitResult.Type.MISS;
+        }
+
+        private boolean areTraceChunksLoaded(Level level, double sx, double sy, double sz, double ex, double ey, double ez) {
+            int x = Mth.floor(sx);
+            int y = Mth.floor(sy);
+            int z = Mth.floor(sz);
+            int endX = Mth.floor(ex);
+            int endY = Mth.floor(ey);
+            int endZ = Mth.floor(ez);
+
+            BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+            mutable.set(x, y, z);
+            if (!isChunkLoaded(level, mutable)) {
+                return false;
+            }
+            if (x == endX && y == endY && z == endZ) {
+                return true;
+            }
+
+            double dx = ex - sx;
+            double dy = ey - sy;
+            double dz = ez - sz;
+
+            int stepX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+            int stepY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+            int stepZ = dz > 0 ? 1 : (dz < 0 ? -1 : 0);
+
+            double tDeltaX = stepX == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dx);
+            double tDeltaY = stepY == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dy);
+            double tDeltaZ = stepZ == 0 ? Double.POSITIVE_INFINITY : 1.0 / Math.abs(dz);
+
+            double tMaxX = stepX == 0 ? Double.POSITIVE_INFINITY
+                    : (stepX > 0 ? (x + 1.0 - sx) : (sx - x)) * tDeltaX;
+            double tMaxY = stepY == 0 ? Double.POSITIVE_INFINITY
+                    : (stepY > 0 ? (y + 1.0 - sy) : (sy - y)) * tDeltaY;
+            double tMaxZ = stepZ == 0 ? Double.POSITIVE_INFINITY
+                    : (stepZ > 0 ? (z + 1.0 - sz) : (sz - z)) * tDeltaZ;
+
+            int maxSteps = 1 + Math.abs(endX - x) + Math.abs(endY - y) + Math.abs(endZ - z);
+            for (int i = 0; i <= maxSteps; i++) {
+                if (x == endX && y == endY && z == endZ) {
+                    return true;
+                }
+                if (tMaxX <= tMaxY && tMaxX <= tMaxZ) {
+                    x += stepX;
+                    tMaxX += tDeltaX;
+                } else if (tMaxY <= tMaxZ) {
+                    y += stepY;
+                    tMaxY += tDeltaY;
+                } else {
+                    z += stepZ;
+                    tMaxZ += tDeltaZ;
+                }
+                mutable.set(x, y, z);
+                if (!isChunkLoaded(level, mutable)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private Vec3 movePastSourceBlock(Vec3 start, Vec3 end, BlockPos sourceBlock) {
@@ -387,6 +454,9 @@ public class HazardManager {
                 public Double point(HazardType type, HazardSource.Transmission.Point t) {
                     double sum = 0.0;
                     for (BlockPos p : a.positions()) {
+                        if (!isChunkLoaded(level, p)) {
+                            continue;
+                        }
                         double x = p.getX() + 0.5;
                         double y = p.getY() + 0.5;
                         double z = p.getZ() + 0.5;
@@ -538,7 +608,12 @@ public class HazardManager {
                 }
                 double sourceY = targetBodyY;
                 double sum = 0.0;
+                BlockPos.MutableBlockPos sourcePos = new BlockPos.MutableBlockPos();
                 for (LostCityCompat.CitySource source : LostCityCompat.findCitySources(level, pos, a.style(), a.buildings(), a.multibuildings(), maxDistance)) {
+                    sourcePos.set(Mth.floor(source.centerX()), Mth.floor(sourceY), Mth.floor(source.centerZ()));
+                    if (!isChunkLoaded(level, sourcePos)) {
+                        continue;
+                    }
                     double dx = targetX - source.centerX();
                     double dz = targetZ - source.centerZ();
                     double d = Math.sqrt(dx * dx + dz * dz);
@@ -631,6 +706,9 @@ public class HazardManager {
                                     continue;
                                 }
                                 mutable.set(center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                                if (!isChunkLoaded(level, mutable)) {
+                                    continue;
+                                }
                                 BlockState state = level.getBlockState(mutable);
                                 if (!matches(state)) {
                                     continue;
@@ -666,6 +744,9 @@ public class HazardManager {
                     int maxY = (int) Math.floor(bounds.maxY);
                     int maxZ = (int) Math.floor(bounds.maxZ);
                     for (BlockPos pos : BlockPos.betweenClosed(minX, minY, minZ, maxX, maxY, maxZ)) {
+                        if (!isChunkLoaded(level, pos)) {
+                            continue;
+                        }
                         if (matches(level.getBlockState(pos))) {
                             return Math.max(0.0, t.baseIntensity());
                         }
@@ -752,6 +833,9 @@ public class HazardManager {
             double factor = 1.0;
             for (int y = startY; y > endY; y--) {
                 mutable.set(x, y, z);
+                if (!isChunkLoaded(level, mutable)) {
+                    return 0.0;
+                }
                 double absorption = getAbsorption(level.getBlockState(mutable));
                 if (absorption <= 0.0) {
                     continue;
@@ -806,6 +890,9 @@ public class HazardManager {
             for (int i = 0; i <= maxSteps; i++) {
                 if (processCurrent && !(x == endX && y == endY && z == endZ)) {
                     mutable.set(x, y, z);
+                    if (!isChunkLoaded(level, mutable)) {
+                        return 0.0;
+                    }
                     double absorption = getAbsorption(level.getBlockState(mutable));
                     if (absorption > 0.0) {
                         factor *= (1.0 - absorption);
