@@ -8,10 +8,13 @@ import mcjty.hazardous.setup.Config;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +25,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -130,7 +134,15 @@ public class HazardManager {
     }
 
     private static boolean isChunkLoaded(Level level, BlockPos pos) {
-        return level.hasChunkAt(pos);
+        if (level instanceof ServerLevel serverLevel) {
+            ServerChunkCache chunkSource = serverLevel.getChunkSource();
+            int x = SectionPos.blockToSectionCoord(pos.getX());
+            int z = SectionPos.blockToSectionCoord(pos.getZ());
+
+            if (chunkSource.mainThread != Thread.currentThread()) return chunkSource.hasChunk(x, z);
+            return chunkSource.getChunkFutureMainThread(x, z, ChunkStatus.FULL, false).isDone();
+        }
+        return level.isLoaded(pos);
     }
 
     private static class PlayerTickVisitor implements HazardSource.Association.Visitor<Double> {
