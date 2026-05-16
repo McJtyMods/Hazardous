@@ -1,3 +1,6 @@
+1.20-0.0.3:
+- Fixed a performance problem with checking if a chunk is loaded. Thanks to Bawnorton for the fix
+
 1.20-0.0.2:
 - Added a server-side playerTickWorkInterval config option to reduce expensive per-player hazard calculations.
 - Hazard apply intervals are now tracked per player and hazard type, so skipped worker ticks do not break exposure timing.
