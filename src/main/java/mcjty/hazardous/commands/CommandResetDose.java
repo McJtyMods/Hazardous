@@ -40,9 +40,9 @@ public class CommandResetDose {
             store.clear();
         });
         if (source.getEntity() == player) {
-            source.sendSuccess(() -> Component.literal("Hazard dose reset."), false);
+            source.sendSuccess(() -> Component.translatable("command.hazardous.resetdose.global"), false);
         } else {
-            source.sendSuccess(() -> Component.literal("Hazard dose reset for " + player.getGameProfile().getName() + "."), false);
+            source.sendSuccess(() -> Component.translatable("command.hazardous.resetdose.player", player.getGameProfile().getName()), false);
         }
     }
 }

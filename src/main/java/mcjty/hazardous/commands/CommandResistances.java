@@ -36,7 +36,7 @@ public class CommandResistances implements Command<CommandSourceStack> {
         Level level = player.level();
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
 
-        source.sendSuccess(() -> Component.literal("Player resistance attributes:"), false);
+        source.sendSuccess(() -> Component.translatable("command.hazardous.resistances.attributes"), false);
 
         for (HazardType type : types) {
             ResourceLocation hazardTypeId = types.getKey(type);

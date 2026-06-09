@@ -35,7 +35,7 @@ public class CommandDose implements Command<CommandSourceStack> {
         Level level = player.level();
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
 
-        source.sendSuccess(() -> Component.literal("Accumulated hazard dose for you:"), false);
+        source.sendSuccess(() -> Component.translatable("command.hazardous.dose.accumulate"), false);
 
         var opt = PlayerHazardDataDispatcher.getPlayerHazardData(player);
         if (opt.isPresent()) {
@@ -49,7 +49,7 @@ public class CommandDose implements Command<CommandSourceStack> {
                 }
             });
         } else {
-            source.sendFailure(Component.literal("No dose data available"));
+            source.sendFailure(Component.translatable("command.hazardous.dose.failure"));
         }
 
         return 0;

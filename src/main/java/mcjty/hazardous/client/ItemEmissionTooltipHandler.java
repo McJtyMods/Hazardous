@@ -33,7 +33,7 @@ public class ItemEmissionTooltipHandler {
                 Messages.sendToServer(new PacketRequestItemEmissions(stack));
             }
             if (ClientItemEmissionData.isPending(stack)) {
-                event.getToolTip().add(Component.literal("Checking carried emissions...")
+                event.getToolTip().add(Component.translatable("message.hazardous.emission.checking")
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
             return;
@@ -43,7 +43,7 @@ public class ItemEmissionTooltipHandler {
         }
 
         List<Component> tooltip = event.getToolTip();
-        tooltip.add(Component.literal("Emissions when carried:").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.translatable("message.hazardous.emission.carried").withStyle(ChatFormatting.YELLOW));
         for (HazardManager.TooltipEmission emission : emissions) {
             tooltip.add(Component.literal(String.format(Locale.ROOT, "  %s: %.2f",
                             TooltipNameHelper.getHazardTypeName(emission.hazardTypeId()),
@@ -60,12 +60,12 @@ public class ItemEmissionTooltipHandler {
             return;
         }
 
-        tooltip.add(Component.literal("Hazard protection when worn:").withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("  Protects: " + TooltipNameHelper.getHazardTypeName(Config.getGasmaskProtectedType().orElse(null)))
+        tooltip.add(Component.translatable("message.hazardous.protection.worn").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.translatable("message.hazardous.protection.type", TooltipNameHelper.getHazardTypeName(Config.getGasmaskProtectedType().orElse(null)))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal(String.format(Locale.ROOT, "  Protection: %.0f%%", Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0) * 100.0))
+        tooltip.add(Component.literal(String.format(Locale.ROOT, Component.translatable("message.hazardous.protection.level").getString(), Mth.clamp(Config.GASMASK_PROTECTION_LEVEL.get(), 0.0, 1.0) * 100.0))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Uses 1 durability per protection application")
+        tooltip.add(Component.translatable("message.hazardous.protection.durability")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

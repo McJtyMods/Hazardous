@@ -64,6 +64,34 @@ public class DataGenerators {
                         .message("itemGroup." + Hazardous.MODID, "Hazardous"),
                 Dob.builder()
                         .message("hazardous.datapack.hazardtype.resistance_attribute", "Resistance Attribute"),
+                Dob.builder()
+                        .message("message.hazardous.emission.checking", "Checking carried emissions..."),
+                Dob.builder()
+                        .message("message.hazardous.emission.carried", "Emissions when carried:"),
+                Dob.builder()
+                        .message("message.hazardous.protection.worn", "Hazard protection when worn:"),
+                Dob.builder()
+                        .message("message.hazardous.protection.type", "Protects: %s"),
+                Dob.builder()
+                        .message("message.hazardous.protection.level", "Protection: %.0f%%"),
+                Dob.builder()
+                        .message("message.hazardous.protection.durability", "Uses 1 durability per protection application"),
+                Dob.builder()
+                        .message("command.hazardous.dose.accumulate", "Accumulated hazard dose for you:"),
+                Dob.builder()
+                        .message("command.hazardous.dose.failure", "No dose data available"),
+                Dob.builder()
+                        .message("command.hazardous.radiationhere.header", "Hazard radiation at your position:"),
+                Dob.builder()
+                        .message("command.hazardous.resetdose.global", "Hazard dose reset."),
+                Dob.builder()
+                        .message("command.hazardous.resetdose.player", "Hazard dose reset for %s."),
+                Dob.builder()
+                        .message("command.hazardous.resetresistances.global", "Hazard resistances reset."),
+                Dob.builder()
+                        .message("command.hazardous.resetresistances.player", "Hazard resistances reset for %s."),
+                Dob.builder()
+                        .message("command.hazardous.resistances.attributes", "Player resistance attributes:"),
                 Dob.itemBuilder(Registration.GEIGER_COUNTER)
                         .name("Geiger Counter")
                         .generatedItem("item/geigercounter")

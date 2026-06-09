@@ -71,9 +71,9 @@ public class CommandResetResistances {
         }
 
         if (source.getEntity() == player) {
-            source.sendSuccess(() -> Component.literal("Hazard resistances reset."), false);
+            source.sendSuccess(() -> Component.translatable("command.hazardous.resetresistances.global"), false);
         } else {
-            source.sendSuccess(() -> Component.literal("Hazard resistances reset for " + player.getGameProfile().getName() + "."), false);
+            source.sendSuccess(() -> Component.translatable("command.hazardous.resetresistances.player", player.getGameProfile().getName()), false);
         }
     }
 

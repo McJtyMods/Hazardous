@@ -35,7 +35,7 @@ public class CommandRadiationHere implements Command<CommandSourceStack> {
         Level level = player.level();
         Registry<HazardType> types = Tools.getRegistryAccess(level).registryOrThrow(CustomRegistries.HAZARD_TYPE_REGISTRY_KEY);
 
-        source.sendSuccess(() -> Component.literal("Hazard radiation at your position:"), false);
+        source.sendSuccess(() -> Component.translatable("command.hazardous.radiationhere.header"), false);
 
         for (HazardType type : types) {
             ResourceLocation id = types.getKey(type);
