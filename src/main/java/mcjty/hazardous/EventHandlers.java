@@ -86,6 +86,13 @@ public class EventHandlers {
             boolean hadTrackedPills = !store.getResistancePillAttributeIds().isEmpty();
             TimedAttributeEffects.syncPlayer(event.player, store, gameTime);
             Map<ResourceLocation, PlayerHazardData.ResistancePillStatus> pillStatuses = store.getActiveResistancePillStatuses(gameTime);
+            if (isHazardImmune(event.player)) {
+                Messages.sendToPlayer(new PacketRadiationAtPos(Map.of()), event.player);
+                if (hadTrackedPills || !pillStatuses.isEmpty()) {
+                    Messages.sendToPlayer(new PacketResistancePillStatus(pillStatuses), event.player);
+                }
+                return;
+            }
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {
@@ -145,6 +152,10 @@ public class EventHandlers {
                 Messages.sendToPlayer(new PacketResistancePillStatus(pillStatuses), event.player);
             }
         });
+    }
+
+    private static boolean isHazardImmune(Player player) {
+        return player.isCreative() || player.isSpectator();
     }
 
     private record HazardTickKey(UUID playerId, ResourceLocation typeId) {

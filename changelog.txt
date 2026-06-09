@@ -1,3 +1,9 @@
+1.20-0.0.4:
+- Gasmasks with Unbreaking now use the enchantment to reduce durability consumption while protecting against hazards.
+- Creative and spectator players are now treated as hazard immune, avoiding dose/effect processing while keeping relevant client status in sync.
+- Added full localization support and Chinese (Simplified) translations. Thanks to TexBlock for the contribution.
+- Updated datapack documentation for gasmask and protective armor durability wear behavior.
+
 1.20-0.0.3:
 - Fixed a performance problem with checking if a chunk is loaded. Thanks to Bawnorton for the fix
 

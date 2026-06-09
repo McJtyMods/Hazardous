@@ -8,6 +8,7 @@ import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -71,7 +72,7 @@ public class GasmaskItem extends ArmorItem {
 
         Optional<ItemStack> gasmask = findEquippedGasmask(player, stack -> getRemainingDurability(stack) > 0);
         if (gasmask.isPresent()) {
-            damageByOne(gasmask.get());
+            damageByOne(gasmask.get(), player);
             return input * (1.0 - protectionLevel);
         }
 
@@ -137,7 +138,7 @@ public class GasmaskItem extends ArmorItem {
         return Optional.empty();
     }
 
-    private static void damageByOne(ItemStack stack) {
+    private static void damageByOne(ItemStack stack, Player player) {
         if (!stack.isDamageableItem()) {
             return;
         }
@@ -146,7 +147,10 @@ public class GasmaskItem extends ArmorItem {
         if (damage >= maxDamage) {
             return;
         }
-        stack.setDamageValue(Math.min(maxDamage, damage + 1));
+        stack.hurt(1, player.getRandom(), player instanceof ServerPlayer serverPlayer ? serverPlayer : null);
+        if (stack.getDamageValue() > maxDamage) {
+            stack.setDamageValue(maxDamage);
+        }
     }
 
     private static void damageArmorByOne(Player player, EquipmentSlot slot, ItemStack stack) {

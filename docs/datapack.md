@@ -700,7 +700,7 @@ Behavior:
 - Must be worn in the armor helmet slot or in the Curios `head` slot.
 - Only protects one configured hazard type id (`gasmaskProtectedType`).
 - Protection amount is `gasmaskProtectionLevel` (0.0 to 1.0).
-- Each protection application consumes 1 durability.
+- Each protection application attempts to consume 1 durability; Unbreaking can prevent the wear.
 - At 0 durability it stays equipped but no longer protects.
 - While worn, plays `hazardous:gasmask.breathing` if durability is above 0 and `hazardous:gasmask.choking` if durability is 0. Loudness uses `gasmaskBreathingVolume` scaled by `masterSoundVolume`.
 
@@ -708,7 +708,7 @@ Datapack armor tag:
 - Hazardous also checks the item tag `hazardous:protective_armor`.
 - If a damageable armor item with that tag is equipped in its normal armor slot (`head`, `chest`, `legs`, or `feet`), it can provide the same protection as the gas mask.
 - Tagged armor uses the same `gasmaskProtectedType` and `gasmaskProtectionLevel` config values as the gas mask.
-- Each protection application consumes 1 normal armor durability and can break the armor item.
+- Each protection application attempts to consume 1 normal armor durability and can break the armor item.
 - If both a usable gas mask and tagged armor are equipped, the gas mask is used first.
 
 Example datapack tag file:
