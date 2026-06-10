@@ -97,7 +97,7 @@ public class GasmaskItem extends ArmorItem {
         if (!ModList.get().isLoaded("curios")) {
             return Optional.empty();
         }
-        return CuriosCompat.findFirstHeadCurio(player, Registration.GASMASK.get())
+        return CuriosCompat.findFirstHeadOrFaceCurio(player, Registration.GASMASK.get())
                 .filter(predicate);
     }
 

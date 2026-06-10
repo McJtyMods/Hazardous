@@ -9,7 +9,7 @@ For modpack developers, the main value is flexibility:
 - player-facing tools like the gas mask, Geiger counter, dosimeter, pills, and anti-rad pills can be retargeted through config
 
 Optional integrations:
-- Curios: gas masks work in the `head` Curios slot, and the Geiger counter and dosimeter can also be equipped as Curios
+- Curios: gas masks work in the `head` and `faceslot` Curios slots, and the Geiger counter and dosimeter can also be equipped as Curios
 - Lost Cities: hazard sources can target cities, city styles, buildings, and multibuildings
 
 Included gameplay items:
@@ -697,7 +697,7 @@ This section documents item behavior and practical use. Crafting recipes are int
 ### 4.1 Gas Mask (`hazardous:gasmask`)
 
 Behavior:
-- Must be worn in the armor helmet slot or in the Curios `head` slot.
+- Must be worn in the armor helmet slot or in the Curios `head` or `faceslot` slots.
 - Only protects one configured hazard type id (`gasmaskProtectedType`).
 - Protection amount is `gasmaskProtectionLevel` (0.0 to 1.0).
 - Each protection application attempts to consume 1 durability; Unbreaking can prevent the wear.
@@ -859,7 +859,7 @@ Client config (`hazardous-client.toml`):
 - `resistancePillsHudScale` (double `0.1..10.0`, default `1.0`)
 - `resistancePillsHudOffsetX` (int `-5000..5000`, default `8`)
 - `resistancePillsHudOffsetY` (int `-5000..5000`, default `8`)
-- `curiosHeadOverrideHelmetRender` (boolean, default `true`; when Curios is installed, a visible head curio with its own renderer can hide the normal helmet armor render)
+- `curiosHeadOverrideHelmetRender` (boolean, default `true`; when Curios is installed, a visible head or faceslot curio with its own renderer can hide the normal helmet armor render)
 
 Example:
 

@@ -15,7 +15,7 @@ public class CuriosHelmetRenderOverride {
         if (slot != EquipmentSlot.HEAD || !Config.CURIOS_HEAD_OVERRIDE_HELMET_RENDER.get() || !ModList.get().isLoaded("curios")) {
             return false;
         }
-        return CuriosCompat.findFirstHeadCurio(livingEntity, CuriosHelmetRenderOverride::shouldOverrideHelmetRender)
+        return CuriosCompat.findFirstHeadOrFaceCurio(livingEntity, CuriosHelmetRenderOverride::shouldOverrideHelmetRender)
                 .filter(slotResult -> slotResult.slotContext().visible())
                 .isPresent();
     }

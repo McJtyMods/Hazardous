@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class DataGenerators {
 
     private static final TagKey<Item> CURIO_TAG = TagKey.create(Registries.ITEM, new ResourceLocation("curios", "curio"));
+    private static final TagKey<Item> CURIOS_HEAD_TAG = TagKey.create(Registries.ITEM, new ResourceLocation("curios", "head"));
+    private static final TagKey<Item> CURIOS_FACESLOT_TAG = TagKey.create(Registries.ITEM, new ResourceLocation("curios", "faceslot"));
 
     public static void datagen(DataGen dataGen) {
         dataGen.addCodecProvider("hazardtypes", Hazardous.MODID + "/hazardtypes", HazardType.CODEC);
@@ -164,7 +166,7 @@ public class DataGenerators {
                                 .pattern("iii")
                                 .unlockedBy("has_filter", InventoryChangeTrigger.TriggerInstance.hasItems(Registration.FILTER.get()))
                                 .save(consumer))
-                        .itemTags(List.of(CURIO_TAG)),
+                        .itemTags(List.of(CURIO_TAG, CURIOS_HEAD_TAG, CURIOS_FACESLOT_TAG)),
                 Dob.itemBuilder(Registration.PILLS)
                         .name("Pills")
                         .generatedItem("item/pills")
