@@ -818,6 +818,7 @@ Server config (`hazardous-server.toml`):
 - `gasmaskProtectionLevel` (double `0.0..1.0`, default `0.75`; used by both `hazardous:gasmask` and `hazardous:protective_armor` items)
 - `gasmaskFilterRestore` (int `1..1000000`, default `250`)
 - `playerTickWorkInterval` (int `1..1200`, default `5`; run expensive per-player hazard evaluation only once every N server ticks)
+- `respawnHazardImmunityTicks` (int `0..72000`, default `1200`; duration of hazard immunity after respawning from death, `0` disables it)
 - `pillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables pill healing)
 - `pillsDoseHeal` (double `0.0..1000000.0`, default `20.0`; amount removed from each matching hazard dose entry)
 - `resistancePillsAttribute` (string attribute resource location, default `hazardous:radioactive_type_resistance`; empty disables the bonus)
@@ -868,6 +869,7 @@ gasmaskProtectedType = "hazardous:radioactive_type"
 gasmaskProtectionLevel = 0.75
 gasmaskFilterRestore = 250
 playerTickWorkInterval = 5
+respawnHazardImmunityTicks = 1200
 pillsAttribute = "hazardous:radioactive_type_resistance"
 pillsDoseHeal = 20.0
 resistancePillsAttribute = "hazardous:radioactive_type_resistance"

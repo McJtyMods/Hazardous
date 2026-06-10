@@ -11,6 +11,7 @@
   "command.hazardous.resetresistances.global": "Hazard resistances reset.",
   "command.hazardous.resetresistances.player": "Hazard resistances reset for %s.",
   "command.hazardous.resistances.attributes": "Player resistance attributes:",
+  "effect.hazardous.hazard_immunity": "Hazard Immunity",
   "hazardous.datapack.hazardtype.resistance_attribute": "Resistance Attribute",
   "hazardtype.hazardous.lava_heat": "Heat",
   "hazardtype.hazardous.lostcity_radiation": "Lost City Radiation",

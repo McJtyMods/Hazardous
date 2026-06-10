@@ -11,6 +11,7 @@
     "command.hazardous.resetresistances.global":"危害抗性已重置。",
     "command.hazardous.resetresistances.player":"危害抗性已重置为%s。",
     "command.hazardous.resistances.attributes":"玩家抗性属性：",
+    "effect.hazardous.hazard_immunity":"危害免疫",
     "hazardous.datapack.hazardtype.resistance_attribute":"抗性属性",
     "hazardtype.hazardous.lava_heat":"高温",
     "hazardtype.hazardous.lostcity_radiation":"失落城市辐射",

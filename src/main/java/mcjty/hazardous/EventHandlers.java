@@ -14,10 +14,12 @@ import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.DoseSetup;
 import mcjty.hazardous.setup.HazardAttributes;
 import mcjty.hazardous.setup.Messages;
+import mcjty.hazardous.setup.Registration;
 import mcjty.hazardous.setup.TimedAttributeEffects;
 import mcjty.lib.varia.Tools;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -60,12 +62,24 @@ public class EventHandlers {
                     newStore.copyFrom(oldStore);
                 });
             });
+            clearPlayerHazardApplicationTimes(event.getEntity().getUUID());
         }
     }
 
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.isEndConquered()) {
+            return;
+        }
+        int duration = Config.RESPAWN_HAZARD_IMMUNITY_TICKS.get();
+        if (duration <= 0) {
+            return;
+        }
+        event.getEntity().addEffect(new MobEffectInstance(Registration.HAZARD_IMMUNITY.get(), duration, 0, false, false, false));
+        clearPlayerHazardApplicationTimes(event.getEntity().getUUID());
+    }
+
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        UUID playerId = event.getEntity().getUUID();
-        LAST_HAZARD_APPLICATION_TIMES.keySet().removeIf(key -> key.playerId().equals(playerId));
+        clearPlayerHazardApplicationTimes(event.getEntity().getUUID());
     }
 
     public static void onPlayerTickEvent(TickEvent.PlayerTickEvent event) {
@@ -93,6 +107,7 @@ public class EventHandlers {
                 }
                 return;
             }
+            boolean respawnHazardImmune = hasRespawnHazardImmunity(event.player);
             boolean clientNeedsUpdate = false;
             Map<ResourceLocation, Double> effectiveExposureForClient = new HashMap<>();
             for (HazardType type : types) {
@@ -115,9 +130,14 @@ public class EventHandlers {
                 clientNeedsUpdate = true;
 
                 double input = HazardManager.getHazardValue(type, level, event.player);
-                input = GasmaskItem.applyProtectionAndDamage(event.player, typeId, input);
-                input = HazardAttributes.applyResistance(event.player, typeId, type, input);
+                if (!respawnHazardImmune) {
+                    input = GasmaskItem.applyProtectionAndDamage(event.player, typeId, input);
+                    input = HazardAttributes.applyResistance(event.player, typeId, type, input);
+                }
                 effectiveExposureForClient.put(typeId, input);
+                if (respawnHazardImmune) {
+                    continue;
+                }
                 double current = store.getDose(typeId);
                 double value = type.exposure().calculate(input, current);
                 store.setDose(typeId, value);
@@ -156,6 +176,14 @@ public class EventHandlers {
 
     private static boolean isHazardImmune(Player player) {
         return player.isCreative() || player.isSpectator();
+    }
+
+    private static boolean hasRespawnHazardImmunity(Player player) {
+        return player.hasEffect(Registration.HAZARD_IMMUNITY.get());
+    }
+
+    private static void clearPlayerHazardApplicationTimes(UUID playerId) {
+        LAST_HAZARD_APPLICATION_TIMES.keySet().removeIf(key -> key.playerId().equals(playerId));
     }
 
     private record HazardTickKey(UUID playerId, ResourceLocation typeId) {

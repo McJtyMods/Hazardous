@@ -2,6 +2,7 @@ package mcjty.hazardous.setup;
 
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.CustomRegistries;
+import mcjty.hazardous.effects.HazardImmunityEffect;
 import mcjty.hazardous.items.DosimeterItem;
 import mcjty.hazardous.items.FilterItem;
 import mcjty.hazardous.items.GasmaskItem;
@@ -15,6 +16,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -33,6 +35,7 @@ public class Registration {
     public static final DeferredItems ITEMS = DeferredItems.create(Hazardous.MODID);
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Hazardous.MODID);
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Hazardous.MODID);
+    public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Hazardous.MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Hazardous.MODID);
 
     public static final DeferredItem<GeigerCounterItem> GEIGER_COUNTER = ITEMS.register("geiger_counter", tab(GeigerCounterItem::new));
@@ -41,6 +44,8 @@ public class Registration {
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", tab(FilterItem::new));
     public static final DeferredItem<PillsItem> PILLS = ITEMS.register("pills", tab(PillsItem::new));
     public static final DeferredItem<ResistancePillsItem> RESISTANCE_PILLS = ITEMS.register("resistance_pills", tab(ResistancePillsItem::new));
+
+    public static final RegistryObject<MobEffect> HAZARD_IMMUNITY = MOB_EFFECTS.register("hazard_immunity", HazardImmunityEffect::new);
 
     public static final RegistryObject<SoundEvent> GEIGER_MEDIUMDOSE = SOUND_EVENTS.register("geiger.mediumdose",
             () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Hazardous.MODID, "geiger.mediumdose")));
@@ -68,6 +73,7 @@ public class Registration {
         ITEMS.register(bus);
         RECIPE_SERIALIZERS.register(bus);
         SOUND_EVENTS.register(bus);
+        MOB_EFFECTS.register(bus);
         TABS.register(bus);
     }
 

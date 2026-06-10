@@ -21,6 +21,7 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_TYPES;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_SOURCES;
     public static ForgeConfigSpec.IntValue PLAYER_TICK_WORK_INTERVAL;
+    public static ForgeConfigSpec.IntValue RESPAWN_HAZARD_IMMUNITY_TICKS;
     public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_TYPE;
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
@@ -84,6 +85,9 @@ public class Config {
         PLAYER_TICK_WORK_INTERVAL = builder
                 .comment("Only run the expensive player hazard calculation once every N server ticks")
                 .defineInRange("playerTickWorkInterval", 5, 1, 20 * 60);
+        RESPAWN_HAZARD_IMMUNITY_TICKS = builder
+                .comment("Duration in ticks of hazard immunity applied after respawning from death (20 ticks = 1 second). Set to 0 to disable")
+                .defineInRange("respawnHazardImmunityTicks", 20 * 60, 0, 20 * 60 * 60);
         GASMASK_PROTECTED_TYPE = builder
                 .comment("Hazard type id the gasmask protects against. Leave empty to disable protection")
                 .define("gasmaskProtectedType", Hazardous.MODID + ":radioactive_type");
