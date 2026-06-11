@@ -1,5 +1,6 @@
 package mcjty.hazardous.effects;
 
+import mcjty.hazardous.setup.Config;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -18,12 +19,12 @@ public class HazardImmunityEffect extends MobEffect {
         consumer.accept(new IClientMobEffectExtensions() {
             @Override
             public boolean isVisibleInInventory(MobEffectInstance instance) {
-                return false;
+                return !Config.HIDE_HAZARD_IMMUNITY_EFFECT.get();
             }
 
             @Override
             public boolean isVisibleInGui(MobEffectInstance instance) {
-                return false;
+                return !Config.HIDE_HAZARD_IMMUNITY_EFFECT.get();
             }
         });
     }

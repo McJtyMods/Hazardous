@@ -64,6 +64,7 @@ public class Config {
     public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_X;
     public static ForgeConfigSpec.IntValue RESISTANCE_PILLS_HUD_OFFSET_Y;
     public static ForgeConfigSpec.BooleanValue CURIOS_HEAD_OVERRIDE_HELMET_RENDER;
+    public static ForgeConfigSpec.BooleanValue HIDE_HAZARD_IMMUNITY_EFFECT;
 
     private static final List<String> DEFAULT_ENABLED_HAZARD_TYPES = List.of();
     private static final List<String> DEFAULT_ENABLED_HAZARD_SOURCES = List.of();
@@ -221,6 +222,9 @@ public class Config {
         CURIOS_HEAD_OVERRIDE_HELMET_RENDER = clientBuilder
                 .comment("If true, a visible helmet-like Curios item in the head slot can hide the normal helmet armor render when it has its own Curios renderer")
                 .define("curiosHeadOverrideHelmetRender", true);
+        HIDE_HAZARD_IMMUNITY_EFFECT = clientBuilder
+                .comment("If true, hide the Hazard Immunity effect from the inventory and HUD effect list")
+                .define("hideHazardImmunityEffect", false);
 
         clientBuilder.pop();
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientBuilder.build());
