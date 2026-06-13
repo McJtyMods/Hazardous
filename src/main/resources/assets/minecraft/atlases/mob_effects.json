@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "hazardous:item/gasmask",
+      "sprite": "hazardous:hazard_immunity"
+    }
+  ]
+}
