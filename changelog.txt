@@ -4,6 +4,7 @@
 - Creative and spectator players are now treated as hazard immune, avoiding dose/effect processing while keeping relevant client status in sync.
 - Added configurable post-respawn hazard immunity, defaulting to 1 minute, while Geiger counters and dosimeters continue to show current radiation/dose data.
 - Added a client-side `hideHazardImmunityEffect` config option to hide the Hazard Immunity effect from the inventory and HUD effect list; it is visible by default.
+- Added a client-side gasmask choking sound durability threshold config option, defaulting to 10% remaining durability.
 - Added full localization support and Chinese (Simplified) translations. Thanks to TexBlock for the contribution.
 - Updated datapack documentation for gasmask and protective armor durability wear behavior.
 

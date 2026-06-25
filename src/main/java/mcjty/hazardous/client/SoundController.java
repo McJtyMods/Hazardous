@@ -339,8 +339,19 @@ public class SoundController {
         }
 
         return GasmaskItem.findEquippedGasmask(player)
-                .map(stack -> GasmaskItem.getRemainingDurability(stack) > 0 ? GasmaskLoopType.BREATHING : GasmaskLoopType.CHOKING)
+                .map(SoundController::pickGasmaskLoopType)
                 .orElse(GasmaskLoopType.NONE);
+    }
+
+    private static GasmaskLoopType pickGasmaskLoopType(ItemStack stack) {
+        int remainingDurability = GasmaskItem.getRemainingDurability(stack);
+        if (remainingDurability <= 0) {
+            return GasmaskLoopType.CHOKING;
+        }
+
+        int maxDurability = stack.getMaxDamage();
+        double chokingThreshold = Math.max(0.0, Math.min(1.0, Config.GASMASK_CHOKING_REMAINING_DURABILITY.get()));
+        return remainingDurability <= maxDurability * chokingThreshold ? GasmaskLoopType.CHOKING : GasmaskLoopType.BREATHING;
     }
 
     private static void playLocalSound(LocalPlayer player, SoundEvent sound, float volume, float pitch) {

@@ -53,6 +53,7 @@ public class Config {
     public static ForgeConfigSpec.DoubleValue DOSIMETER_ICON_SHAKE_SPEED;
     public static ForgeConfigSpec.DoubleValue MASTER_SOUND_VOLUME;
     public static ForgeConfigSpec.DoubleValue GASMASK_BREATHING_VOLUME;
+    public static ForgeConfigSpec.DoubleValue GASMASK_CHOKING_REMAINING_DURABILITY;
     public static ForgeConfigSpec.DoubleValue FILTER_REPLENISH_VOLUME;
     public static ForgeConfigSpec.ConfigValue<String> DOSIMETER_HUD_ANCHOR;
     public static ForgeConfigSpec.DoubleValue DOSIMETER_HUD_SCALE;
@@ -189,6 +190,9 @@ public class Config {
         GASMASK_BREATHING_VOLUME = clientBuilder
                 .comment("Volume multiplier for the looping gasmask breathing sound. Set to 0 to disable")
                 .defineInRange("gasmaskBreathingVolume", 0.5, 0.0, 1.0);
+        GASMASK_CHOKING_REMAINING_DURABILITY = clientBuilder
+                .comment("Remaining gasmask durability fraction at or below which the choking loop replaces breathing (0.1 = 10%, 0 keeps the old zero-durability behavior)")
+                .defineInRange("gasmaskChokingRemainingDurability", 0.1, 0.0, 1.0);
         FILTER_REPLENISH_VOLUME = clientBuilder
                 .comment("Volume multiplier for the filter replenish sound. Set to 0 to disable")
                 .defineInRange("filterReplenishVolume", 0.7, 0.0, 1.0);
