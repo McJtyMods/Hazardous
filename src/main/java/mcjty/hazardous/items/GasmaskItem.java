@@ -6,6 +6,7 @@ import mcjty.hazardous.setup.Config;
 import mcjty.hazardous.setup.HazardousTags;
 import mcjty.hazardous.setup.Registration;
 import mcjty.lib.builder.TooltipBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,6 +29,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class GasmaskItem extends ArmorItem {
+
+    private static final String LOW_DURABILITY_WARNING_TAG = "hazardous:low_durability_warning_shown";
 
     private static final TooltipBuilder TOOLTIP = new TooltipBuilder()
             .info(
@@ -111,6 +114,9 @@ public class GasmaskItem extends ArmorItem {
         }
         int newDamage = Math.max(0, currentDamage - amount);
         stack.setDamageValue(newDamage);
+        if (!isBelowLowDurabilityThreshold(stack) && stack.hasTag()) {
+            stack.getTag().remove(LOW_DURABILITY_WARNING_TAG);
+        }
         return currentDamage - newDamage;
     }
 
@@ -142,6 +148,7 @@ public class GasmaskItem extends ArmorItem {
         if (!stack.isDamageableItem()) {
             return;
         }
+        updateLowDurabilityWarning(player, stack);
         int maxDamage = stack.getMaxDamage();
         int damage = stack.getDamageValue();
         if (damage >= maxDamage) {
@@ -151,13 +158,37 @@ public class GasmaskItem extends ArmorItem {
         if (stack.getDamageValue() > maxDamage) {
             stack.setDamageValue(maxDamage);
         }
+        updateLowDurabilityWarning(player, stack);
     }
 
     private static void damageArmorByOne(Player player, EquipmentSlot slot, ItemStack stack) {
         if (!stack.isDamageableItem()) {
             return;
         }
+        updateLowDurabilityWarning(player, stack);
         stack.hurtAndBreak(1, player, living -> living.broadcastBreakEvent(slot));
+        updateLowDurabilityWarning(player, stack);
+    }
+
+    private static void updateLowDurabilityWarning(Player player, ItemStack stack) {
+        if (stack.isEmpty() || !stack.isDamageableItem()) {
+            return;
+        }
+        if (!isBelowLowDurabilityThreshold(stack)) {
+            if (stack.hasTag()) {
+                stack.getTag().remove(LOW_DURABILITY_WARNING_TAG);
+            }
+            return;
+        }
+        if (!stack.getOrCreateTag().getBoolean(LOW_DURABILITY_WARNING_TAG)) {
+            stack.getTag().putBoolean(LOW_DURABILITY_WARNING_TAG, true);
+            player.displayClientMessage(Component.translatable("message.hazardous.protection.low_durability", stack.getHoverName())
+                    .withStyle(ChatFormatting.YELLOW), false);
+        }
+    }
+
+    private static boolean isBelowLowDurabilityThreshold(ItemStack stack) {
+        return (long) getRemainingDurability(stack) * 10L < stack.getMaxDamage();
     }
 
     private record TaggedArmorProtection(ItemStack stack, EquipmentSlot slot) {

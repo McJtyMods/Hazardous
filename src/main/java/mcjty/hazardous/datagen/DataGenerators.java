@@ -81,6 +81,8 @@ public class DataGenerators {
                 Dob.builder()
                         .message("message.hazardous.protection.durability", "Uses 1 durability per protection application"),
                 Dob.builder()
+                        .message("message.hazardous.protection.low_durability", "Warning: %s has less than 10%% durability remaining!"),
+                Dob.builder()
                         .message("command.hazardous.dose.accumulate", "Accumulated hazard dose for you:"),
                 Dob.builder()
                         .message("command.hazardous.dose.failure", "No dose data available"),

@@ -1,4 +1,5 @@
 1.20-0.0.4:
+- Added a translatable, non-spamming chat warning when a gas mask or `hazardous:protective_armor` item falls below 10% durability.
 - Gasmasks with Unbreaking now use the enchantment to reduce durability consumption while protecting against hazards.
 - Gasmasks can now be equipped in the Curios `faceslot` slot in addition to the Curios `head` slot.
 - Creative and spectator players are now treated as hazard immune, avoiding dose/effect processing while keeping relevant client status in sync.

@@ -50,6 +50,7 @@
     "message.hazardous.pills.usage":"右击使用并减少相应的剂量",
     "message.hazardous.protection.durability":"每次防护会消耗1点耐久度",
     "message.hazardous.protection.level":"防护率：%.0f%%",
+    "message.hazardous.protection.low_durability":"警告：%s的剩余耐久度低于10%%！",
     "message.hazardous.protection.type":"防护源：%s",
     "message.hazardous.protection.worn":"穿戴时防护以下危害：",
     "message.hazardous.resistance_pills.amount":"每次用量：",

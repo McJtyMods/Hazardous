@@ -50,6 +50,7 @@
   "message.hazardous.pills.usage": "Right-click to consume and reduce matching dose",
   "message.hazardous.protection.durability": "Uses 1 durability per protection application",
   "message.hazardous.protection.level": "Protection: %.0f%%",
+  "message.hazardous.protection.low_durability": "Warning: %s has less than 10%% durability remaining!",
   "message.hazardous.protection.type": "Protects: %s",
   "message.hazardous.protection.worn": "Hazard protection when worn:",
   "message.hazardous.resistance_pills.amount": "Amount per use: ",
