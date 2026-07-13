@@ -93,15 +93,18 @@ public class GasmaskItem extends ArmorItem {
     }
 
     public static Optional<ItemStack> findEquippedGasmask(Player player, Predicate<ItemStack> predicate) {
+        if (ModList.get().isLoaded("curios")) {
+            Optional<ItemStack> curioGasmask = CuriosCompat.findFirstHeadOrFaceCurio(player, Registration.GASMASK.get())
+                    .filter(predicate);
+            if (curioGasmask.isPresent()) {
+                return curioGasmask;
+            }
+        }
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         if (helmet.is(Registration.GASMASK.get()) && predicate.test(helmet)) {
             return Optional.of(helmet);
         }
-        if (!ModList.get().isLoaded("curios")) {
-            return Optional.empty();
-        }
-        return CuriosCompat.findFirstHeadOrFaceCurio(player, Registration.GASMASK.get())
-                .filter(predicate);
+        return Optional.empty();
     }
 
     public static int restoreDurability(ItemStack stack, int amount) {
