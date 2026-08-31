@@ -1,2 +1,2 @@
-# InControl
-Be In Control of Mob Spawns and others
+# Hazardous
+Everything about making your world more dangerous.
