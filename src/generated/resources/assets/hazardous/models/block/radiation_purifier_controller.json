@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "minecraft:block/iron_block"
+    "all": "hazardous:block/radiation_purifier_controller"
   }
 }

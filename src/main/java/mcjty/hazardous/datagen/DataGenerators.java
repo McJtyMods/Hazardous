@@ -117,10 +117,11 @@ public class DataGenerators {
                 Dob.blockBuilder(Registration.RADIATION_PURIFIER_CONTROLLER)
                         .name("Radiation Purifier Controller")
                         .ironPickaxeTags()
-                        .parentedItem("block/radiation_purifier_placeholder")
+                        .parentedItem("block/radiation_purifier_controller")
                         .standardLoot(Registration.RADIATION_PURIFIER_CONTROLLER_BLOCK_ENTITY)
                         .blockState(provider -> {
-                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_placeholder", provider.mcLoc("block/iron_block"));
+                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_controller",
+                                    provider.modLoc("block/radiation_purifier_controller"));
                             ModelFile inactive = provider.models().getExistingFile(provider.modLoc("block/radiation_purifier_static"));
                             ModelFile active = provider.models().getExistingFile(provider.modLoc("block/radiation_purifier_active"));
                             provider.getVariantBuilder(Registration.RADIATION_PURIFIER_CONTROLLER.get()).forAllStates(state -> {
@@ -143,12 +144,13 @@ public class DataGenerators {
                 Dob.blockBuilder(Registration.RADIATION_PURIFIER_BASE)
                         .name("Radiation Purifier Base")
                         .ironPickaxeTags()
-                        .parentedItem("block/radiation_purifier_placeholder")
+                        .parentedItem("block/radiation_purifier_base")
                         .simpleLoot()
                         .blockState(provider -> {
-                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_placeholder", provider.mcLoc("block/iron_block"));
+                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_base",
+                                    provider.modLoc("block/radiation_purifier_base"));
                             ModelFile empty = provider.models().getBuilder("radiation_purifier_empty")
-                                    .texture("particle", provider.mcLoc("block/iron_block"));
+                                    .texture("particle", provider.modLoc("block/radiation_purifier_base"));
                             provider.getVariantBuilder(Registration.RADIATION_PURIFIER_BASE.get()).forAllStates(state ->
                                     ConfiguredModel.builder()
                                             .modelFile(state.getValue(mcjty.hazardous.blocks.RadiationPurifierBaseBlock.FORMED) ? empty : placeholder)

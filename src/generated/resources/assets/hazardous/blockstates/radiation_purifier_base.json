@@ -1,13 +1,13 @@
 {
   "variants": {
     "facing=east,formed=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder"
+      "model": "hazardous:block/radiation_purifier_base"
     },
     "facing=east,formed=true": {
       "model": "hazardous:block/radiation_purifier_empty"
     },
     "facing=north,formed=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_base",
       "y": 270
     },
     "facing=north,formed=true": {
@@ -15,7 +15,7 @@
       "y": 270
     },
     "facing=south,formed=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_base",
       "y": 90
     },
     "facing=south,formed=true": {
@@ -23,7 +23,7 @@
       "y": 90
     },
     "facing=west,formed=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_base",
       "y": 180
     },
     "facing=west,formed=true": {

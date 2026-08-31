@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "hazardous:block/radiation_purifier_base"
+  }
+}

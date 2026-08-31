@@ -1,5 +1,5 @@
 {
   "textures": {
-    "particle": "minecraft:block/iron_block"
+    "particle": "hazardous:block/radiation_purifier_base"
   }
 }

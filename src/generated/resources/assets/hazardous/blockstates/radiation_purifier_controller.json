@@ -1,10 +1,10 @@
 {
   "variants": {
     "facing=east,formed=false,lit=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder"
+      "model": "hazardous:block/radiation_purifier_controller"
     },
     "facing=east,formed=false,lit=true": {
-      "model": "hazardous:block/radiation_purifier_placeholder"
+      "model": "hazardous:block/radiation_purifier_controller"
     },
     "facing=east,formed=true,lit=false": {
       "model": "hazardous:block/radiation_purifier_static"
@@ -13,11 +13,11 @@
       "model": "hazardous:block/radiation_purifier_active"
     },
     "facing=north,formed=false,lit=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 270
     },
     "facing=north,formed=false,lit=true": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 270
     },
     "facing=north,formed=true,lit=false": {
@@ -29,11 +29,11 @@
       "y": 270
     },
     "facing=south,formed=false,lit=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 90
     },
     "facing=south,formed=false,lit=true": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 90
     },
     "facing=south,formed=true,lit=false": {
@@ -45,11 +45,11 @@
       "y": 90
     },
     "facing=west,formed=false,lit=false": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 180
     },
     "facing=west,formed=false,lit=true": {
-      "model": "hazardous:block/radiation_purifier_placeholder",
+      "model": "hazardous:block/radiation_purifier_controller",
       "y": 180
     },
     "facing=west,formed=true,lit=false": {

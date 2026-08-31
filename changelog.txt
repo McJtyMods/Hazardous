@@ -1,3 +1,6 @@
+1.20-1.0.0:
+- Add a new purifier block that can be used to grant hazard immunity to players in a configurable radius
+
 1.20-0.0.4:
 - Gas masks equipped in a Curios head or face slot now take priority over a gas mask in the vanilla helmet slot.
 - Added a translatable, non-spamming chat warning when a gas mask or `hazardous:protective_armor` item falls below 10% durability.
