@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "X": {
+      "item": "minecraft:diamond_block"
+    }
+  },
+  "pattern": [
+    "NXN",
+    "CSC",
+    "OXO"
+  ],
+  "result": {
+    "item": "hazardous:radiation_purifier_controller"
+  },
+  "show_notification": true
+}

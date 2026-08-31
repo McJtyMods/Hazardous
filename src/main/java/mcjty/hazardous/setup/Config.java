@@ -22,6 +22,10 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> ENABLED_HAZARD_SOURCES;
     public static ForgeConfigSpec.IntValue PLAYER_TICK_WORK_INTERVAL;
     public static ForgeConfigSpec.IntValue RESPAWN_HAZARD_IMMUNITY_TICKS;
+    public static ForgeConfigSpec.IntValue RADIATION_PURIFIER_MAX_ENERGY;
+    public static ForgeConfigSpec.IntValue RADIATION_PURIFIER_ENERGY_PER_TICK;
+    public static ForgeConfigSpec.IntValue RADIATION_PURIFIER_RADIUS;
+    public static ForgeConfigSpec.IntValue RADIATION_PURIFIER_PLAYER_SCAN_INTERVAL;
     public static ForgeConfigSpec.ConfigValue<String> GASMASK_PROTECTED_TYPE;
     public static ForgeConfigSpec.DoubleValue GASMASK_PROTECTION_LEVEL;
     public static ForgeConfigSpec.IntValue GASMASK_FILTER_RESTORE;
@@ -90,6 +94,18 @@ public class Config {
         RESPAWN_HAZARD_IMMUNITY_TICKS = builder
                 .comment("Duration in ticks of hazard immunity applied after respawning from death (20 ticks = 1 second). Set to 0 to disable")
                 .defineInRange("respawnHazardImmunityTicks", 20 * 60, 0, 20 * 60 * 60);
+        RADIATION_PURIFIER_MAX_ENERGY = builder
+                .comment("Maximum Forge Energy stored by a Radiation Purifier")
+                .defineInRange("radiationPurifierMaxEnergy", 100_000, 1, Integer.MAX_VALUE);
+        RADIATION_PURIFIER_ENERGY_PER_TICK = builder
+                .comment("Forge Energy consumed by a formed Radiation Purifier every tick")
+                .defineInRange("radiationPurifierEnergyPerTick", 50, 0, Integer.MAX_VALUE);
+        RADIATION_PURIFIER_RADIUS = builder
+                .comment("Radius in blocks in which an active Radiation Purifier grants hazard immunity")
+                .defineInRange("radiationPurifierRadius", 50, 0, 1_024);
+        RADIATION_PURIFIER_PLAYER_SCAN_INTERVAL = builder
+                .comment("How often an active Radiation Purifier searches for nearby players, in ticks")
+                .defineInRange("radiationPurifierPlayerScanInterval", 20, 1, 20 * 60);
         GASMASK_PROTECTED_TYPE = builder
                 .comment("Hazard type id the gasmask protects against. Leave empty to disable protection")
                 .define("gasmaskProtectedType", Hazardous.MODID + ":radioactive_type");

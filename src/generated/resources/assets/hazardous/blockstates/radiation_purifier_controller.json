@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=east,formed=false,lit=false": {
+      "model": "hazardous:block/radiation_purifier_placeholder"
+    },
+    "facing=east,formed=false,lit=true": {
+      "model": "hazardous:block/radiation_purifier_placeholder"
+    },
+    "facing=east,formed=true,lit=false": {
+      "model": "hazardous:block/radiation_purifier_static"
+    },
+    "facing=east,formed=true,lit=true": {
+      "model": "hazardous:block/radiation_purifier_active"
+    },
+    "facing=north,formed=false,lit=false": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 270
+    },
+    "facing=north,formed=false,lit=true": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 270
+    },
+    "facing=north,formed=true,lit=false": {
+      "model": "hazardous:block/radiation_purifier_static",
+      "y": 270
+    },
+    "facing=north,formed=true,lit=true": {
+      "model": "hazardous:block/radiation_purifier_active",
+      "y": 270
+    },
+    "facing=south,formed=false,lit=false": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 90
+    },
+    "facing=south,formed=false,lit=true": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 90
+    },
+    "facing=south,formed=true,lit=false": {
+      "model": "hazardous:block/radiation_purifier_static",
+      "y": 90
+    },
+    "facing=south,formed=true,lit=true": {
+      "model": "hazardous:block/radiation_purifier_active",
+      "y": 90
+    },
+    "facing=west,formed=false,lit=false": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 180
+    },
+    "facing=west,formed=false,lit=true": {
+      "model": "hazardous:block/radiation_purifier_placeholder",
+      "y": 180
+    },
+    "facing=west,formed=true,lit=false": {
+      "model": "hazardous:block/radiation_purifier_static",
+      "y": 180
+    },
+    "facing=west,formed=true,lit=true": {
+      "model": "hazardous:block/radiation_purifier_active",
+      "y": 180
+    }
+  }
+}

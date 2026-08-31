@@ -1,11 +1,14 @@
 package mcjty.hazardous.client;
 
 import mcjty.hazardous.items.model.GasmaskModel;
+import mcjty.hazardous.client.gui.GuiRadiationPurifier;
 import mcjty.hazardous.setup.Registration;
 import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -20,10 +23,14 @@ public class ClientRegistration {
     private static final Field LAYERS_FIELD = ObfuscationReflectionHelper.findField(LivingEntityRenderer.class, "f_115291_");
 
     public static void onClientSetup(FMLClientSetupEvent event) {
-        if (!ModList.get().isLoaded("curios")) {
-            return;
-        }
-        event.enqueueWork(() -> CuriosRendererRegistry.register(Registration.GASMASK.get(), GasmaskCurioRenderer::new));
+        event.enqueueWork(() -> {
+            GuiRadiationPurifier.register();
+            ItemBlockRenderTypes.setRenderLayer(Registration.RADIATION_PURIFIER_CONTROLLER.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(Registration.RADIATION_PURIFIER_BASE.get(), RenderType.cutout());
+            if (ModList.get().isLoaded("curios")) {
+                CuriosRendererRegistry.register(Registration.GASMASK.get(), GasmaskCurioRenderer::new);
+            }
+        });
     }
 
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {

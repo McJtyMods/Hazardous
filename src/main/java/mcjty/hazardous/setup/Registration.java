@@ -3,6 +3,9 @@ package mcjty.hazardous.setup;
 import mcjty.hazardous.Hazardous;
 import mcjty.hazardous.data.CustomRegistries;
 import mcjty.hazardous.effects.HazardImmunityEffect;
+import mcjty.hazardous.blocks.RadiationPurifierBaseBlock;
+import mcjty.hazardous.blocks.RadiationPurifierControllerBlock;
+import mcjty.hazardous.blocks.RadiationPurifierControllerBlockEntity;
 import mcjty.hazardous.items.DosimeterItem;
 import mcjty.hazardous.items.FilterItem;
 import mcjty.hazardous.items.GasmaskItem;
@@ -12,6 +15,9 @@ import mcjty.hazardous.items.ResistancePillsItem;
 import mcjty.hazardous.recipes.GasmaskFilterRecipe;
 import mcjty.lib.setup.DeferredItem;
 import mcjty.lib.setup.DeferredItems;
+import mcjty.lib.setup.DeferredBlock;
+import mcjty.lib.setup.DeferredBlocks;
+import mcjty.lib.container.GenericContainer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -21,18 +27,24 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.function.Supplier;
 
 public class Registration {
 
     public static final DeferredItems ITEMS = DeferredItems.create(Hazardous.MODID);
+    public static final DeferredBlocks BLOCKS = DeferredBlocks.create(Hazardous.MODID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Hazardous.MODID);
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Hazardous.MODID);
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Hazardous.MODID);
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Hazardous.MODID);
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Hazardous.MODID);
@@ -44,6 +56,20 @@ public class Registration {
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", tab(FilterItem::new));
     public static final DeferredItem<PillsItem> PILLS = ITEMS.register("pills", tab(PillsItem::new));
     public static final DeferredItem<ResistancePillsItem> RESISTANCE_PILLS = ITEMS.register("resistance_pills", tab(ResistancePillsItem::new));
+
+    public static final DeferredBlock<RadiationPurifierControllerBlock> RADIATION_PURIFIER_CONTROLLER =
+            BLOCKS.register("radiation_purifier_controller", RadiationPurifierControllerBlock::new);
+    public static final DeferredItem<Item> RADIATION_PURIFIER_CONTROLLER_ITEM = ITEMS.register("radiation_purifier_controller",
+            tab(() -> new BlockItem(RADIATION_PURIFIER_CONTROLLER.get(), Hazardous.setup.defaultProperties())));
+    public static final DeferredBlock<RadiationPurifierBaseBlock> RADIATION_PURIFIER_BASE =
+            BLOCKS.register("radiation_purifier_base", RadiationPurifierBaseBlock::new);
+    public static final DeferredItem<Item> RADIATION_PURIFIER_BASE_ITEM = ITEMS.register("radiation_purifier_base",
+            tab(() -> new BlockItem(RADIATION_PURIFIER_BASE.get(), Hazardous.setup.defaultProperties())));
+    public static final RegistryObject<BlockEntityType<RadiationPurifierControllerBlockEntity>> RADIATION_PURIFIER_CONTROLLER_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("radiation_purifier_controller", () -> BlockEntityType.Builder.of(
+                    RadiationPurifierControllerBlockEntity::new, RADIATION_PURIFIER_CONTROLLER.get()).build(null));
+    public static final RegistryObject<MenuType<GenericContainer>> RADIATION_PURIFIER_MENU =
+            MENUS.register("radiation_purifier", GenericContainer::createContainerType);
 
     public static final RegistryObject<MobEffect> HAZARD_IMMUNITY = MOB_EFFECTS.register("hazard_immunity", HazardImmunityEffect::new);
 
@@ -70,7 +96,10 @@ public class Registration {
     public static void register(IEventBus bus) {
         CustomRegistries.init(bus);
         HazardAttributes.register(bus);
+        BLOCKS.register(bus);
         ITEMS.register(bus);
+        BLOCK_ENTITIES.register(bus);
+        MENUS.register(bus);
         RECIPE_SERIALIZERS.register(bus);
         SOUND_EVENTS.register(bus);
         MOB_EFFECTS.register(bus);

@@ -11,6 +11,7 @@ import mcjty.hazardous.setup.Registration;
 import mcjty.lib.datagen.DataGen;
 import mcjty.lib.datagen.Dob;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -18,6 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraftforge.client.model.generators.ConfiguredModel;
+import net.minecraftforge.client.model.generators.ModelFile;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -98,6 +102,65 @@ public class DataGenerators {
                         .message("command.hazardous.resetresistances.player", "Hazard resistances reset for %s."),
                 Dob.builder()
                         .message("command.hazardous.resistances.attributes", "Player resistance attributes:"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier", "Radiation Purifier"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier.active", "Status: Active"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier.no_power", "Status: Insufficient power"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier.unformed", "Status: Base missing"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier.radius", "Immunity radius: %s blocks"),
+                Dob.builder()
+                        .message("gui.hazardous.radiation_purifier.scan_interval", "Player scan interval: %s ticks"),
+                Dob.blockBuilder(Registration.RADIATION_PURIFIER_CONTROLLER)
+                        .name("Radiation Purifier Controller")
+                        .ironPickaxeTags()
+                        .parentedItem("block/radiation_purifier_placeholder")
+                        .standardLoot(Registration.RADIATION_PURIFIER_CONTROLLER_BLOCK_ENTITY)
+                        .blockState(provider -> {
+                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_placeholder", provider.mcLoc("block/iron_block"));
+                            ModelFile inactive = provider.models().getExistingFile(provider.modLoc("block/radiation_purifier_static"));
+                            ModelFile active = provider.models().getExistingFile(provider.modLoc("block/radiation_purifier_active"));
+                            provider.getVariantBuilder(Registration.RADIATION_PURIFIER_CONTROLLER.get()).forAllStates(state -> {
+                                ModelFile model = !state.getValue(mcjty.hazardous.blocks.RadiationPurifierControllerBlock.FORMED)
+                                        ? placeholder
+                                        : state.getValue(mcjty.hazardous.blocks.RadiationPurifierControllerBlock.ACTIVE) ? active : inactive;
+                                return ConfiguredModel.builder()
+                                        .modelFile(model)
+                                        .rotationY(purifierRotation(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
+                                        .build();
+                            });
+                        })
+                        .shaped(builder -> builder
+                                        .define('N', Items.NETHERITE_INGOT)
+                                        .define('X', Items.DIAMOND_BLOCK)
+                                        .define('S', Items.NETHER_STAR)
+                                        .define('C', Items.COMPARATOR)
+                                        .unlockedBy("has_nether_star", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHER_STAR)),
+                                "NXN", "CSC", "OXO"),
+                Dob.blockBuilder(Registration.RADIATION_PURIFIER_BASE)
+                        .name("Radiation Purifier Base")
+                        .ironPickaxeTags()
+                        .parentedItem("block/radiation_purifier_placeholder")
+                        .simpleLoot()
+                        .blockState(provider -> {
+                            ModelFile placeholder = provider.models().cubeAll("radiation_purifier_placeholder", provider.mcLoc("block/iron_block"));
+                            ModelFile empty = provider.models().getBuilder("radiation_purifier_empty")
+                                    .texture("particle", provider.mcLoc("block/iron_block"));
+                            provider.getVariantBuilder(Registration.RADIATION_PURIFIER_BASE.get()).forAllStates(state ->
+                                    ConfiguredModel.builder()
+                                            .modelFile(state.getValue(mcjty.hazardous.blocks.RadiationPurifierBaseBlock.FORMED) ? empty : placeholder)
+                                            .rotationY(purifierRotation(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
+                                            .build());
+                        })
+                        .shaped(builder -> builder
+                                        .define('N', Items.NETHERITE_INGOT)
+                                        .define('X', Items.DIAMOND_BLOCK)
+                                        .define('M', Items.IRON_BLOCK)
+                                        .unlockedBy("has_netherite", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHERITE_INGOT)),
+                                "ONO", "XMX", "OOO"),
                 Dob.itemBuilder(Registration.GEIGER_COUNTER)
                         .name("Geiger Counter")
                         .generatedItem("item/geigercounter")
@@ -207,5 +270,15 @@ public class DataGenerators {
                                 .unlockedBy("has_pills", InventoryChangeTrigger.TriggerInstance.hasItems(Registration.PILLS.get()))
                                 .save(consumer))
         );
+    }
+
+    private static int purifierRotation(Direction facing) {
+        return switch (facing) {
+            case EAST -> 0;
+            case SOUTH -> 90;
+            case WEST -> 180;
+            case NORTH -> 270;
+            default -> 0;
+        };
     }
 }

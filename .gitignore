@@ -1,0 +1,59 @@
+# Gradle build state and outputs
+/.gradle/
+/build/
+/out/
+/bin/
+/.gradletasknamecache
+
+# Forge/Minecraft development runtime
+/run/
+/runs/
+/logs/
+/crash-reports/
+
+# Data generator cache (generated resources themselves are committed)
+/src/generated/resources/.cache/
+
+# IntelliJ IDEA
+/.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+/.classpath
+/.project
+/.settings/
+
+# Visual Studio Code
+/.vscode/
+
+# Local tooling/agent metadata
+/.agents/
+/.codex/
+
+# Java/JVM artifacts
+*.class
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# Logs and temporary files
+*.log
+*.log.gz
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Local environment and machine-specific configuration
+.env
+.env.*
+!.env.example
+local.properties
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
