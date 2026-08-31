@@ -49,7 +49,9 @@ public class RadiationPurifierControllerBlockEntity extends TickingTileEntity {
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
         if (capability == ForgeCapabilities.ENERGY) {
             Direction outward = getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-            if (side != outward) {
+            // Unsided access is used for persistence, GUIs, and read-only integrations such as The One Probe.
+            // Physical neighbors still receive the capability only from the controller's outward face.
+            if (side != null && side != outward) {
                 return LazyOptional.empty();
             }
         }
@@ -103,7 +105,8 @@ public class RadiationPurifierControllerBlockEntity extends TickingTileEntity {
         Vec3 center = Vec3.atCenterOf(worldPosition).relative(facing.getOpposite(), 0.5);
         AABB searchBox = new AABB(center, center).inflate(radius);
         double radiusSquared = (double) radius * radius;
-        int effectDuration = interval + 5;
+        // Keep the effect above Minecraft's ten-second HUD warning range between scans so its icon does not flash.
+        int effectDuration = Math.max(240, interval + 220);
 
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, searchBox,
                 player -> player.distanceToSqr(center) <= radiusSquared)) {
