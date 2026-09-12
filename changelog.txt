@@ -1,3 +1,6 @@
+1.20-1.0.1:
+- Fixed Lost Cities style filters only matching city-center chunks by using the chunk-style API
+
 1.20-1.0.0:
 - Add a new purifier block that can be used to grant hazard immunity to players in a configurable radius
 

@@ -3,6 +3,7 @@ package mcjty.hazardous.compat;
 import mcjty.lib.varia.Logging;
 import mcjty.lostcities.api.ILostCities;
 import mcjty.lostcities.api.ILostChunkInfo;
+import mcjty.lostcities.api.ILostCityCityStyle;
 import mcjty.lostcities.api.ILostCityInfo;
 import mcjty.lostcities.api.ILostCityInformation;
 import net.minecraft.resources.ResourceLocation;
@@ -42,8 +43,8 @@ public class LostCityCompat {
             return null;
         }
         if (style.isPresent()) {
-            ILostCityInfo cityInfo = chunkData.chunkInfo().getCityInfo();
-            if (cityInfo == null || !style.get().equals(cityInfo.getCityStyle())) {
+            ILostCityCityStyle cityStyle = chunkData.chunkInfo().getCityStyle();
+            if (cityStyle == null || !style.get().equals(cityStyle.getName())) {
                 return null;
             }
         }
@@ -127,8 +128,8 @@ public class LostCityCompat {
                 return false;
             }
             if (style.isPresent()) {
-                ILostCityInfo cityInfo = chunkInfo.getCityInfo();
-                if (cityInfo == null || !style.get().equals(cityInfo.getCityStyle())) {
+                ILostCityCityStyle cityStyle = chunkInfo.getCityStyle();
+                if (cityStyle == null || !style.get().equals(cityStyle.getName())) {
                     return false;
                 }
             }
