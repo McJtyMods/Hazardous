@@ -33,3 +33,9 @@ A simple minimal mod used for testing hazardous features
     versionRange="[5.1.0,)"
     ordering="AFTER"
     side="BOTH"
+[[dependencies.hazardous]]
+    modId="lostcities"
+    mandatory=false
+    versionRange="[7.5.5,)"
+    ordering="AFTER"
+    side="BOTH"
