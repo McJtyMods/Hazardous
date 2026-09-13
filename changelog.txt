@@ -1,3 +1,6 @@
+1.20-1.0.2:
+- Fixed Lost Cities dependency
+
 1.20-1.0.1:
 - Fixed Lost Cities style filters only matching city-center chunks by using the chunk-style API
 
