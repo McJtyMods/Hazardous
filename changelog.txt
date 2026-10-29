@@ -1,3 +1,6 @@
+1.20-1.0.3:
+- Fixed a crash when opening the Creative inventory with items or tabs hidden by modpack scripts.
+
 1.20-1.0.2:
 - Fixed Lost Cities dependency
 

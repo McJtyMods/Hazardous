@@ -21,7 +21,7 @@ public class ItemEmissionTooltipHandler {
 
     public static void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
-        if (event.getEntity() == null || stack.isEmpty()) {
+        if (event.getEntity() == null || stack == null || stack.isEmpty()) {
             return;
         }
 
